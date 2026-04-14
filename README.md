@@ -1,58 +1,100 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# groep-d-project
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Samenwerkingsplan
 
-## About Laravel
+## 1. Doel van de samenwerking
+Het doel van deze samenwerking is om gezamenlijk en efficiënt te werken aan het project, waarbij iedere groepsgenoot actief bijdraagt en verantwoordelijkheid neemt voor zijn/haar taken.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 2. Afspraken over aanwezigheid & beschikbaarheid
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Projectinhoudelijke lessen, samenwerkingslessen en projectwerklessen:
+- Afmelden uiterlijk vóór 23:59 de dag ervoor als je niet aanwezig kunt zijn.
+- Je geeft altijd een reden door.
+- Als je dit niet doet, wordt het alsnog gevraagd.
 
-## Learning Laravel
+### Ziekmelding:
+- Bij ziekte meld je je minimaal 30 minuten vóór de eerste les van de dag af.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Gevolgen bij niet-naleving:
+- Niet geldige redenen of te late meldingen → waarschuwing.
+- Na 3 waarschuwingen volgt een gesprek met de hele groep (exclusief Amir).
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## 3. Communicatieafspraken
 
-## Agentic Development
+### WhatsApp:
+- Afmelden gebeurt altijd via WhatsApp in de projectgroepchat.
+- Korte vragen of snelle updates mogen ook via WhatsApp.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Microsoft Teams:
+- Alle projectmatige berichten, bestanden, versies, documenten en feedback worden via Teams gedeeld.
+- Bestanden worden duidelijk benoemd en in de juiste map geplaatst.
 
-```bash
-composer require laravel/boost --dev
+---
 
-php artisan boost:install
-```
+## 4. Taakverdeling & rollen (Wiel van Vroemen – taakgericht)
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+- **Projectleider**: overzicht houden, planning bewaken, vergaderingen starten, taken verdelen.
+- **Planner / Procesbewaker**: deadlines bijhouden, check-ins organiseren, voortgang monitoren.
+- **Notulist / Documentbeheerder**: notulen maken, versies beheren, structuur in Teams bewaken.
+- **Kwaliteitsbewaker**: werk controleren, feedback verzamelen, eindkwaliteit bewaken.
+- **Uitvoerders**: taken uitwerken, tijdig opleveren, actief meedenken.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 5. Samenwerkingsafspraken (Wiel van Vroemen – samenwerkingsgericht)
 
-## Code of Conduct
+- We spreken elkaar respectvol aan.
+- We geven constructieve feedback en staan open voor feedback.
+- We komen afspraken na; lukt dat niet, dan melden we dat tijdig.
+- Iedereen levert een gelijke bijdrage.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Conflicthantering:
+1. Eerst 1-op-1 bespreken.
+2. Lukt dat niet → bespreken in de groep.
+3. Blijft het probleem bestaan → docent inschakelen.
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 6. Planning & voortgang
 
-## License
+### Wekelijkse check-in:
+- Wat is af?
+- Wat moet nog?
+- Waar loop je tegenaan?
+- Wie heeft hulp nodig?
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Deadlines:
+- Deadlines worden door de groep vastgesteld en bewaakt door de planner.
+- Opleveren gebeurt via Teams, niet via WhatsApp.
+
+---
+
+## 7. Kwaliteitsafspraken
+
+- Werk wordt pas ingeleverd na controle door de kwaliteitsbewaker.
+- Iedereen leest elkaars werk na.
+- We gebruiken dezelfde schrijfstijl, structuur en bestandsnamen.
+
+---
+
+## 8. Evaluatie (Wiel van Vroemen – reflectie)
+
+Aan het einde van elke fase reflecteren we:
+- Wat ging goed?
+- Wat kan beter?
+- Hoe verbeteren we dat in de volgende fase?
+
+---
+
+## 9. Ondertekening
+
+Iedereen bevestigt dat hij/zij akkoord is met dit samenwerkingsplan en zich eraan zal houden.
+
+---
+
+## Bron
+Gebaseerd op het aangeleverde document:  [oai_citation:0‡Samenwerkingsplan.docx](sediment://file_00000000a0e07246a064cc7cfb7ff49d)
