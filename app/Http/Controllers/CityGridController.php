@@ -28,4 +28,23 @@ class CityGridController extends Controller
             'cell' => $cell
         ]);
     }
+    
+//assign function
+    public function assignFunction(Request $request, $id)
+    {
+        $request->validate([
+            'function_name' => 'required|string|max:255',
+        ]);
+
+        $cell = CityGridCell::findOrFail($id);
+
+        $cell->update([
+            'function_name' => $request->function_name,
+        ]);
+
+        return response()->json([
+            'message' => 'Function assigned',
+            'cell' => $cell
+        ]);
+    }
 }

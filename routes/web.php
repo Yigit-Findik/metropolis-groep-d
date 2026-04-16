@@ -24,6 +24,7 @@ Route::middleware('auth')->group(function () {
 //gridcontroller
 Route::get('/grid', [CityGridController::class, 'index']);
 Route::post('/grid/select/{id}', [CityGridController::class, 'select']);
+Route::post('/grid/{id}/assign', [CityGridController::class, 'assignFunction']);
 
 
 
