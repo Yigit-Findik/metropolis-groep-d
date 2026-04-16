@@ -13,7 +13,7 @@ const initializeCityGrid = () => {
 		return;
 	}
 
-	const cells = Array.from(grid.querySelectorAll('[data-grid-cell]'));
+	const cells = Array.from(grid.querySelectorAll('[data-grid-cell]')); //
 	const preview = document.querySelector('[data-selected-cell-preview]');
 	const clearButton = document.querySelector('[data-clear-selection]');
 	let selectedCell = cells[0] ?? null;
@@ -97,6 +97,16 @@ const initializeCityGrid = () => {
 		if (!cell || !grid.contains(cell)) {
 			return;
 		}
+
+		// Validation, checks if the cell has a name already
+
+		if (cell.dataset.function !== ""){
+			concole.log("Oeps! Deze locatie is al bezet");
+			alert("Deze plek is al bezet!");
+			return;
+		}
+
+		// end validation
 
 		setSelection(cell);
 	});
