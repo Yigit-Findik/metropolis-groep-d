@@ -7,15 +7,29 @@
 
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm">
-                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-6">Function Library</h3>
+            <div class="bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
+                 x-data="{ active: 'All' }">
+
+                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Function Library</h3>
 
                 @if($cityFunctions->isEmpty())
                     <p class="text-gray-500 dark:text-gray-400">{{ __('No city functions found.') }}</p>
                 @else
+                    {{-- Category filter dropdown --}}
+                    <div class="mb-6">
+                        <select x-model="active"
+                                class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                            <option value="All">All categories</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category }}">{{ $category }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    {{-- City functions grid --}}
                     <div class="flex flex-wrap gap-4">
                         @foreach($cityFunctions as $cityFunction)
-                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition w-24">
+                            <div x-show="active === 'All' || active === '{{ $cityFunction->category }}'"
+                                 class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition w-24">
                                 @if($cityFunction->image_path)
                                     <img src="{{ asset($cityFunction->image_path) }}"
                                          alt="{{ $cityFunction->name }}"
