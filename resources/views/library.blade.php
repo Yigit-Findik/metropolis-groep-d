@@ -26,10 +26,10 @@
                         </select>
                     </div>
                     {{-- City functions grid --}}
-                    <div class="flex flex-wrap gap-4">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 1rem;">
                         @foreach($cityFunctions as $cityFunction)
                             <div x-show="active === 'All' || active === '{{ $cityFunction->category }}'"
-                                 class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition w-24">
+                                class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition">
                                 @if($cityFunction->image_path)
                                     <img src="{{ asset($cityFunction->image_path) }}"
                                          alt="{{ $cityFunction->name }}"
