@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CityFunction;
 
-class LibraryController extends Controller
+class CityFunctionController extends Controller
 {
     public function index()
     {
