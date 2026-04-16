@@ -3,6 +3,7 @@
 use App\Models\CityGridCell;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CityGridController;
 
 Route::get('/', function () {
     return view('welcome', [
@@ -19,5 +20,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+//gridcontroller
+Route::get('/grid', [CityGridController::class, 'index']);
+Route::post('/grid/select/{id}', [CityGridController::class, 'select']);
+
+
 
 require __DIR__.'/auth.php';

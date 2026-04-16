@@ -15,6 +15,7 @@ class CityGridCell extends Model
         'row_index',
         'column_index',
         'function_name',
+        'is_selected',
     ];
 
     protected $casts = [
