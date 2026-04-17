@@ -11,7 +11,9 @@ class CityGridController extends Controller
     {
         $cells = CityGridCell::ensureGridExists();
 
-        return response()->json($cells);
+        // return response()->json($cells);
+        return view('grid', ['gridCells' => $cells]);
+
     }
 
     public function select($id)
