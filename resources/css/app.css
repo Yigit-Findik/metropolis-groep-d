@@ -1,3 +1,300 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+	:root {
+		color-scheme: light;
+	}
+
+	body {
+		margin: 0;
+		font-size: 16px;
+		font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+		color: #0f172a;
+		background:
+			radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 30%),
+			radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.08), transparent 28%),
+			#f8fafc;
+	}
+}
+
+@layer components {
+	.city-page {
+		min-height: 100vh;
+	}
+
+	.city-shell {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 32px 16px 40px;
+	}
+
+	.city-topbar {
+		display: flex;
+		justify-content: flex-end;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 16px 16px 0;
+	}
+
+	.city-auth-links {
+		display: flex;
+		gap: 10px;
+	}
+
+	.city-auth-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 10px 14px;
+		border: 1px solid rgba(148, 163, 184, 0.45);
+		border-radius: 9999px;
+		background: rgba(255, 255, 255, 0.9);
+		color: #0f172a;
+		font-size: 0.92rem;
+		font-weight: 700;
+		text-decoration: none;
+		box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+		transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease, background 150ms ease;
+	}
+
+	.city-auth-link:hover {
+		transform: translateY(-1px);
+		border-color: rgba(96, 165, 250, 0.7);
+		box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+	}
+
+	.city-auth-link--primary {
+		background: #0f172a;
+		border-color: #0f172a;
+		color: #ffffff;
+	}
+
+	.city-auth-link--primary:hover {
+		background: #1e293b;
+		border-color: #1e293b;
+	}
+
+	.city-frame {
+		overflow: hidden;
+		border: 1px solid rgba(148, 163, 184, 0.35);
+		border-radius: 28px;
+		background: rgba(255, 255, 255, 0.92);
+		box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+	}
+
+	.city-metrics {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 12px;
+	}
+
+	.city-metric {
+		padding: 16px;
+		border: 1px solid rgba(226, 232, 240, 1);
+		border-radius: 20px;
+		background: #f8fafc;
+	}
+
+	.city-metric-label {
+		display: block;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: #64748b;
+	}
+
+	.city-metric-value {
+		display: block;
+		margin-top: 6px;
+		font-size: 1.9rem;
+		font-weight: 800;
+		line-height: 1;
+		color: #0f172a;
+	}
+
+	.city-body {
+		display: grid;
+		gap: 24px;
+		padding: 24px;
+	}
+
+	.city-panel {
+		border: 1px solid rgba(226, 232, 240, 1);
+		border-radius: 24px;
+		background: #ffffff;
+	}
+
+	.city-grid {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 12px;
+	}
+
+	.city-cell {
+		position: relative;
+		min-height: 132px;
+		padding: 16px;
+		border: 1px solid rgba(226, 232, 240, 1);
+		border-radius: 20px;
+		background: #ffffff;
+		text-align: left;
+		box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+		transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease, background 150ms ease;
+		cursor: pointer;
+	}
+
+	.city-cell::before {
+		content: '';
+		position: absolute;
+		top: 16px;
+		right: 16px;
+		width: 12px;
+		height: 12px;
+		border-radius: 9999px;
+		background: #cbd5e1;
+	}
+
+	.city-cell:hover {
+		transform: translateY(-2px);
+		border-color: rgba(96, 165, 250, 0.7);
+		box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
+	}
+
+	.city-cell.is-empty {
+		background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+	}
+
+	.city-cell.is-empty::before {
+		background: #cbd5e1;
+	}
+
+	.city-cell.is-occupied {
+		background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);
+	}
+
+	.city-cell.is-occupied::before {
+		background: #f59e0b;
+	}
+
+	.city-cell.is-selected {
+		border-color: #2563eb;
+		background: #eff6ff;
+		box-shadow: 0 0 0 3px rgba(191, 219, 254, 0.9), 0 18px 32px rgba(15, 23, 42, 0.14);
+	}
+
+	.city-cell.is-selected::before {
+		background: #2563eb;
+		box-shadow: 0 0 0 4px rgba(191, 219, 254, 0.8);
+	}
+
+	.city-side {
+		padding: 20px;
+		border: 1px solid rgba(226, 232, 240, 1);
+		border-radius: 24px;
+		background: #f8fafc;
+	}
+
+	.city-side-card {
+		margin-top: 14px;
+		display: grid;
+		place-items: center;
+		padding: 18px;
+		border: 1px solid rgba(226, 232, 240, 1);
+		border-radius: 20px;
+		background: #ffffff;
+	}
+
+	.city-side-preview {
+		width: 100%;
+		min-height: 280px;
+		border: 1px solid rgba(226, 232, 240, 1);
+		border-radius: 24px;
+		background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+		position: relative;
+		overflow: hidden;
+	}
+
+	.city-side-preview::before {
+		content: '';
+		position: absolute;
+		inset: 20px;
+		border-radius: 18px;
+		border: 1px dashed rgba(148, 163, 184, 0.4);
+	}
+
+	.city-side-preview::after {
+		content: '';
+		position: absolute;
+		top: 24px;
+		right: 24px;
+		width: 18px;
+		height: 18px;
+		border-radius: 9999px;
+		background: #cbd5e1;
+		box-shadow: 0 0 0 6px rgba(226, 232, 240, 0.7);
+	}
+
+	.city-side-preview.is-empty {
+		background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+	}
+
+	.city-side-preview.is-occupied {
+		background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);
+	}
+
+	.city-side-preview.is-selected {
+		background: #eff6ff;
+		border-color: #2563eb;
+	}
+
+	.city-side-preview.is-hover {
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 0 0 3px rgba(191, 219, 254, 0.9);
+	}
+
+	.grid-cell.is-selected {
+		border-color: rgb(14 165 233);
+		background: rgb(240 249 255);
+		box-shadow: 0 0 0 3px rgb(186 230 253 / 0.9), 0 10px 20px rgb(15 23 42 / 0.08);
+	}
+
+	.grid-cell.is-occupied {
+		background: rgb(255 251 235);
+	}
+
+	.grid-cell.is-empty {
+		background: rgb(255 255 255);
+	}
+
+	@media (max-width: 1024px) {
+		.city-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.city-metrics {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.city-shell {
+			padding-inline: 12px;
+			padding-top: 12px;
+		}
+
+		.city-topbar {
+			padding-inline: 12px;
+		}
+
+		.city-body {
+			padding: 18px;
+		}
+
+		.city-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+}
