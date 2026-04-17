@@ -6,32 +6,39 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row gap-6 items-start">
+        <div class="px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-6 lg:items-start">
 
                 {{-- City Grid --}}
-                <div class="flex-1 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
-                     x-data="{ size: 96 }">
-                    <div class="flex items-center justify-between mb-4">
+                <div class="shrink-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
+                     x-data="{
+                         size: 96,
+                         isDesktop: window.matchMedia('(min-width: 1024px)').matches,
+                         init() {
+                             const mq = window.matchMedia('(min-width: 1024px)');
+                             mq.addEventListener('change', e => this.isDesktop = e.matches);
+                         }
+                     }">
+                    <div class="flex items-center gap-4 mb-4 sticky top-0 z-10 bg-blue-50 dark:bg-gray-700 py-2">
                         <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">City Grid</h3>
-                        <div class="flex items-center gap-3">
+                        <div class="hidden lg:flex items-center gap-3">
                             <label for="grid-size" class="text-sm text-gray-600 dark:text-gray-300">Zoom</label>
-                            <input id="grid-size" type="range" min="64" max="192" step="16"
+                            <input id="grid-size" type="range" min="64" max="128" step="16"
                                    x-model="size"
                                    class="w-28 accent-blue-500"
                                    aria-label="Adjust grid size">
                         </div>
                     </div>
-                    <div class="overflow-auto">
-                        <div class="grid gap-4"
-                             :style="`grid-template-columns: repeat(4, ${size}px)`"
+                    <div class="lg:overflow-auto">
+                        <div class="grid grid-cols-4 gap-4 w-full"
+                             :style="isDesktop ? `grid-template-columns: repeat(4, ${size}px)` : null"
                              data-city-grid>
                             @foreach ($gridCells->groupBy('row_index') as $rowNumber => $rowCells)
                                 @foreach ($rowCells as $cell)
                                     <button
                                         type="button"
-                                        class="grid-cell bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition {{ filled($cell->function_name) ? 'is-occupied' : 'is-empty' }}"
-                                        :style="`width: ${size}px; height: ${size}px`"
+                                        class="grid-cell aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition {{ filled($cell->function_name) ? 'is-occupied' : 'is-empty' }}"
+                                        :style="isDesktop ? `width: ${size}px; height: ${size}px` : null"
                                         data-grid-cell
                                         data-row="{{ $cell->row_index }}"
                                         data-column="{{ $cell->column_index }}"
@@ -50,7 +57,7 @@
                 </div>
 
                 {{-- Function Library --}}
-                <div class="w-full lg:w-80 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
+                <div class="flex-1 min-w-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
                      x-data="{ active: 'All' }">
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Function Library</h3>
 
@@ -60,7 +67,7 @@
                         {{-- Category filter dropdown --}}
                         <div class="mb-6">
                             <select x-model="active"
-                                    class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                    class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="All">All categories</option>
                                 @foreach($categories as $category)
                                     <option value="{{ $category }}">{{ $category }}</option>
@@ -68,7 +75,7 @@
                             </select>
                         </div>
                         {{-- City functions grid --}}
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(96px, 1fr))">
                             @foreach($cityFunctions as $cityFunction)
                                 <div x-show="active === 'All' || active === '{{ $cityFunction->category }}'"
                                     class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition">

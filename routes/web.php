@@ -16,7 +16,6 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/library', [CityFunctionController::class, 'index'])->middleware(['auth', 'verified'])->name('library');
 Route::get('/grid', [CityGridController::class, 'index'])->middleware(['auth', 'verified'])->name('grid');
 
 Route::middleware('auth')->group(function () {
