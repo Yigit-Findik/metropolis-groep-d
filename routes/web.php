@@ -17,6 +17,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/library', [CityFunctionController::class, 'index'])->middleware(['auth', 'verified'])->name('library');
+Route::get('/grid', [CityGridController::class, 'index'])->middleware(['auth', 'verified'])->name('grid');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -25,7 +26,6 @@ Route::middleware('auth')->group(function () {
 });
 
 //gridcontroller
-Route::get('/grid', [CityGridController::class, 'index']);
 Route::post('/grid/select/{id}', [CityGridController::class, 'select']);
 Route::post('/grid/{id}/assign', [CityGridController::class, 'assignFunction']);
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CityGridCell;
+use App\Models\CityFunction;
 
 class CityGridController extends Controller
 {
@@ -12,7 +13,14 @@ class CityGridController extends Controller
         $cells = CityGridCell::ensureGridExists();
 
         // return response()->json($cells);
-        return view('grid', ['gridCells' => $cells]);
+        $cityFunctions = CityFunction::all();
+        $categories = $cityFunctions->pluck('category')->unique()->filter()->values();
+
+        return view('grid', [
+            'gridCells' => $cells,
+            'cityFunctions' => $cityFunctions,
+            'categories' => $categories,
+        ]);
 
     }
 

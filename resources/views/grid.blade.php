@@ -1,60 +1,90 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Grid') }}
+        </h2>
+    </x-slot>
 
-        <title>City Grid</title>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-6 items-start">
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="city-page">
-        <header class="city-topbar">
-            @if (Route::has('login'))
-                <div class="city-auth-links">
-                    @auth
-                        <a class="city-auth-link city-auth-link--primary" href="{{ url('/dashboard') }}">Dashboard</a>
+                {{-- City Grid --}}
+                <div class="flex-1 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
+                     x-data="{ size: 96 }">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">City Grid</h3>
+                        <div class="flex items-center gap-3">
+                            <label for="grid-size" class="text-sm text-gray-600 dark:text-gray-300">Zoom</label>
+                            <input id="grid-size" type="range" min="64" max="192" step="16"
+                                   x-model="size"
+                                   class="w-28 accent-blue-500"
+                                   aria-label="Adjust grid size">
+                        </div>
+                    </div>
+                    <div class="overflow-auto">
+                        <div class="grid gap-4"
+                             :style="`grid-template-columns: repeat(4, ${size}px)`"
+                             data-city-grid>
+                            @foreach ($gridCells->groupBy('row_index') as $rowNumber => $rowCells)
+                                @foreach ($rowCells as $cell)
+                                    <button
+                                        type="button"
+                                        class="grid-cell bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition {{ filled($cell->function_name) ? 'is-occupied' : 'is-empty' }}"
+                                        :style="`width: ${size}px; height: ${size}px`"
+                                        data-grid-cell
+                                        data-row="{{ $cell->row_index }}"
+                                        data-column="{{ $cell->column_index }}"
+                                        data-function="{{ $cell->function_name ?? '' }}"
+                                        aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_name) ? ', occupied' : ', available' }}"
+                                        aria-pressed="false"
+                                    >
+                                        <span class="text-xs font-semibold text-center text-gray-500 dark:text-gray-400">
+                                            {{ $cell->function_name ?? '' }}
+                                        </span>
+                                    </button>
+                                @endforeach
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Function Library --}}
+                <div class="w-full lg:w-80 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
+                     x-data="{ active: 'All' }">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Function Library</h3>
+
+                    @if($cityFunctions->isEmpty())
+                        <p class="text-gray-500 dark:text-gray-400">{{ __('No city functions found.') }}</p>
                     @else
-                        <a class="city-auth-link" href="{{ route('login') }}">Login</a>
-
-                        @if (Route::has('register'))
-                            <a class="city-auth-link city-auth-link--primary" href="{{ route('register') }}">Register</a>
-                        @endif
-                    @endauth
-                </div>
-            @endif
-        </header>
-
-        <main class="city-shell">
-            <section class="city-frame">
-                <div class="city-body">
-                    <section class="city-panel" style="padding:20px;">
-                        <div class="city-grid" data-city-grid>
-                    @foreach ($gridCells->groupBy('row_index') as $rowNumber => $rowCells)
-                        @foreach ($rowCells as $cell)
-                            <button
-                                type="button"
-                                class="city-cell grid-cell {{ filled($cell->function_name) ? 'is-occupied' : 'is-empty' }}"
-                                data-grid-cell
-                                data-row="{{ $cell->row_index }}"
-                                data-column="{{ $cell->column_index }}"
-                                data-function="{{ $cell->function_name ?? '' }}"
-                                aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_name) ? ', occupied' : ', available' }}"
-                                aria-pressed="false"
-                            >
-                            </button>
-                        @endforeach
-                    @endforeach
+                        {{-- Category filter dropdown --}}
+                        <div class="mb-6">
+                            <select x-model="active"
+                                    class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="All">All categories</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category }}">{{ $category }}</option>
+                                @endforeach
+                            </select>
                         </div>
-                    </section>
-
-                    <aside class="city-side">
-                        <div class="city-side-card">
-                            <div class="city-side-preview is-empty" data-selected-cell-preview aria-hidden="true"></div>
+                        {{-- City functions grid --}}
+                        <div class="grid grid-cols-2 gap-4">
+                            @foreach($cityFunctions as $cityFunction)
+                                <div x-show="active === 'All' || active === '{{ $cityFunction->category }}'"
+                                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition">
+                                    @if($cityFunction->image_path)
+                                        <img src="{{ asset($cityFunction->image_path) }}"
+                                             alt="{{ $cityFunction->name }}"
+                                             class="w-16 h-16 object-contain mb-2">
+                                    @endif
+                                    <span class="text-xs font-semibold text-center text-gray-700 dark:text-white">{{ $cityFunction->name }}</span>
+                                </div>
+                            @endforeach
                         </div>
-                    </aside>
+                    @endif
                 </div>
-            </section>
-        </main>
-    </body>
-</html>
+
+            </div>
+        </div>
+    </div>
+</x-app-layout>
