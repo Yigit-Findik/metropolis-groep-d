@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\CityGridCell;
+use App\Http\Controllers\CityFunctionController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CityGridController;
@@ -14,6 +15,8 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/library', [CityFunctionController::class, 'index'])->middleware(['auth', 'verified'])->name('library');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

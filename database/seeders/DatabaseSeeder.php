@@ -24,5 +24,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         CityGridCell::ensureGridExists();
+        $this->call([CityFunctionsTableSeeder::class]);
     }
 }
