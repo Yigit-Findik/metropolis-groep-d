@@ -16,7 +16,7 @@ Het doel van deze samenwerking is om gezamenlijk en efficiënt te werken aan het
 
 ### Ziekmelding:
 - Bij ziekte meld je je minimaal 30 minuten vóór de eerste les van de dag af.
-
+- bart is piloot geweest hij vliegt de vliegtuig naar vietnam
 ### Gevolgen bij niet-naleving:
 - Niet geldige redenen of te late meldingen → waarschuwing.
 - Na 3 waarschuwingen volgt een gesprek met de hele groep (exclusief Amir).
