@@ -100,7 +100,10 @@
 
                                 {{-- Hide cards that don't match the selected category --}}
                                 <div x-show="active === 'All' || active === '{{ $cityFunction->category }}'"
-                                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition">
+                                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition"
+                                    draggable="true"
+                                    data-function="{{ $cityFunction->name }}"
+                                    data-image="{{ $cityFunction->image_path }}">
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
                                              alt="{{ $cityFunction->name }}"

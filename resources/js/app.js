@@ -8,16 +8,59 @@ Alpine.start();
 
 const initializeCityGrid = () => {
 	const grid = document.querySelector('[data-city-grid]');
+	const cards = document.querySelectorAll('[data-function]');
+	
+	cards.forEach(card => {
+    	card.addEventListener("dragstart", (e) => {
+       	 e.dataTransfer.setData("function", card.dataset.function);
+		 e.dataTransfer.setData("image", card.dataset.image);
+    	});
+	});
 
 	if (!grid) {
 		return;
 	}
 
-	const cells = Array.from(grid.querySelectorAll('[data-grid-cell]')); //
+	const cells = Array.from(grid.querySelectorAll('[data-grid-cell]'));
+	cells.forEach(cell => {
+
+    cell.addEventListener("dragover", (e) => {
+        e.preventDefault();
+    });
+
+    cell.addEventListener("drop", (e) => {
+        e.preventDefault();
+
+        const functionName = e.dataTransfer.getData("function");
+		const image = e.dataTransfer.getData("image");
+
+		cell.innerHTML = "";
+
+		if (image) {
+			const img = document.createElement("img");
+			img.src = image;
+			img.classList.add("w-10", "h-10", "object-contain");
+			cell.appendChild(img);
+		}
+
+        const label = cell.querySelector("span");
+		label.textContent = functionName;
+		label.classList.add("text-xs", "font-semibold");
+
+		cell.appendChild(label);
+
+
+        cell.classList.remove("is-empty");
+        cell.classList.add("is-occupied");
+
+    });
+
+});
 	const preview = document.querySelector('[data-selected-cell-preview]');
 	const clearButton = document.querySelector('[data-clear-selection]');
 	let selectedCell = cells[0] ?? null;
 	let hoveredCell = null;
+
 
 	const clearSelectionClasses = () => {
 		cells.forEach((cell) => {
@@ -125,3 +168,7 @@ const initializeCityGrid = () => {
 };
 
 document.addEventListener('DOMContentLoaded', initializeCityGrid);
+
+card.addEventListener("dragstart", (e) => {
+    e.dataTransfer.setData("function", card.dataset.function);
+});
