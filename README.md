@@ -14,12 +14,14 @@ Het doel van deze samenwerking is om gezamenlijk en efficiënt te werken aan het
 - Je geeft altijd een reden door.
 - Als je dit niet doet, wordt het alsnog gevraagd.
 
-### Ziekmelding:
+### Ziekmelding & Te laat aanwezig:
 - Bij ziekte meld je je minimaal 30 minuten vóór de eerste les van de dag af.
 - bart is piloot geweest hij vliegt de vliegtuig naar vietnam
+- Niet vaker dan 2 keer 5 minuten te laat komen ook al laat je dat weten, krijg je een waarschuwing.
+
 ### Gevolgen bij niet-naleving:
 - Niet geldige redenen of te late meldingen → waarschuwing.
-- Na 3 waarschuwingen volgt een gesprek met de hele groep (exclusief Amir).
+- Na 3 waarschuwingen volgt een gesprek met de hele groep.
 
 ---
 
@@ -28,10 +30,13 @@ Het doel van deze samenwerking is om gezamenlijk en efficiënt te werken aan het
 ### WhatsApp:
 - Afmelden gebeurt altijd via WhatsApp in de projectgroepchat.
 - Korte vragen of snelle updates mogen ook via WhatsApp.
+- Feedback word per whatsapp gedeeld.
+- Je moet tijdens werkdagen van 9 tot 5 elk twee uur je whatsapp bekijken. Tijdens avond uren moet je minimaal 1x bekijken
 
 ### Microsoft Teams:
-- Alle projectmatige berichten, bestanden, versies, documenten en feedback worden via Teams gedeeld.
+- Alle projectmatige berichten, bestanden, versies, documenten.
 - Bestanden worden duidelijk benoemd en in de juiste map geplaatst.
+- Je bent niet geforceerd om je teams te bekijken, tenzij je bestanden moet installeren.
 
 ---
 
@@ -70,6 +75,9 @@ Het doel van deze samenwerking is om gezamenlijk en efficiënt te werken aan het
 ### Deadlines:
 - Deadlines worden door de groep vastgesteld en bewaakt door de planner.
 - Opleveren gebeurt via Teams, niet via WhatsApp.
+
+### Gewerkte uren
+- Met clockify gaan we uren opslaan voor gewerkte uren per userstory.
 
 ---
 
