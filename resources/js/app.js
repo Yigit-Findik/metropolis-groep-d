@@ -31,6 +31,11 @@ const initializeCityGrid = () => {
     cell.addEventListener("drop", (e) => {
         e.preventDefault();
 
+		if (cell.classList.contains("is-occupied")) {
+        	alert("Deze plek is al bezet!");
+        	return;
+    	}
+
         const functionName = e.dataTransfer.getData("function");
 		const image = e.dataTransfer.getData("image");
 
@@ -40,6 +45,9 @@ const initializeCityGrid = () => {
 			const img = document.createElement("img");
 			img.src = image;
 			img.classList.add("w-10", "h-10", "object-contain");
+
+			img.draggable = false;
+
 			cell.appendChild(img);
 		}
 
@@ -168,7 +176,3 @@ const initializeCityGrid = () => {
 };
 
 document.addEventListener('DOMContentLoaded', initializeCityGrid);
-
-card.addEventListener("dragstart", (e) => {
-    e.dataTransfer.setData("function", card.dataset.function);
-});
