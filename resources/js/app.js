@@ -11,10 +11,16 @@ const initializeCityGrid = () => {
 	const cards = document.querySelectorAll('[data-function]');
 	
 	cards.forEach(card => {
-    	card.addEventListener("dragstart", (e) => {
-       	 e.dataTransfer.setData("function", card.dataset.function);
-		 e.dataTransfer.setData("image", card.dataset.image);
-    	});
+		card.addEventListener("dragstart", (e) => {
+			e.dataTransfer.setData("function", card.dataset.function);
+			e.dataTransfer.setData("image", card.dataset.image);
+
+			const img = card.querySelector("img");
+			if (img) {
+				e.dataTransfer.setDragImage(img, 25, 25);
+				img.style.pointerEvents = "none";
+			}
+		});
 	});
 
 	if (!grid) {
@@ -24,47 +30,57 @@ const initializeCityGrid = () => {
 	const cells = Array.from(grid.querySelectorAll('[data-grid-cell]'));
 	cells.forEach(cell => {
 
-    cell.addEventListener("dragover", (e) => {
-        e.preventDefault();
-    });
+		cell.addEventListener("dragover", (e) => {
+			e.preventDefault();
 
-    cell.addEventListener("drop", (e) => {
-        e.preventDefault();
+			cells.forEach(c => {
+				c.classList.remove("ring-2", "ring-blue-500");
+			});
 
-		if (cell.dataset.function && cell.dataset.function !== "") {
-    		const confirmChange = confirm("Are you sure you want to change this function?");
-    		if (!confirmChange) return;
-		}
+			cell.classList.add("ring-2", "ring-blue-500");
+		});
 
-        const functionName = e.dataTransfer.getData("function");
-		const image = e.dataTransfer.getData("image");
+		cell.addEventListener("drop", (e) => {
+			e.preventDefault();
 
-		cell.innerHTML = "";
+			if (cell.dataset.function && cell.dataset.function !== "") {
+				const confirmChange = confirm("Are you sure you want to change this function?");
+				if (!confirmChange) return;
+			}
 
-		if (image) {
-			const img = document.createElement("img");
-			img.src = image;
-			img.classList.add("w-10", "h-10", "object-contain");
+			const functionName = e.dataTransfer.getData("function");
+			const image = e.dataTransfer.getData("image");
 
-			img.draggable = false;
+			cell.innerHTML = "";
 
-			cell.appendChild(img);
-		}
+			cell.classList.remove("ring-2", "ring-blue-500");
 
-        const label = document.createElement("span");
-		label.textContent = functionName;
-		label.classList.add("text-xs", "font-semibold");
-		cell.appendChild(label);
+			if (image) {
+				const img = document.createElement("img");
+				img.src = image;
+				img.classList.add("w-10", "h-10", "object-contain");
+
+				img.draggable = false;
+
+				cell.appendChild(img);
+			}
+
+			const label = document.createElement("span");
+			label.textContent = functionName;
+			label.classList.add("text-xs", "font-semibold");
+			cell.appendChild(label);
 
 
-        cell.classList.remove("is-empty");
-        cell.classList.add("is-occupied");
+			cell.classList.remove("is-empty");
+			cell.classList.add("is-occupied");
 
-		cell.dataset.function = functionName;
+			cell.dataset.function = functionName;
 
-    });
+		});
 
-});
+	});
+
+
 	const preview = document.querySelector('[data-selected-cell-preview]');
 	const clearButton = document.querySelector('[data-clear-selection]');
 	let selectedCell = cells[0] ?? null;
@@ -153,7 +169,7 @@ const initializeCityGrid = () => {
 		// Validation, checks if the cell has a name already
 
 		if (cell.dataset.function !== ""){
-			concole.log("Oeps! Deze locatie is al bezet");
+			console.log("Oeps! Deze locatie is al bezet");
 			alert("Deze plek is al bezet!");
 			return;
 		}
