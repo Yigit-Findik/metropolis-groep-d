@@ -31,10 +31,10 @@ const initializeCityGrid = () => {
     cell.addEventListener("drop", (e) => {
         e.preventDefault();
 
-		if (cell.classList.contains("is-occupied")) {
-        	alert("Deze plek is al bezet!");
-        	return;
-    	}
+		if (cell.dataset.function && cell.dataset.function !== "") {
+    		const confirmChange = confirm("Are you sure you want to change this function?");
+    		if (!confirmChange) return;
+		}
 
         const functionName = e.dataTransfer.getData("function");
 		const image = e.dataTransfer.getData("image");
@@ -51,15 +51,16 @@ const initializeCityGrid = () => {
 			cell.appendChild(img);
 		}
 
-        const label = cell.querySelector("span");
+        const label = document.createElement("span");
 		label.textContent = functionName;
 		label.classList.add("text-xs", "font-semibold");
-
 		cell.appendChild(label);
 
 
         cell.classList.remove("is-empty");
         cell.classList.add("is-occupied");
+
+		cell.dataset.function = functionName;
 
     });
 
