@@ -34,17 +34,21 @@ const initializeCityGrid = () => {
 
     const cells = Array.from(grid.querySelectorAll("[data-grid-cell]"));
     cells.forEach((cell) => {
-
         // Highlight the cell the user is dragging over
         cell.addEventListener("dragover", (e) => {
             e.preventDefault();
 
             // Remove the highlight from all other cells first
             cells.forEach((c) => {
-                c.classList.remove("ring-2", "ring-blue-500");
+                c.classList.remove("ring-4", "ring-blue-500");
             });
 
-            cell.classList.add("ring-2", "ring-blue-500");
+            cell.classList.add("ring-4", "ring-blue-500");
+        });
+
+        // Remove the highlight when the drag leaves this cell
+        cell.addEventListener("dragleave", () => {
+            cell.classList.remove("ring-4", "ring-blue-500");
         });
 
         // Fires when a dragged card is released onto a cell
@@ -67,7 +71,7 @@ const initializeCityGrid = () => {
 
             // Clear whatever was in the cell before and remove the highlight
             cell.innerHTML = "";
-            cell.classList.remove("ring-2", "ring-blue-500");
+            cell.classList.remove("ring-4", "ring-blue-500");
 
             // Show the function's image inside the cell
             if (image) {
@@ -112,130 +116,6 @@ const initializeCityGrid = () => {
         });
     });
 
-    const preview = document.querySelector("[data-selected-cell-preview]");
-    const clearButton = document.querySelector("[data-clear-selection]");
-    let selectedCell = cells[0] ?? null;
-    let hoveredCell = null;
-
-    // Remove the selected style from every cell
-    const clearSelectionClasses = () => {
-        cells.forEach((cell) => {
-            cell.classList.remove("is-selected");
-            cell.setAttribute("aria-pressed", "false");
-        });
-    };
-
-    // Remove all state classes from the preview panel
-    const clearPreviewClasses = () => {
-        preview?.classList.remove(
-            "is-empty",
-            "is-occupied",
-            "is-selected",
-            "is-hover",
-        );
-    };
-
-    // Update the preview panel to reflect a given cell's state
-    const applyPreviewState = (cell, mode) => {
-        if (!cell) {
-            return;
-        }
-
-        if (!preview) {
-            return;
-        }
-
-        clearPreviewClasses();
-        // Copy whether the cell is occupied or empty
-        preview.classList.add(
-            cell.classList.contains("is-occupied") ? "is-occupied" : "is-empty",
-        );
-        // Mark as hovered or selected depending on what triggered this
-        preview.classList.add(mode === "hover" ? "is-hover" : "is-selected");
-    };
-
-    // Highlight the selected cell and update the preview panel
-    const renderSelectedCell = () => {
-        clearSelectionClasses();
-
-        if (selectedCell) {
-            selectedCell.classList.add("is-selected");
-            selectedCell.setAttribute("aria-pressed", "true");
-            applyPreviewState(selectedCell, "selected");
-            return;
-        }
-
-        clearPreviewClasses();
-        preview?.classList.add("is-empty");
-    };
-
-    // Show a temporary hover preview when the mouse is over a cell
-    const previewCell = (cell) => {
-        hoveredCell = cell;
-        applyPreviewState(cell, "hover");
-    };
-
-    // Go back to showing the selected cell after the mouse leaves
-    const restoreSelectedCell = () => {
-        hoveredCell = null;
-        renderSelectedCell();
-    };
-
-    // Make a cell the active selection
-    const setSelection = (cell) => {
-        selectedCell = cell;
-        hoveredCell = null;
-        renderSelectedCell();
-    };
-
-    // Attach hover and focus listeners so the preview updates as you move around
-    const bindPreviewEvents = (cell) => {
-        cell.addEventListener("mouseenter", () => previewCell(cell));
-        cell.addEventListener("mouseleave", () => {
-            if (hoveredCell === cell) {
-                restoreSelectedCell();
-            }
-        });
-        cell.addEventListener("focus", () => previewCell(cell));
-        cell.addEventListener("blur", () => {
-            if (hoveredCell === cell) {
-                restoreSelectedCell();
-            }
-        });
-    };
-
-    cells.forEach(bindPreviewEvents);
-
-    // Select a cell when it is clicked, but block clicks on occupied cells
-    grid.addEventListener("click", (event) => {
-        const cell = event.target.closest("[data-grid-cell]");
-
-        if (!cell || !grid.contains(cell)) {
-            return;
-        }
-
-        if (cell.dataset.function !== "") {
-            console.log("This location is already occupied!");
-            alert("This location is already occupied!");
-            return;
-        }
-
-        setSelection(cell);
-    });
-
-    // Deselect everything when the clear button is pressed
-    clearButton?.addEventListener("click", () => {
-        selectedCell = null;
-        hoveredCell = null;
-        clearSelectionClasses();
-        clearPreviewClasses();
-        renderSelectedCell();
-    });
-
-    // Select the first cell by default when the page loads
-    if (cells.length > 0) {
-        setSelection(cells[0]);
-    }
 };
 
 document.addEventListener("DOMContentLoaded", initializeCityGrid);

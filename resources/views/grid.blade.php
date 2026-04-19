@@ -65,7 +65,6 @@
                                         data-function="{{ $fn?->name ?? '' }}"
                                         data-function-id="{{ $cell->function_id ?? '' }}"
                                         aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_id) ? ', occupied' : ', available' }}"
-                                        aria-pressed="false"
                                     >
                                         @if($fn?->image_path)
                                             {{-- Image scales with the zoom slider, fixed size on mobile --}}

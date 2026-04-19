@@ -51,18 +51,6 @@
     background: #f59e0b;
 }
 
-.grid-cell.is-selected {
-    border-color: rgb(14 165 233);
-    background: rgb(240 249 255);
-    box-shadow:
-        0 0 0 3px rgb(186 230 253 / 0.9),
-        0 10px 20px rgb(15 23 42 / 0.08);
-}
-
-.grid-cell.is-selected::before {
-    background: #2563eb;
-    box-shadow: 0 0 0 4px rgba(191, 219, 254, 0.8);
-}
 
 [data-grid-cell] * {
     pointer-events: none;
