@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\CityGridCell;
 use App\Models\CityFunction;
 
-class CityGridController extends Controller
+class CityGridCellController extends Controller
 {
     public function index()
     {
@@ -38,7 +38,7 @@ class CityGridController extends Controller
             'cell' => $cell
         ]);
     }
-    
+
 //assign function
     public function assignFunction(Request $request, $id)
     {
