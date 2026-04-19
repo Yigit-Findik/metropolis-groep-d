@@ -19,17 +19,15 @@ class QolScoreService
         foreach ($cells as $cell) {
             if ($cell->cityFunction) {
                 $fn = $cell->cityFunction;
-                $totalScore += $fn->qol_score;
-
                 foreach (self::CATEGORIES as $cat) {
                     $totals[$cat] += $fn->$cat;
+                    $totalScore += $fn->$cat;
                 }
 
                 $breakdown[] = [
                     'row'         => $cell->row_index,
                     'column'      => $cell->column_index,
                     'function'    => $fn->name,
-                    'score'       => $fn->qol_score,
                     'livability'  => $fn->livability,
                     'safety'      => $fn->safety,
                     'economy'     => $fn->economy,
