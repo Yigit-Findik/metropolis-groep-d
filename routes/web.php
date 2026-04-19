@@ -24,10 +24,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-//gridcontroller
+// Grid Management Routes
+// SIM.2 - Cell selection and function assignment
 Route::post('/grid/select/{id}', [CityGridCellController::class, 'select']);
 Route::post('/grid/{id}/assign', [CityGridCellController::class, 'assignFunction']);
 
-
+// SIM.3 - Subtask 4: Build Removal API Endpoint
+// DELETE endpoint to remove a function from a cell (Subtask 5: Send Removal Request to Backend)
+Route::delete('/grid/{id}/remove', [CityGridCellController::class, 'removeFunction']);
 
 require __DIR__.'/auth.php';

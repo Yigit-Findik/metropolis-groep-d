@@ -11,6 +11,9 @@
             {{-- Grid and library sit next to each other on desktop, above each other on mobile --}}
             <div class="flex flex-col lg:flex-row gap-6 lg:items-start">
 
+                {{-- MAIN GRID SECTION: Contains the city grid and the removal zone below it --}}
+                <div class="flex flex-col gap-4">
+
                 {{-- CITY GRID --------------------------------------------------------------
                      "size" controls how many pixels wide each cell is on desktop.
                      "isDesktop" checks if the screen is wide enough for the zoom slider. --}}
@@ -53,11 +56,13 @@
                                     {{-- Look up the matching city function by id so we can show its name and image --}}
                                     @php $fn = $cityFunctions->firstWhere('id', $cell->function_id); @endphp
 
-                                    {{-- "is-occupied" or "is-empty" is read by app.js to update the preview panel --}}
+                                    {{-- "is-occupied" or "is-empty" is read by app.js to update the preview panel
+                                         draggable="true" allows occupied cells to be dragged off the grid (SIM.3 - Subtask 1) --}}
                                     <button
                                         type="button"
                                         class="grid-cell aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }}"
                                         :style="isDesktop ? `width: ${size}px; height: ${size}px` : null"
+                                        draggable="true"
                                         data-grid-cell
                                         data-cell-id="{{ $cell->id ?? '' }}"
                                         data-row="{{ $cell->row_index }}"
@@ -81,6 +86,21 @@
                             @endforeach
                         </div>
                     </div>
+                </div>
+
+                {{-- FUNCTION REMOVAL ZONE (SIM.3 - Subtask 2) ------------------------------------------
+                     This is the "trash" or "remove" zone where users can drag functions
+                     to remove them from the grid. It has a distinctive red/danger color
+                     to indicate this is a destructive action. --}}
+                <div class="w-full lg:w-auto bg-red-50 dark:bg-red-900/20 border-2 border-dashed border-red-300 dark:border-red-700 rounded-2xl p-6 shadow-sm"
+                     id="removal-zone"
+                     data-removal-zone>
+                    <p class="text-sm text-red-700 dark:text-red-300 text-center font-semibold">
+                        Drag here to remove
+                    </p>
+                </div>
+
+                {{-- Close the main grid section div --}}
                 </div>
 
                 {{-- FUNCTION LIBRARY ------------------------------------------------

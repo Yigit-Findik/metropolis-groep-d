@@ -9,6 +9,9 @@ Alpine.start();
 const initializeCityGrid = () => {
     const grid = document.querySelector("[data-city-grid]");
     const cards = document.querySelectorAll("[data-function]");
+    
+    // Get the removal zone element (SIM.3 - Subtask 2: Define a Drop Zone Outside the Grid)
+    const removalZone = document.querySelector("[data-removal-zone]");
 
     // When you start dragging a library card, save its name, id, and image
     // so we can read them when it gets dropped onto a cell
@@ -114,7 +117,107 @@ const initializeCityGrid = () => {
                 alert("Failed to save — please refresh and try again.");
             });
         });
+
+        // SIM.3 - Subtask 1: Add Drag-Off Detection to Grid Cells
+        // Listen for when user starts dragging a PLACED function (inside a cell) to remove it
+        cell.addEventListener("dragstart", (e) => {
+            // Only allow dragging if the cell is occupied (has a function)
+            if (!cell.dataset.functionId || cell.dataset.functionId === "") {
+                e.preventDefault();
+                return;
+            }
+
+            // Store cell information so we know which cell to remove from
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("cellId", cell.dataset.cellId);
+            e.dataTransfer.setData("fromCell", "true"); // Flag to indicate this is from a cell (not library)
+
+            // Show a subtle drag image
+            const img = cell.querySelector("img");
+            if (img) {
+                e.dataTransfer.setDragImage(img, 25, 25);
+            }
+        });
     });
+
+    // SIM.3 - Subtask 2: Define a Drop Zone Outside the Grid (removal zone setup)
+    if (removalZone) {
+        // Allow dragging over the removal zone
+        removalZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+
+            // Visual feedback: highlight the removal zone when dragging over it
+            removalZone.classList.add("ring-2", "ring-red-500", "bg-red-100", "dark:bg-red-800/30");
+        });
+
+        // Remove highlight when dragging leaves the removal zone
+        removalZone.addEventListener("dragleave", () => {
+            removalZone.classList.remove("ring-2", "ring-red-500", "bg-red-100", "dark:bg-red-800/30");
+        });
+
+        // SIM.3 - Subtask 3: Clear Cell After Successful Removal
+        // Handle the drop event on removal zone
+        removalZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            removalZone.classList.remove("ring-2", "ring-red-500", "bg-red-100", "dark:bg-red-800/30");
+
+            // Check if this drag came from a cell (not from the library)
+            const fromCell = e.dataTransfer.getData("fromCell");
+            if (fromCell !== "true") {
+                return; // Ignore drops from library cards
+            }
+
+            const cellId = e.dataTransfer.getData("cellId");
+
+            // Find the cell element that we're removing from
+            const cellElement = document.querySelector(`[data-cell-id="${cellId}"]`);
+            if (!cellElement) {
+                alert("Error: Could not find the cell to remove from.");
+                return;
+            }
+
+            // SIM.3 - Subtask 5: Send Removal Request to Backend
+            // Send DELETE request to backend to remove the function from database
+            const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content");
+
+            fetch(`/grid/${cellId}/remove`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                },
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    // Success! Now clear the cell visually
+                    // Clear the cell's inner HTML to remove the image and label
+                    cellElement.innerHTML = "";
+
+                    // Update CSS classes: mark as empty, remove occupied
+                    cellElement.classList.remove("is-occupied");
+                    cellElement.classList.add("is-empty");
+
+                    // Clear the data attributes
+                    cellElement.dataset.function = "";
+                    cellElement.dataset.functionId = "";
+
+                    // Optional: Show success message
+                    console.log("Function removed successfully", data);
+                })
+                .catch((error) => {
+                    console.error("Error removing function:", error);
+                    alert("Failed to remove function — please try again.");
+                });
+        });
+    }
 
 };
 
