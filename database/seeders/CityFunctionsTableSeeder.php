@@ -9,7 +9,10 @@ class CityFunctionsTableSeeder extends Seeder
 {
     public function run()
     {
+        // Disable foreign key checks so we can truncate without the grid cells constraint blocking us
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
         DB::table('city_functions')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         DB::table('city_functions')->insert([
             [
