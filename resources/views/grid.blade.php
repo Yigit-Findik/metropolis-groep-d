@@ -96,7 +96,7 @@
                      id="removal-zone"
                      data-removal-zone>
                     <p class="text-sm text-red-700 dark:text-red-300 text-center font-semibold">
-                        🗑️ Drag here to remove
+                        Drag here to remove
                     </p>
                 </div>
 
