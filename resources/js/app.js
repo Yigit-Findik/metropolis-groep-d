@@ -6,6 +6,37 @@ window.Alpine = Alpine;
 
 Alpine.start();
 
+let toastTimer = null;
+
+const showToast = (functionName, qolScore) => {
+    const toast = document.getElementById("qol-toast");
+    if (!toast) return;
+
+    const isPositive = qolScore >= 0;
+    const sign = isPositive ? "+" : "";
+
+    // Set the text and styling of the toast based on QoL score
+    toast.textContent = `${functionName}: ${sign}${qolScore} `;
+    toast.className = `fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold ${
+        isPositive ? "bg-green-500" : "bg-red-500"
+    }`;
+
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        toast.classList.add("hidden");
+    }, 3000);
+};
+
+const refreshQolScore = () => {
+    fetch("/grid/qol-score")
+        .then((r) => r.json())
+        .then((data) => {
+            const el = document.getElementById("qol-score-value");
+            if (el) el.textContent = data.total_score;
+        })
+        .catch(() => {});
+};
+
 const initializeCityGrid = () => {
     const grid = document.querySelector("[data-city-grid]");
     const cards = document.querySelectorAll("[data-function]");
@@ -20,6 +51,7 @@ const initializeCityGrid = () => {
             e.dataTransfer.setData("function", card.dataset.function);
             e.dataTransfer.setData("function_id", card.dataset.functionId);
             e.dataTransfer.setData("image", card.dataset.image);
+            e.dataTransfer.setData("qol_score", card.dataset.qolScore);
 
             // Use the card's image as the drag ghost
             const img = card.querySelector("img");
@@ -70,6 +102,7 @@ const initializeCityGrid = () => {
             const functionName = e.dataTransfer.getData("function");
             const functionId = e.dataTransfer.getData("function_id");
             const image = e.dataTransfer.getData("image");
+            const qolScore = parseInt(e.dataTransfer.getData("qol_score"), 10);
             const cellId = cell.dataset.cellId;
 
             // Clear whatever was in the cell before and remove the highlight
@@ -113,6 +146,9 @@ const initializeCityGrid = () => {
                     "X-CSRF-TOKEN": csrfToken,
                 },
                 body: JSON.stringify({ function_id: parseInt(functionId) }),
+            }).then(() => {
+                refreshQolScore();
+                showToast(functionName, qolScore);
             }).catch(() => {
                 alert("Failed to save — please refresh and try again.");
             });
@@ -209,8 +245,7 @@ const initializeCityGrid = () => {
                     cellElement.dataset.function = "";
                     cellElement.dataset.functionId = "";
 
-                    // Optional: Show success message
-                    console.log("Function removed successfully", data);
+                    refreshQolScore();
                 })
                 .catch((error) => {
                     console.error("Error removing function:", error);
@@ -221,4 +256,7 @@ const initializeCityGrid = () => {
 
 };
 
-document.addEventListener("DOMContentLoaded", initializeCityGrid);
+document.addEventListener("DOMContentLoaded", () => {
+    initializeCityGrid();
+    refreshQolScore();
+});

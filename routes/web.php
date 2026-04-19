@@ -29,6 +29,9 @@ Route::middleware('auth')->group(function () {
 Route::post('/grid/select/{id}', [CityGridCellController::class, 'select']);
 Route::post('/grid/{id}/assign', [CityGridCellController::class, 'assignFunction']);
 
+// SIM.1.4 - QoL score calculation
+Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);
+
 // SIM.3 - Subtask 4: Build Removal API Endpoint
 // DELETE endpoint to remove a function from a cell (Subtask 5: Send Removal Request to Backend)
 Route::delete('/grid/{id}/remove', [CityGridCellController::class, 'removeFunction']);

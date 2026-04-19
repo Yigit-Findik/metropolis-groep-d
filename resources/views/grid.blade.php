@@ -8,6 +8,18 @@
     <div class="py-12">
         <div class="px-4 sm:px-6 lg:px-8">
 
+            {{-- QoL Score Banner --}}
+            <div class="w-full bg-blue-600 dark:bg-blue-800 rounded-2xl shadow-sm px-8 py-5 mb-6 flex items-center justify-between">
+                <div>
+                    <p class="text-blue-200 dark:text-blue-300 text-sm font-medium uppercase tracking-wide">Quality of Life Score</p>
+                    <p class="text-white text-4xl font-bold mt-1" id="qol-score-value">—</p>
+                </div>
+                <div class="text-blue-200 dark:text-blue-300 text-sm text-right hidden sm:block">
+                    <p>Place functions on the grid</p>
+                    <p>to calculte your city's Quality of Life score.</p>
+                </div>
+            </div>
+
             {{-- Grid and library sit next to each other on desktop, above each other on mobile --}}
             <div class="flex flex-col lg:flex-row gap-6 lg:items-start">
 
@@ -134,7 +146,8 @@
                                     draggable="true"
                                     data-function="{{ $cityFunction->name }}"
                                     data-function-id="{{ $cityFunction->id }}"
-                                    data-image="{{ $cityFunction->image_path }}">
+                                    data-image="{{ $cityFunction->image_path }}"
+                                    data-qol-score="{{ $cityFunction->qol_score }}">
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
                                              alt="{{ $cityFunction->name }}"
@@ -151,4 +164,10 @@
             </div>
         </div>
     </div>
+
+    {{-- QoL Toast Notification --}}
+    <div id="qol-toast"
+         class="fixed bottom-6 right-6 z-50 hidden px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all duration-300">
+    </div>
+
 </x-app-layout>
