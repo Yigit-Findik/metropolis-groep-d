@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CityGridCell;
 use App\Models\CityFunction;
+use App\Services\QolScoreService;
 
 class CityGridCellController extends Controller
 {
@@ -79,6 +80,13 @@ class CityGridCellController extends Controller
      * @param int $id - The ID of the cell to remove the function from
      * @return \Illuminate\Http\JsonResponse
      */
+    public function getQolScore()
+    {
+        $result = (new QolScoreService())->calculate();
+
+        return response()->json($result);
+    }
+
     public function removeFunction($id)
     {
         // Find the cell or return 404 if not found
