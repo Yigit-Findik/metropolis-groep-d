@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Collection;
+use App\Models\CityFunction;
 
 class CityGridCell extends Model
 {
@@ -14,14 +15,20 @@ class CityGridCell extends Model
     protected $fillable = [
         'row_index',
         'column_index',
-        'function_name',
+        'function_id',
         'is_selected',
     ];
 
     protected $casts = [
         'row_index' => 'integer',
         'column_index' => 'integer',
+        'function_id' => 'integer',
     ];
+
+    public function cityFunction()
+    {
+        return $this->belongsTo(CityFunction::class, 'function_id');
+    }
 
     public static function ensureGridExists(): Collection
     {
@@ -37,7 +44,7 @@ class CityGridCell extends Model
                         'column_index' => $columnIndex,
                     ],
                     [
-                        'function_name' => null,
+                        'function_id' => null,
                     ]
                 );
             }
@@ -59,9 +66,10 @@ class CityGridCell extends Model
         for ($rowIndex = 1; $rowIndex <= 3; $rowIndex++) {
             for ($columnIndex = 1; $columnIndex <= 4; $columnIndex++) {
                 $cells->push((object) [
+                    'id' => null,
                     'row_index' => $rowIndex,
                     'column_index' => $columnIndex,
-                    'function_name' => null,
+                    'function_id' => null,
                 ]);
             }
         }

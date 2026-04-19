@@ -50,20 +50,30 @@
                             @foreach ($gridCells->groupBy('row_index') as $rowNumber => $rowCells)
                                 @foreach ($rowCells as $cell)
 
+                                    {{-- Look up the matching city function by id so we can show its name and image --}}
+                                    @php $fn = $cityFunctions->firstWhere('id', $cell->function_id); @endphp
+
                                     {{-- "is-occupied" or "is-empty" is read by app.js to update the preview panel --}}
                                     <button
                                         type="button"
-                                        class="grid-cell aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition {{ filled($cell->function_name) ? 'is-occupied' : 'is-empty' }}"
+                                        class="grid-cell aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }}"
                                         :style="isDesktop ? `width: ${size}px; height: ${size}px` : null"
                                         data-grid-cell
+                                        data-cell-id="{{ $cell->id ?? '' }}"
                                         data-row="{{ $cell->row_index }}"
                                         data-column="{{ $cell->column_index }}"
-                                        data-function="{{ $cell->function_name ?? '' }}"
-                                        aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_name) ? ', occupied' : ', available' }}"
-                                        aria-pressed="false"
+                                        data-function="{{ $fn?->name ?? '' }}"
+                                        data-function-id="{{ $cell->function_id ?? '' }}"
+                                        aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_id) ? ', occupied' : ', available' }}"
                                     >
-                                        <span class="text-xs font-semibold text-center text-gray-500 dark:text-gray-400">
-                                            {{ $cell->function_name ?? '' }}
+                                        @if($fn?->image_path)
+                                            {{-- Image scales with the zoom slider, fixed size on mobile --}}
+                                            <img src="{{ asset($fn->image_path) }}"
+                                                 alt="{{ $fn->name }}"
+                                                 class="mb-1">
+                                        @endif
+                                        <span class="text-xs font-semibold text-center text-black">
+                                            {{ $fn?->name ?? '' }}
                                         </span>
                                     </button>
 
@@ -103,6 +113,7 @@
                                     class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition"
                                     draggable="true"
                                     data-function="{{ $cityFunction->name }}"
+                                    data-function-id="{{ $cityFunction->id }}"
                                     data-image="{{ $cityFunction->image_path }}">
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
