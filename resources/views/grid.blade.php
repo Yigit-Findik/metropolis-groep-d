@@ -51,6 +51,10 @@
                                 @foreach ($rowCells as $cell)
 
                                     {{-- "is-occupied" or "is-empty" is read by app.js to update the preview panel --}}
+                                    {{-- Look up the matching city function so we can show its image --}}
+                                    @php $fn = $cityFunctions->firstWhere('name', $cell->function_name); @endphp
+
+                                    {{-- "is-occupied" or "is-empty" is read by app.js to update the preview panel --}}
                                     <button
                                         type="button"
                                         class="grid-cell aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition {{ filled($cell->function_name) ? 'is-occupied' : 'is-empty' }}"
@@ -62,6 +66,12 @@
                                         aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_name) ? ', occupied' : ', available' }}"
                                         aria-pressed="false"
                                     >
+                                        @if($fn?->image_path)
+                                            {{-- Image scales with the zoom slider, fixed size on mobile --}}
+                                            <img src="{{ asset($fn->image_path) }}"
+                                                 alt="{{ $fn->name }}"
+                                                 class="mb-1">
+                                        @endif
                                         <span class="text-xs font-semibold text-center text-gray-500 dark:text-gray-400">
                                             {{ $cell->function_name ?? '' }}
                                         </span>
