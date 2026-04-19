@@ -43,22 +43,14 @@ class CityGridController extends Controller
     public function assignFunction(Request $request, $id)
     {
         $request->validate([
-            'function_name' => 'required|string|max:255',
+            'function_id' => 'required|integer|exists:city_functions,id',
         ]);
 
         $cell = CityGridCell::findOrFail($id);
 
-        if ($cell->function_name !== null) { // checks if the function has a name
-            return response()->json(['message' => 'Cell occupied'], 422);
-        }
-            
-        // update the cell's name 
-
         $cell->update([
-            'function_name' => $request->function_name,
+            'function_id' => $request->function_id,
         ]);
-
-        // return the view (or actually it's just a list with all cells right now)
 
         return response()->json([
             'message' => 'Function assigned',
