@@ -9,14 +9,27 @@
         <div class="px-4 sm:px-6 lg:px-8">
 
             {{-- QoL Score Banner --}}
-            <div class="w-full bg-blue-600 dark:bg-blue-800 rounded-2xl shadow-sm px-8 py-5 mb-6 flex items-center justify-between">
-                <div>
-                    <p class="text-blue-200 dark:text-blue-300 text-sm font-medium uppercase tracking-wide">Quality of Life Score</p>
-                    <p class="text-white text-4xl font-bold mt-1" id="qol-score-value">—</p>
-                </div>
-                <div class="text-blue-200 dark:text-blue-300 text-sm text-right hidden sm:block">
-                    <p>Place functions on the grid</p>
-                    <p>to calculte your city's Quality of Life score.</p>
+            <div class="w-full bg-blue-600 dark:bg-blue-800 rounded-2xl shadow-sm px-8 py-6 mb-6">
+                <div class="flex flex-wrap items-center gap-6">
+
+                    {{-- Total score --}}
+                    <div class="min-w-[120px]">
+                        <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">Total QoL</p>
+                        <p class="text-white text-4xl font-bold mt-1" id="qol-score-value">—</p>
+                    </div>
+
+                    <div class="hidden sm:block w-px h-12 bg-blue-400/50"></div>
+
+                    {{-- Category scores --}}
+                    <div class="flex flex-wrap gap-x-6 gap-y-3">
+                        @foreach(['livability' => '', 'safety' => '', 'economy' => '', 'environment' => '', 'welfare' => ''] as $cat => $icon)
+                            <div>
+                                <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{{ $icon }} {{ ucfirst($cat) }}</p>
+                                <p class="text-white text-xl font-semibold mt-0.5" id="qol-{{ $cat }}">—</p>
+                            </div>
+                        @endforeach
+                    </div>
+
                 </div>
             </div>
 

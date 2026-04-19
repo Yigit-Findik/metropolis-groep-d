@@ -6,30 +6,43 @@ use App\Models\CityGridCell;
 
 class QolScoreService
 {
+    public const CATEGORIES = ['livability', 'safety', 'economy', 'environment', 'welfare'];
+
     public function calculate(): array
     {
         $cells = CityGridCell::with('cityFunction')->get();
 
+        $totals = array_fill_keys(self::CATEGORIES, 0);
         $totalScore = 0;
         $breakdown = [];
 
         foreach ($cells as $cell) {
             if ($cell->cityFunction) {
-                $score = $cell->cityFunction->qol_score;
-                $totalScore += $score;
+                $fn = $cell->cityFunction;
+                $totalScore += $fn->qol_score;
+
+                foreach (self::CATEGORIES as $cat) {
+                    $totals[$cat] += $fn->$cat;
+                }
 
                 $breakdown[] = [
-                    'row' => $cell->row_index,
-                    'column' => $cell->column_index,
-                    'function' => $cell->cityFunction->name,
-                    'score' => $score,
+                    'row'         => $cell->row_index,
+                    'column'      => $cell->column_index,
+                    'function'    => $fn->name,
+                    'score'       => $fn->qol_score,
+                    'livability'  => $fn->livability,
+                    'safety'      => $fn->safety,
+                    'economy'     => $fn->economy,
+                    'environment' => $fn->environment,
+                    'welfare'     => $fn->welfare,
                 ];
             }
         }
 
         return [
             'total_score' => $totalScore,
-            'breakdown' => $breakdown,
+            'categories'  => $totals,
+            'breakdown'   => $breakdown,
         ];
     }
 }

@@ -10,6 +10,11 @@ class CityFunction extends Model
         'name',
         'category',
         'qol_score',
+        'livability',
+        'safety',
+        'economy',
+        'environment',
+        'welfare',
         'image_path',
         'description',
     ];

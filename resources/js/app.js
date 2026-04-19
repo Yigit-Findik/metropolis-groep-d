@@ -31,8 +31,18 @@ const refreshQolScore = () => {
     fetch("/grid/qol-score")
         .then((r) => r.json())
         .then((data) => {
-            const el = document.getElementById("qol-score-value");
-            if (el) el.textContent = data.total_score;
+            const total = document.getElementById("qol-score-value");
+            if (total) total.textContent = data.total_score;
+
+            if (data.categories) {
+                for (const [cat, score] of Object.entries(data.categories)) {
+                    const el = document.getElementById(`qol-${cat}`);
+                    if (el) {
+                        el.textContent = (score >= 0 ? "+" : "") + score;
+                        el.className = `text-xl font-semibold mt-0.5 ${score >= 0 ? "text-green-300" : "text-red-300"}`;
+                    }
+                }
+            }
         })
         .catch(() => {});
 };
