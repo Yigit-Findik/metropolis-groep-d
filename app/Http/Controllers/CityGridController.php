@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\CityGridCell;
 use App\Models\CityFunction;
 
-class CityGridCellController extends Controller
+class CityGridController extends Controller
 {
     public function index()
     {
@@ -38,7 +38,7 @@ class CityGridCellController extends Controller
             'cell' => $cell
         ]);
     }
-
+    
 //assign function
     public function assignFunction(Request $request, $id)
     {
@@ -51,8 +51,8 @@ class CityGridCellController extends Controller
         if ($cell->function_name !== null) { // checks if the function has a name
             return response()->json(['message' => 'Cell occupied'], 422);
         }
-
-        // update the cell's name
+            
+        // update the cell's name 
 
         $cell->update([
             'function_name' => $request->function_name,

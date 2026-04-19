@@ -6,7 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\CityGridCell;
 
-class CityGridCellSeeder extends Seeder
+class CityGridSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,10 +14,10 @@ class CityGridCellSeeder extends Seeder
     public function run(): void
     {
         for ($row = 1; $row <= 3; $row++) {
-            for ($column = 1; $column <= 4; $column++) {
+            for ($col = 1; $col <= 4; $col++) {
                 CityGridCell::create([
                     'row_index' => $row,
-                    'column_index' => $column,
+                    'col_index' => $col,
                     'function_name' => null,
                 ]);
             }
