@@ -160,7 +160,7 @@
                                     data-function="{{ $cityFunction->name }}"
                                     data-function-id="{{ $cityFunction->id }}"
                                     data-image="{{ $cityFunction->image_path }}"
-                                    data-qol-score="{{ $cityFunction->qol_score }}">
+                                    data-qol-score="{{ $cityFunction->livability + $cityFunction->safety + $cityFunction->economy + $cityFunction->environment + $cityFunction->welfare }}">
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
                                              alt="{{ $cityFunction->name }}"
