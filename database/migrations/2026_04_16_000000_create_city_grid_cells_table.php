@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('city_functions', function (Blueprint $table) {
+        Schema::create('city_grid_cells', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->integer('qol_score');
-            $table->string('category');
-            $table->string('image_path');
-            $table->text('description')->nullable();
+            $table->unsignedTinyInteger('row_index');
+            $table->unsignedTinyInteger('column_index');
+            $table->string('function_name')->nullable();
             $table->timestamps();
+
+            $table->unique(['row_index', 'column_index']);
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('city_functions');
+        Schema::dropIfExists('city_grid_cells');
     }
 };

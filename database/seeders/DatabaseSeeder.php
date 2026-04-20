@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\CityGridCell;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -21,6 +22,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        CityGridCell::ensureGridExists();
         $this->call([CityFunctionsTableSeeder::class]);
     }
 }
