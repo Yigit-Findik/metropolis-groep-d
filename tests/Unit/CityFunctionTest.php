@@ -6,7 +6,7 @@ use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
-// Test 1: Create a city function with all QoL scores
+// 1: create a city function with all qol scores
 test('can create city function with all QoL scores', function () {
     $function = CityFunction::create([
         'name' => 'Hospital',
@@ -24,7 +24,7 @@ test('can create city function with all QoL scores', function () {
     expect($function->safety)->toBe(10);
 });
 
-// Test 2: Verify all required fields are stored correctly
+// 2: verify function has all required fields stored correctly
 test('city function has all required fields stored', function () {
     $function = CityFunction::create([
         'name' => 'School',

@@ -7,7 +7,7 @@ use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
-// Test 1: Remove function from a grid cell
+// 1: remove function from a grid cell
 test('can remove function from grid cell', function () {
     $function = CityFunction::create([
         'name' => 'Park',
@@ -33,7 +33,7 @@ test('can remove function from grid cell', function () {
     expect($cell->function_id)->toBeNull();
 });
 
-// Test 2: Removing function from one cell does not affect other cells
+// 2: removing a function from one cell does not affect other cells
 test('removing function does not affect other cells', function () {
     $function = CityFunction::create([
         'name' => 'Hospital',
