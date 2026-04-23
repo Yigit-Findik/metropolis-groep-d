@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('city_functions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('qol_score');
             $table->string('category');
             $table->string('image_path');
             $table->text('description')->nullable();
