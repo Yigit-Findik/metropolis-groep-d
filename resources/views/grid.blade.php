@@ -59,7 +59,7 @@
                         {{-- Zoom slider only shown on desktop --}}
                         <div class="hidden lg:flex items-center gap-3">
                             <label for="grid-size" class="text-sm text-gray-600 dark:text-gray-300">Zoom</label>
-                            <input id="grid-size" type="range" min="64" max="128" step="16"
+                            <input id="grid-size" type="range" min="64" max="224" step="16"
                                    x-model="size"
                                    class="w-28 accent-blue-500"
                                    aria-label="Adjust grid size">
