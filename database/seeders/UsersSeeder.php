@@ -10,34 +10,34 @@ class UsersSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminId   = DB::table('roles')->where('name', 'admin')->value('id');
-        $plannerId = DB::table('roles')->where('name', 'planner')->value('id');
-        $viewerId  = DB::table('roles')->where('name', 'viewer')->value('id');
+        $administratorId    = DB::table('roles')->where('name', 'Administrator')->value('id');
+        $cityPlannerId      = DB::table('roles')->where('name', 'City planner')->value('id');
+        $expertInEffectsId  = DB::table('roles')->where('name', 'Expert in effects')->value('id');
 
         DB::table('users')->insert([
             [
-                'name'              => 'Admin User',
-                'email'             => 'admin@metropolis.test',
-                'password'          => Hash::make('password'),
-                'role_id'           => $adminId,
+                'name'              => 'Administrator',
+                'email'             => 'administrator@metropolis.test',
+                'password'          => Hash::make('administrator@metropolis.test'),
+                'role_id'           => $administratorId,
                 'email_verified_at' => now(),
                 'created_at'        => now(),
                 'updated_at'        => now(),
             ],
             [
-                'name'              => 'Planner User',
-                'email'             => 'planner@metropolis.test',
-                'password'          => Hash::make('password'),
-                'role_id'           => $plannerId,
+                'name'              => 'City Planner',
+                'email'             => 'cityplanner@metropolis.test',
+                'password'          => Hash::make('cityplanner@metropolis.test'),
+                'role_id'           => $cityPlannerId,
                 'email_verified_at' => now(),
                 'created_at'        => now(),
                 'updated_at'        => now(),
             ],
             [
-                'name'              => 'Viewer User',
-                'email'             => 'viewer@metropolis.test',
-                'password'          => Hash::make('password'),
-                'role_id'           => $viewerId,
+                'name'              => 'Expert in Effects',
+                'email'             => 'expert@metropolis.test',
+                'password'          => Hash::make('expert@metropolis.test'),
+                'role_id'           => $expertInEffectsId,
                 'email_verified_at' => now(),
                 'created_at'        => now(),
                 'updated_at'        => now(),
