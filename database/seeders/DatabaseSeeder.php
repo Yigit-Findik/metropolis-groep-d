@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\CityGridCell;
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -11,19 +10,15 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-
         CityGridCell::ensureGridExists();
-        $this->call([CityFunctionsTableSeeder::class]);
+
+        // Order matters, roles must exist before users are seeded.
+        $this->call([
+            CityFunctionsTableSeeder::class,
+            RolesSeeder::class,
+            UsersSeeder::class,
+        ]);
     }
 }
