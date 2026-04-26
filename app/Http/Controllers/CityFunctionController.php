@@ -11,6 +11,6 @@ class CityFunctionController extends Controller
         $cityFunctions = CityFunction::orderBy('category')->orderBy('name')->get();
         $categories = CityFunction::select('category')->distinct()->orderBy('category')->pluck('category');
 
-        return view('grid', compact('cityFunctions', 'categories'));
+        return view('city_functions', compact('cityFunctions', 'categories'));
     }
 }
