@@ -18,7 +18,7 @@ const showToast = (functionName, qolScore) => {
     // Set the text and styling of the toast based on QoL score
     toast.textContent = `${functionName}: ${sign}${qolScore} `;
     toast.className = `fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold ${
-        isPositive ? "bg-green-500" : "bg-red-500"
+        isPositive ? "bg-green-700" : "bg-red-700"
     }`;
 
     clearTimeout(toastTimer);
@@ -50,7 +50,7 @@ const refreshQolScore = () => {
 const initializeCityGrid = () => {
     const grid = document.querySelector("[data-city-grid]");
     const cards = document.querySelectorAll("[data-function]");
-    
+
     // Get the removal zone element (SIM.3 - Subtask 2: Define a Drop Zone Outside the Grid)
     const removalZone = document.querySelector("[data-removal-zone]");
 
@@ -156,12 +156,14 @@ const initializeCityGrid = () => {
                     "X-CSRF-TOKEN": csrfToken,
                 },
                 body: JSON.stringify({ function_id: parseInt(functionId) }),
-            }).then(() => {
-                refreshQolScore();
-                showToast(functionName, qolScore);
-            }).catch(() => {
-                alert("Failed to save — please refresh and try again.");
-            });
+            })
+                .then(() => {
+                    refreshQolScore();
+                    showToast(functionName, qolScore);
+                })
+                .catch(() => {
+                    alert("Failed to save — please refresh and try again.");
+                });
         });
 
         // SIM.3 - Subtask 1: Add Drag-Off Detection to Grid Cells
@@ -194,19 +196,34 @@ const initializeCityGrid = () => {
             e.dataTransfer.dropEffect = "move";
 
             // Visual feedback: highlight the removal zone when dragging over it
-            removalZone.classList.add("ring-2", "ring-red-500", "bg-red-100", "dark:bg-red-800/30");
+            removalZone.classList.add(
+                "ring-2",
+                "ring-red-500",
+                "bg-red-100",
+                "dark:bg-red-800/30",
+            );
         });
 
         // Remove highlight when dragging leaves the removal zone
         removalZone.addEventListener("dragleave", () => {
-            removalZone.classList.remove("ring-2", "ring-red-500", "bg-red-100", "dark:bg-red-800/30");
+            removalZone.classList.remove(
+                "ring-2",
+                "ring-red-500",
+                "bg-red-100",
+                "dark:bg-red-800/30",
+            );
         });
 
         // SIM.3 - Subtask 3: Clear Cell After Successful Removal
         // Handle the drop event on removal zone
         removalZone.addEventListener("drop", (e) => {
             e.preventDefault();
-            removalZone.classList.remove("ring-2", "ring-red-500", "bg-red-100", "dark:bg-red-800/30");
+            removalZone.classList.remove(
+                "ring-2",
+                "ring-red-500",
+                "bg-red-100",
+                "dark:bg-red-800/30",
+            );
 
             // Check if this drag came from a cell (not from the library)
             const fromCell = e.dataTransfer.getData("fromCell");
@@ -217,7 +234,9 @@ const initializeCityGrid = () => {
             const cellId = e.dataTransfer.getData("cellId");
 
             // Find the cell element that we're removing from
-            const cellElement = document.querySelector(`[data-cell-id="${cellId}"]`);
+            const cellElement = document.querySelector(
+                `[data-cell-id="${cellId}"]`,
+            );
             if (!cellElement) {
                 alert("Error: Could not find the cell to remove from.");
                 return;
@@ -238,7 +257,9 @@ const initializeCityGrid = () => {
             })
                 .then((response) => {
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        throw new Error(
+                            `HTTP error! status: ${response.status}`,
+                        );
                     }
                     return response.json();
                 })
@@ -263,7 +284,6 @@ const initializeCityGrid = () => {
                 });
         });
     }
-
 };
 
 document.addEventListener("DOMContentLoaded", () => {

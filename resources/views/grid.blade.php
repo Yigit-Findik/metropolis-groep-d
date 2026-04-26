@@ -22,10 +22,10 @@
 
                     {{-- Category scores --}}
                     <div class="flex flex-wrap gap-x-6 gap-y-3">
-                        @foreach(['livability' => '', 'safety' => '', 'economy' => '', 'environment' => '', 'welfare' => ''] as $cat => $icon)
+                        @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
                             <div>
-                                <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{{ $icon }} {{ ucfirst($cat) }}</p>
-                                <p class="text-white text-xl font-semibold mt-0.5" id="qol-{{ $cat }}">—</p>
+                                <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{{ $label }}</p>
+                                <p class="text-white text-xl font-semibold mt-0.5" id="qol-{{ $slug }}">—</p>
                             </div>
                         @endforeach
                     </div>
@@ -160,7 +160,7 @@
                                     data-function="{{ $cityFunction->name }}"
                                     data-function-id="{{ $cityFunction->id }}"
                                     data-image="{{ $cityFunction->image_path }}"
-                                    data-qol-score="{{ $cityFunction->qol_score }}">
+                                    data-qol-score="{{ ($cityFunction->Safety ?? 0) + ($cityFunction->Recreation ?? 0) + ($cityFunction->{'Environment Quality'} ?? 0) + ($cityFunction->Facilities ?? 0) + ($cityFunction->Mobility ?? 0) }}">
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
                                              alt="{{ $cityFunction->name }}"
