@@ -5,6 +5,7 @@ use App\Http\Controllers\CityFunctionController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CityGridCellController;
+use App\Http\Controllers\EffectController;
 
 // Public landing page
 Route::get('/', function () {
@@ -30,6 +31,10 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
 
     // SIM.3 - Remove a function from a cell
     Route::delete('/grid/{id}/remove', [CityGridCellController::class, 'removeFunction']);
+
+    // EFF.1 - Effect management table
+    Route::get('/effects', [EffectController::class, 'index'])->name('effects.index');
+    Route::post('/effects/{functionId}', [EffectController::class, 'update'])->name('effects.update');
 });
 
 // Profile management — auth only, no role restriction so all users can manage their own account

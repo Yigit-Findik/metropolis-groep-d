@@ -15,6 +15,11 @@ class CityFunction extends Model
         'economy',
         'environment',
         'welfare',
+        'Safety',
+        'Recreation',
+        'Environment Quality',
+        'Facilities',
+        'Mobility',
         'image_path',
         'description',
     ];

@@ -36,7 +36,9 @@ const refreshQolScore = () => {
 
             if (data.categories) {
                 for (const [cat, score] of Object.entries(data.categories)) {
-                    const el = document.getElementById(`qol-${cat}`);
+                    // Convert category names to match HTML IDs (replace spaces with dashes)
+                    const elementId = `qol-${cat.replace(/\s+/g, '-')}`;
+                    const el = document.getElementById(elementId);
                     if (el) {
                         el.textContent = (score >= 0 ? "+" : "") + score;
                         el.className = `text-xl font-semibold mt-0.5 ${score >= 0 ? "text-green-300" : "text-red-300"}`;
