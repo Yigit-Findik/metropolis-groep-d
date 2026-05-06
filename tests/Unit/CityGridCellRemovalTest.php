@@ -11,13 +11,12 @@ uses(TestCase::class, RefreshDatabase::class);
 test('can remove function from grid cell', function () {
     $function = CityFunction::create([
         'name' => 'Park',
-        'category' => 'recreation',
-        'qol_score' => 10,
-        'livability' => 5,
-        'safety' => 1,
-        'economy' => 1,
-        'environment' => 2,
-        'welfare' => 1,
+        'category' => 'Recreation',
+        'Safety' => -2,
+        'Recreation' => 5,
+        'Environment Quality' => 4,
+        'Facilities' => 0,
+        'Mobility' => 1,
         'image_path' => 'park.jpg',
     ]);
 
@@ -36,15 +35,14 @@ test('can remove function from grid cell', function () {
 // 2: removing a function from one cell does not affect other cells
 test('removing function does not affect other cells', function () {
     $function = CityFunction::create([
-        'name' => 'Hospital',
-        'category' => 'healthcare',
-        'qol_score' => 30,
-        'livability' => 5,
-        'safety' => 10,
-        'economy' => 3,
-        'environment' => 4,
-        'welfare' => 8,
-        'image_path' => 'hospital.jpg',
+        'name' => 'Police Station',
+        'category' => 'Safety',
+        'Safety' => 5,
+        'Recreation' => 1,
+        'Environment Quality' => 0,
+        'Facilities' => 1,
+        'Mobility' => 2,
+        'image_path' => 'police_station.jpg',
     ]);
 
     $cell1 = CityGridCell::create([

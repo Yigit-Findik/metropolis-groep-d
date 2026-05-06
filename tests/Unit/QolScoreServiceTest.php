@@ -21,14 +21,13 @@ test('service calculates scores correctly', function () {
     // create city function with random scores
     CityFunction::create([
         'name' => 'Park',
-        'qol_score' => 10,
-        'category' => 'recreation',
+        'category' => 'Recreation',
         'image_path' => 'test.jpg',
-        'livability' => 5,
-        'safety' => 3,
-        'economy' => 1,
-        'environment' => 2,
-        'welfare' => 4,
+        'Safety' => 3,
+        'Recreation' => 5,
+        'Environment Quality' => 2,
+        'Facilities' => 1,
+        'Mobility' => 4,
     ]);
 
     // add function to the grid
