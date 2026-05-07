@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CityGridCellController;
 use App\Http\Controllers\EffectController;
+use App\Http\Controllers\PendingActionController;
 
 // Public landing page
 Route::get('/', function () {
@@ -14,11 +15,12 @@ Route::get('/', function () {
     ]);
 });
 
-// All application routes — restricted to Administrator and City planner
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects'])->get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');
+
+// City planner and administrator routes
 Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
 
     Route::get('/grid', [CityGridCellController::class, 'index'])->name('grid');
 
@@ -32,9 +34,16 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     // SIM.3 - Remove a function from a cell
     Route::delete('/grid/{id}/remove', [CityGridCellController::class, 'removeFunction']);
 
+});
+
+// Effects expert and administrator routes
+Route::middleware(['auth', 'verified', 'role:Administrator,Expert in effects'])->group(function () {
     // EFF.1 - Effect management table
     Route::get('/effects', [EffectController::class, 'index'])->name('effects.index');
     Route::post('/effects/{functionId}', [EffectController::class, 'update'])->name('effects.update');
+
+    // Pending actions dashboard for the effects expert
+    Route::get('/effects/pending-actions', [PendingActionController::class, 'index'])->name('effects.pending-actions');
 });
 
 // Profile management — auth only, no role restriction so all users can manage their own account

@@ -4,23 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Models\CityFunction;
 use Illuminate\Http\Request;
+use App\Services\CityFunctionEffectValueService;
 
 class EffectController extends Controller
 {
+    public function __construct(
+        private readonly CityFunctionEffectValueService $effectValueService,
+    ) {
+    }
+
     /**
      * Display the effects management table
      * Shows all functions (rows) vs all categories (columns)
      */
     public function index()
     {
-        $functions = CityFunction::all();
-        
-        // get all unique categories from the functions
-        $categories = ['Safety', 'Recreation', 'Environment Quality', 'Facilities', 'Mobility'];
+        $functions = CityFunction::withTrashed()->orderBy('name')->get();
 
         return view('effects.index', [
             'functions' => $functions,
-            'categories' => $categories,
+            'categories' => $this->effectValueService->effectColumns(),
+            'selectedFunctionId' => request()->integer('function') ?: null,
         ]);
     }
 
@@ -36,6 +40,10 @@ class EffectController extends Controller
         ]);
 
         $function = CityFunction::findOrFail($functionId);
+
+        if ($function->trashed()) {
+            abort(403);
+        }
         
         // Update the category column with the new value
         $function->update([
