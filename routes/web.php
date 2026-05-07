@@ -57,7 +57,6 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::delete('/grid/{id}/remove', [CityGridCellController::class, 'removeFunction']);
 
 });
-
 // Effects expert and administrator routes
 Route::middleware(['auth', 'verified', 'role:Administrator,Expert in effects'])->group(function () {
     // EFF.1 - Effect management table
@@ -66,6 +65,14 @@ Route::middleware(['auth', 'verified', 'role:Administrator,Expert in effects'])-
 
     // Pending actions dashboard for the effects expert
     Route::get('/effects/pending-actions', [PendingActionController::class, 'index'])->name('effects.pending-actions');
+});
+
+// BES.2 - City functions management
+Route::middleware(['auth', 'verified', 'role:Administrator'])->group(function () {
+    Route::get('/city_functions', [CityFunctionController::class, 'index'])->name('city_functions');
+    Route::post('/city_functions', [CityFunctionController::class, 'store']);
+    Route::put('/city_functions/{id}', [CityFunctionController::class, 'update']);
+    Route::delete('/city_functions/{id}', [CityFunctionController::class, 'destroy']);
 });
 
 // Profile management — auth only, no role restriction so all users can manage their own account
