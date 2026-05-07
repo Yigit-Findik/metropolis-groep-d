@@ -6,7 +6,7 @@ use App\Models\CityGridCell;
 
 class QolScoreService
 {
-    // Map display categories to database column names
+    // Map display categories to database column names.
     public const CATEGORIES = [
         'Safety' => 'Safety',
         'Recreation' => 'Recreation',
@@ -17,6 +17,7 @@ class QolScoreService
 
     public function calculate(): array
     {
+        // Load the grid with its related function once so the score can be built from the current state.
         $cells = CityGridCell::with('cityFunction')->get();
 
         $totals = [
@@ -38,6 +39,7 @@ class QolScoreService
                     $totalScore += $value;
                 }
 
+                // Keep a per-cell breakdown so the UI can explain how the score was composed.
                 $breakdown[] = [
                     'row'         => $cell->row_index,
                     'column'      => $cell->column_index,

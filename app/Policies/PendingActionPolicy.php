@@ -9,6 +9,7 @@ class PendingActionPolicy
 {
     public function viewAny(User $user): bool
     {
+        // Match the user's role name against the allowed list so policy checks stay simple and database-driven.
         return in_array($user->role?->name, ['Administrator', 'Expert in effects'], true);
     }
 

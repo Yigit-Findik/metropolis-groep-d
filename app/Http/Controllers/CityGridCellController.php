@@ -11,6 +11,7 @@ class CityGridCellController extends Controller
 {
     public function index()
     {
+        // Create missing cells on demand so the view always receives a complete grid structure.
         $cells = CityGridCell::ensureGridExists();
 
         // return response()->json($cells);
@@ -27,10 +28,10 @@ class CityGridCellController extends Controller
 
     public function select($id)
     {
-        // Reset all selections
+        // Update every row to false first, then flip only the clicked cell to true to keep selection exclusive.
         CityGridCell::query()->update(['is_selected' => false]);
 
-        // Select clicked cell
+        // Persist the newly selected cell so subsequent requests can restore the active state.
         $cell = CityGridCell::findOrFail($id);
         $cell->update(['is_selected' => true]);
 
@@ -82,6 +83,7 @@ class CityGridCellController extends Controller
      */
     public function getQolScore()
     {
+        // Calculate the score on demand and return the aggregated result as JSON for the frontend.
         $result = (new QolScoreService())->calculate();
 
         return response()->json($result);
@@ -89,20 +91,18 @@ class CityGridCellController extends Controller
 
     public function removeFunction($id)
     {
-        // Find the cell or return 404 if not found
+        // Load the target cell once so we can validate and update the same record.
         $cell = CityGridCell::findOrFail($id);
 
-        // Safeguard: Ensure the cell actually has a function before removing
-        // This prevents unnecessary operations and provides better error handling
-        if (!$cell->function_id) {
+        // Skip the write when the cell is already empty; that keeps the API response explicit.
+        if (! $cell->function_id) {
             return response()->json([
                 'message' => 'Cell does not contain a function',
                 'cell' => $cell
             ], 400);
         }
 
-        // Remove the function by setting function_id to null
-        // This leaves all other cells completely untouched
+        // Setting function_id to null removes only this placement and leaves the rest of the grid untouched.
         $cell->update([
             'function_id' => null,
         ]);

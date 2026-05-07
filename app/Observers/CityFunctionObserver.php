@@ -10,14 +10,21 @@ use Illuminate\Support\Facades\Auth;
 
 class CityFunctionObserver
 {
-    public function __construct(
-        private readonly PendingActionService $pendingActionService,
-        private readonly CityFunctionEffectValueService $effectValueService,
-    ) {
+    private function pendingActionService(): PendingActionService
+    {
+        // Resolve the service lazily so the observer stays constructor-free.
+        return app(PendingActionService::class);
+    }
+
+    private function effectValueService(): CityFunctionEffectValueService
+    {
+        // Resolve the helper only when an update needs to inspect effect columns.
+        return app(CityFunctionEffectValueService::class);
     }
 
     protected function shouldTrackAdminChange(): bool
     {
+        // Check the authenticated user's role name directly, because the observer runs outside a controller context.
         return Auth::user()?->role?->name === 'Administrator';
     }
 
@@ -27,7 +34,7 @@ class CityFunctionObserver
             return;
         }
 
-        $this->pendingActionService->registerTrigger(
+        $this->pendingActionService()->registerTrigger(
             $cityFunction,
             PendingAction::TRIGGER_CREATED,
             Auth::user(),
@@ -36,9 +43,10 @@ class CityFunctionObserver
 
     public function updated(CityFunction $cityFunction): void
     {
-        if ($this->effectValueService->hasChangedEffectValues($cityFunction)) {
-            if (! $this->effectValueService->hasCompleteValues($cityFunction)) {
-                $this->pendingActionService->registerTrigger(
+        // Effect values are handled first: a partial update opens a pending action, and a complete update closes them.
+        if ($this->effectValueService()->hasChangedEffectValues($cityFunction)) {
+            if (! $this->effectValueService()->hasCompleteValues($cityFunction)) {
+                $this->pendingActionService()->registerTrigger(
                     $cityFunction,
                     PendingAction::TRIGGER_EFFECT_VALUES,
                     Auth::user(),
@@ -47,7 +55,7 @@ class CityFunctionObserver
                 return;
             }
 
-            $this->pendingActionService->completePendingActionsForFunction($cityFunction);
+            $this->pendingActionService()->completePendingActionsForFunction($cityFunction);
 
             return;
         }
@@ -56,7 +64,7 @@ class CityFunctionObserver
             return;
         }
 
-        $this->pendingActionService->registerTrigger(
+        $this->pendingActionService()->registerTrigger(
             $cityFunction,
             PendingAction::TRIGGER_UPDATED,
             Auth::user(),
@@ -69,7 +77,7 @@ class CityFunctionObserver
             return;
         }
 
-        $this->pendingActionService->registerTrigger(
+        $this->pendingActionService()->registerTrigger(
             $cityFunction,
             PendingAction::TRIGGER_SOFT_DELETED,
             Auth::user(),

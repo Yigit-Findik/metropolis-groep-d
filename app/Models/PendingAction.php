@@ -46,10 +46,10 @@ class PendingAction extends Model
     public function getTriggerLabelAttribute(): string
     {
         return match ($this->trigger_type) {
-            self::TRIGGER_CREATED => 'Functie toegevoegd',
-            self::TRIGGER_UPDATED => 'Functie gewijzigd',
-            self::TRIGGER_SOFT_DELETED => 'Functie gearchiveerd',
-            self::TRIGGER_EFFECT_VALUES => 'Effectwaarden invullen',
+            self::TRIGGER_CREATED => 'Function created',
+            self::TRIGGER_UPDATED => 'Function updated',
+            self::TRIGGER_SOFT_DELETED => 'Function archived',
+            self::TRIGGER_EFFECT_VALUES => 'Fill in effect values',
             default => ucfirst(str_replace('_', ' ', (string) $this->trigger_type)),
         };
     }
@@ -57,14 +57,14 @@ class PendingAction extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            self::STATUS_PENDING => 'Open',
-            self::STATUS_COMPLETED => 'Afgerond',
+            self::STATUS_PENDING => 'Pending',
+            self::STATUS_COMPLETED => 'Completed',
             default => ucfirst((string) $this->status),
         };
     }
 
     public function getResolvedFunctionNameAttribute(): string
     {
-        return $this->cityFunction?->name ?? $this->function_name ?? 'Verwijderde functie';
+        return $this->cityFunction?->name ?? $this->function_name ?? 'Deleted function';
     }
 }

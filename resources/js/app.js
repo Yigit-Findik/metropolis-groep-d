@@ -15,11 +15,9 @@ const showToast = (functionName, qolScore) => {
     const isPositive = qolScore >= 0;
     const sign = isPositive ? "+" : "";
 
-    // Set the text and styling of the toast based on QoL score
+    // Keep the visual styling in CSS and only switch between semantic modifier classes here.
     toast.textContent = `${functionName}: ${sign}${qolScore} `;
-    toast.className = `fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold ${
-        isPositive ? "bg-green-500" : "bg-red-500"
-    }`;
+    toast.className = `qol-toast ${isPositive ? "qol-toast--positive" : "qol-toast--negative"}`;
 
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
@@ -41,7 +39,7 @@ const refreshQolScore = () => {
                     const el = document.getElementById(elementId);
                     if (el) {
                         el.textContent = (score >= 0 ? "+" : "") + score;
-                        el.className = `text-xl font-semibold mt-0.5 ${score >= 0 ? "text-green-300" : "text-red-300"}`;
+                        el.className = `qol-score-value ${score >= 0 ? "qol-score-value--positive" : "qol-score-value--negative"}`;
                     }
                 }
             }
@@ -69,7 +67,7 @@ const initializeCityGrid = () => {
             const img = card.querySelector("img");
             if (img) {
                 e.dataTransfer.setDragImage(img, 25, 25);
-                img.style.pointerEvents = "none";
+                img.classList.add("grid-drag-image");
             }
         });
     });

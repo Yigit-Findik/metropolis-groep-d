@@ -16,6 +16,7 @@ class PendingActionService
 
     public function registerTrigger(CityFunction $function, string $triggerType, ?User $user = null): PendingAction
     {
+        // Reuse the first matching open row so repeated observer events do not create duplicate pending actions.
         $pendingAction = PendingAction::query()
             ->where('city_function_id', $function->id)
             ->where('trigger_type', $triggerType)
@@ -26,6 +27,7 @@ class PendingActionService
             return $pendingAction;
         }
 
+        // Persist a name snapshot so the pending action still shows the original function name after renames.
         $pendingAction = PendingAction::create([
             'city_function_id' => $function->id,
             'function_name' => $function->name,
@@ -45,6 +47,7 @@ class PendingActionService
 
     public function completePendingActionsForFunction(CityFunction $function): int
     {
+        // Close nothing until the helper confirms every tracked effect column is filled with a valid value.
         if (! $this->effectValueService->hasCompleteValues($function)) {
             return 0;
         }

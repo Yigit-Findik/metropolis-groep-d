@@ -8,22 +8,17 @@ use App\Services\CityFunctionEffectValueService;
 
 class EffectController extends Controller
 {
-    public function __construct(
-        private readonly CityFunctionEffectValueService $effectValueService,
-    ) {
-    }
-
     /**
      * Display the effects management table
      * Shows all functions (rows) vs all categories (columns)
      */
-    public function index()
+    public function index(CityFunctionEffectValueService $effectValueService)
     {
         $functions = CityFunction::withTrashed()->orderBy('name')->get();
 
         return view('effects.index', [
             'functions' => $functions,
-            'categories' => $this->effectValueService->effectColumns(),
+            'categories' => $effectValueService->effectColumns(),
             'selectedFunctionId' => request()->integer('function') ?: null,
         ]);
     }

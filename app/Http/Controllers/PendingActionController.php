@@ -15,24 +15,26 @@ class PendingActionController extends Controller
         $statusFilter = $request->string('status')->toString();
         $triggerTypeFilter = $request->string('trigger_type')->toString();
 
+        // Keep the filter labels in one place so the dropdown values stay readable.
         $statusOptions = [
-            'all' => 'Alle statussen',
-            PendingAction::STATUS_PENDING => 'Open',
-            PendingAction::STATUS_COMPLETED => 'Afgerond',
+            'all' => 'All statuses',
+            PendingAction::STATUS_PENDING => 'Pending',
+            PendingAction::STATUS_COMPLETED => 'Completed',
         ];
 
         $triggerTypeOptions = [
-            'all' => 'Alle triggers',
-            PendingAction::TRIGGER_CREATED => 'Functie toegevoegd',
-            PendingAction::TRIGGER_UPDATED => 'Functie gewijzigd',
-            PendingAction::TRIGGER_SOFT_DELETED => 'Functie gearchiveerd',
-            PendingAction::TRIGGER_EFFECT_VALUES => 'Effectwaarden invullen',
+            'all' => 'All triggers',
+            PendingAction::TRIGGER_CREATED => 'Function created',
+            PendingAction::TRIGGER_UPDATED => 'Function updated',
+            PendingAction::TRIGGER_SOFT_DELETED => 'Function archived',
+            PendingAction::TRIGGER_EFFECT_VALUES => 'Fill in effect values',
         ];
 
         $query = PendingAction::query()
             ->with(['cityFunction', 'createdBy'])
             ->latest('created_at');
 
+        // Fall back to the default state when the query string contains an invalid value.
         if (! array_key_exists($statusFilter, $statusOptions)) {
             $statusFilter = PendingAction::STATUS_PENDING;
         }

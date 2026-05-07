@@ -34,6 +34,408 @@
     }
 }
 
+@layer components {
+    .page-title {
+        @apply font-semibold text-xl leading-tight text-gray-800 dark:text-gray-200;
+    }
+
+    .effects-page {
+        @apply py-12;
+    }
+
+    .effects-container {
+        @apply px-4 sm:px-6 lg:px-8;
+    }
+
+    .effects-alert {
+        @apply mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-100;
+    }
+
+    .effects-panel {
+        @apply overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-gray-800;
+    }
+
+    .effects-table-shell {
+        @apply overflow-x-auto;
+    }
+
+    .effects-table {
+        @apply w-full;
+    }
+
+    .effects-table-body {
+        @apply divide-y divide-gray-200 dark:divide-gray-700;
+    }
+
+    .effects-table-head {
+        @apply border-b border-gray-200 bg-blue-50 dark:border-gray-600 dark:bg-gray-700;
+    }
+
+    .effects-head-cell {
+        @apply px-6 py-3 text-left text-sm font-semibold text-gray-800 dark:text-gray-100;
+    }
+
+    .effects-head-cell--center {
+        @apply text-center;
+    }
+
+    .effects-row {
+        @apply transition hover:bg-gray-50 dark:hover:bg-gray-700/50;
+    }
+
+    .effects-function-cell {
+        @apply whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100;
+    }
+
+    .effects-function-cell--selected {
+        @apply ring-2 ring-inset ring-blue-400;
+    }
+
+    .effects-function-cell--archived {
+        @apply opacity-70;
+    }
+
+    .effects-function-wrap {
+        @apply flex items-center gap-3;
+    }
+
+    .effects-function-image {
+        @apply h-8 w-8 object-contain;
+    }
+
+    .effects-function-meta {
+        @apply flex items-center gap-2;
+    }
+
+    .effects-archive-badge {
+        @apply inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gray-600 dark:bg-gray-700 dark:text-gray-300;
+    }
+
+    .effects-value-cell {
+        @apply px-6 py-4 text-center;
+    }
+
+    .effects-empty-cell {
+        @apply px-6 py-12 text-center text-gray-500 dark:text-gray-400;
+    }
+
+    .effects-value-badge {
+        @apply inline-flex min-w-14 justify-center rounded-lg bg-gray-100 px-3 py-1 text-sm font-semibold text-gray-600 dark:bg-gray-700 dark:text-gray-300;
+    }
+
+    .effects-editor {
+        @apply flex justify-center;
+    }
+
+    .effects-editor-view {
+        @apply cursor-pointer rounded px-3 py-1 text-sm font-semibold transition hover:bg-gray-100 dark:hover:bg-gray-700;
+    }
+
+    .effects-editor-view--positive {
+        @apply text-green-600 dark:text-green-400;
+    }
+
+    .effects-editor-view--negative {
+        @apply text-red-600 dark:text-red-400;
+    }
+
+    .effects-editor-view--neutral {
+        @apply text-gray-500 dark:text-gray-400;
+    }
+
+    .effects-editor-input-wrap {
+        @apply flex flex-col gap-2;
+    }
+
+    .effects-editor-controls {
+        @apply flex gap-2;
+    }
+
+    .effects-editor-input {
+        @apply w-16 rounded border px-2 py-1 text-sm focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white;
+    }
+
+    .effects-editor-input--error {
+        @apply border-red-500 focus:ring-red-500 dark:border-red-500;
+    }
+
+    .effects-editor-input--neutral {
+        @apply border-gray-300 dark:border-gray-600 focus:ring-blue-500;
+    }
+
+    .effects-editor-save {
+        @apply rounded px-2 py-1 text-xs transition;
+    }
+
+    .effects-editor-save--enabled {
+        @apply bg-green-600 text-white hover:bg-green-700;
+    }
+
+    .effects-editor-save--disabled {
+        @apply cursor-not-allowed bg-gray-300 text-gray-500;
+    }
+
+    .effects-editor-cancel {
+        @apply rounded bg-gray-400 px-2 py-1 text-xs text-white transition hover:bg-gray-500;
+    }
+
+    .effects-editor-error {
+        @apply rounded bg-red-50 px-2 py-1 text-xs font-medium text-red-600 dark:bg-red-900/20 dark:text-red-400;
+    }
+
+    .effects-editor-range {
+        @apply text-xs text-gray-600 dark:text-gray-400;
+    }
+
+    .effects-legend {
+        @apply mt-6 rounded-2xl bg-blue-50 p-6 dark:bg-gray-700/50;
+    }
+
+    .effects-legend-title {
+        @apply mb-3 text-sm font-semibold text-gray-800 dark:text-gray-100;
+    }
+
+    .effects-legend-items {
+        @apply flex flex-wrap gap-6;
+    }
+
+    .effects-legend-item {
+        @apply flex items-center gap-2;
+    }
+
+    .effects-legend-key {
+        @apply text-sm font-semibold;
+    }
+
+    .effects-legend-key--positive {
+        @apply text-green-600 dark:text-green-400;
+    }
+
+    .effects-legend-key--negative {
+        @apply text-red-600 dark:text-red-400;
+    }
+
+    .effects-legend-key--neutral {
+        @apply text-gray-500 dark:text-gray-400;
+    }
+
+    .effects-legend-note {
+        @apply text-xs text-gray-600 dark:text-gray-400;
+    }
+
+    .effects-toast {
+        @apply fixed bottom-6 right-6 z-50 hidden rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300;
+    }
+
+    .effects-toast--success {
+        @apply bg-green-500;
+    }
+
+    .effects-toast--error {
+        @apply bg-red-500;
+    }
+
+    .qol-toast {
+        @apply fixed bottom-6 right-6 z-50 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300;
+    }
+
+    .qol-toast--positive {
+        @apply bg-green-500;
+    }
+
+    .qol-toast--negative {
+        @apply bg-red-500;
+    }
+
+    .qol-score-value {
+        @apply mt-0.5 text-xl font-semibold;
+    }
+
+    .qol-score-value--positive {
+        @apply text-green-300;
+    }
+
+    .qol-score-value--negative {
+        @apply text-red-300;
+    }
+
+    .pending-actions-page {
+        @apply py-12;
+    }
+
+    .pending-actions-container {
+        @apply px-4 sm:px-6 lg:px-8;
+    }
+
+    .pending-actions-stats {
+        @apply mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3;
+    }
+
+    .pending-actions-card {
+        @apply rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700;
+    }
+
+    .pending-actions-card-label {
+        @apply text-sm text-gray-500 dark:text-gray-400;
+    }
+
+    .pending-actions-card-value {
+        @apply mt-2 text-3xl font-semibold text-gray-900 dark:text-gray-100;
+    }
+
+    .pending-actions-card--wide {
+        @apply sm:col-span-2 xl:col-span-1;
+    }
+
+    .pending-actions-filter-panel {
+        @apply mb-6 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700;
+    }
+
+    .pending-actions-filter-grid {
+        @apply grid gap-4 md:grid-cols-3;
+    }
+
+    .pending-actions-label {
+        @apply block text-sm font-medium text-gray-700 dark:text-gray-200;
+    }
+
+    .pending-actions-select {
+        @apply mt-1 block w-full rounded-lg border-gray-300 bg-white text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100;
+    }
+
+    .pending-actions-actions {
+        @apply flex items-end gap-3;
+    }
+
+    .pending-actions-button-primary {
+        @apply inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800;
+    }
+
+    .pending-actions-button-secondary {
+        @apply inline-flex items-center rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600;
+    }
+
+    .pending-actions-loading {
+        @apply mt-4 rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400;
+    }
+
+    .pending-actions-table-shell {
+        @apply overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700;
+    }
+
+    .pending-actions-table-wrap {
+        @apply overflow-x-auto;
+    }
+
+    .pending-actions-table {
+        @apply min-w-full divide-y divide-gray-200 dark:divide-gray-700;
+    }
+
+    .pending-actions-table-body {
+        @apply divide-y divide-gray-200 dark:divide-gray-700;
+    }
+
+    .pending-actions-table-head {
+        @apply bg-gray-50 dark:bg-gray-700/60;
+    }
+
+    .pending-actions-head-cell {
+        @apply px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300;
+    }
+
+    .pending-actions-head-cell--right {
+        @apply text-right;
+    }
+
+    .pending-actions-row {
+        @apply transition hover:bg-gray-50 dark:hover:bg-gray-700/40;
+    }
+
+    .pending-actions-function-cell {
+        @apply px-6 py-4;
+    }
+
+    .pending-actions-function-label {
+        @apply text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400;
+    }
+
+    .pending-actions-function-value {
+        @apply mt-1 font-medium text-gray-900 dark:text-gray-100;
+    }
+
+    .pending-actions-snapshot {
+        @apply mt-1 text-xs text-gray-500 dark:text-gray-400;
+    }
+
+    .pending-actions-trigger-cell {
+        @apply px-6 py-4 text-sm text-gray-700 dark:text-gray-200;
+    }
+
+    .pending-actions-trigger-label {
+        @apply mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400;
+    }
+
+    .pending-actions-trigger-badge {
+        @apply inline-flex rounded-full px-2.5 py-1 text-xs font-semibold;
+    }
+
+    .pending-actions-trigger-badge--blue {
+        @apply bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200;
+    }
+
+    .pending-actions-status-cell {
+        @apply px-6 py-4 text-sm text-gray-700 dark:text-gray-200;
+    }
+
+    .pending-actions-status-badge {
+        @apply inline-flex rounded-full px-2.5 py-1 text-xs font-semibold;
+    }
+
+    .pending-actions-status-badge--green {
+        @apply bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-200;
+    }
+
+    .pending-actions-status-badge--amber {
+        @apply bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200;
+    }
+
+    .pending-actions-user-cell {
+        @apply px-6 py-4 text-sm text-gray-700 dark:text-gray-200;
+    }
+
+    .pending-actions-action-cell {
+        @apply px-6 py-4 text-right text-sm;
+    }
+
+    .pending-actions-link {
+        @apply inline-flex items-center rounded-lg px-4 py-2 font-semibold transition;
+    }
+
+    .pending-actions-link--primary {
+        @apply bg-gray-900 text-white hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white;
+    }
+
+    .pending-actions-link--disabled {
+        @apply bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500;
+    }
+
+    .pending-actions-empty-cell {
+        @apply px-6 py-16 text-center;
+    }
+
+    .pending-actions-empty-wrap {
+        @apply mx-auto max-w-md;
+    }
+
+    .pending-actions-empty-title {
+        @apply text-lg font-semibold text-gray-900 dark:text-gray-100;
+    }
+
+    .pending-actions-empty-text {
+        @apply mt-2 text-sm text-gray-500 dark:text-gray-400;
+    }
+}
+
 /* Grid cell state classes — toggled by JS, defined outside @layer to override utilities */
 .grid-cell.is-empty {
     background: #ffffff;
@@ -61,4 +463,8 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
+}
+
+.grid-drag-image {
+    pointer-events: none;
 }

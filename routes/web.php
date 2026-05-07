@@ -8,6 +8,28 @@ use App\Http\Controllers\CityGridCellController;
 use App\Http\Controllers\EffectController;
 use App\Http\Controllers\PendingActionController;
 
+/*
+|--------------------------------------------------------------------------
+| Routes — structure and conventions
+|--------------------------------------------------------------------------
+|
+| Keep routes organized by responsibility and access level. Use the
+| following conventions when adding new routes:
+|
+| - Group routes by middleware (e.g. `auth`, `verified`, `role:`) and by
+|   purpose (admin, planner, effects expert, public, etc.).
+| - Add a short comment header for each group describing its intent.
+| - Use named routes when the route is referenced from views/controllers
+|   (->name('...')).
+| - Prefer controller methods for complex behavior. Use RESTful
+|   conventions where appropriate (index, show, store, update, destroy).
+| - Keep one-line comments for specific feature references (e.g. SIM.2,
+|   EFF.1) so feature traceability is easy.
+| - Put public or unauthenticated routes near the top, then role-based
+|   groups, then `require __DIR__.'/auth.php'` at the end for auth helpers.
+|
+*/
+
 // Public landing page
 Route::get('/', function () {
     return view('welcome', [
