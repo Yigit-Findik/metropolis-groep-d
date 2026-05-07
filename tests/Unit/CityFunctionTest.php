@@ -6,8 +6,8 @@ use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
-// 1: create a city function with all qol scores
-test('can create city function with all QoL scores', function () {
+// 1: create a city function with all category scores
+test('can create city function with all category scores', function () {
     $function = CityFunction::create([
         'name'                => 'Hospital',
         'category'            => 'Facilities',

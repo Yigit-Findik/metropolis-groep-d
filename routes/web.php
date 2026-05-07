@@ -5,6 +5,7 @@ use App\Http\Controllers\CityFunctionController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CityGridCellController;
+use App\Http\Controllers\EffectController;
 
 // Public landing page
 Route::get('/', function () {
