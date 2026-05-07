@@ -20,4 +20,9 @@ class CityFunction extends Model
         'image_path',
         'description',
     ];
+
+    public function functionConditions()
+    {
+        return $this->hasMany(FunctionCondition::class, 'city_function_id');
+    }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CityGridCellController;
 use App\Http\Controllers\EffectController;
+use App\Http\Controllers\FunctionConditionController;
 
 // Public landing page
 Route::get('/', function () {
@@ -39,6 +40,10 @@ Route::middleware(['auth', 'verified', 'role:Administrator'])->group(function ()
     Route::post('/city_functions', [CityFunctionController::class, 'store']);
     Route::put('/city_functions/{id}', [CityFunctionController::class, 'update']);
     Route::delete('/city_functions/{id}', [CityFunctionController::class, 'destroy']);
+
+    Route::post('/city_functions/{id}/conditions', [FunctionConditionController::class, 'store']);
+    Route::put('/city_functions/{id}/conditions/{condition}', [FunctionConditionController::class, 'update']);
+    Route::delete('/city_functions/{id}/conditions/{condition}', [FunctionConditionController::class, 'destroy']);
 });
 
 // Profile management — auth only, no role restriction so all users can manage their own account
