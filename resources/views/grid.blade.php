@@ -22,10 +22,10 @@
 
                     {{-- Category scores --}}
                     <div class="flex flex-wrap gap-x-6 gap-y-3">
-                        @foreach(['Safety', 'Recreation', 'Environment Quality', 'Facilities', 'Mobility'] as $cat)
+                        @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
                             <div>
-                                <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{{ $cat }}</p>
-                                <p class="text-white text-xl font-semibold mt-0.5" id="qol-{{ str_replace(' ', '-', $cat) }}">—</p>
+                                <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{{ $label }}</p>
+                                <p class="text-white text-xl font-semibold mt-0.5" id="qol-{{ $slug }}">—</p>
                             </div>
                         @endforeach
                     </div>

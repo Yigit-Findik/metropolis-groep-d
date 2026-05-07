@@ -9,32 +9,32 @@ uses(TestCase::class, RefreshDatabase::class);
 // 1: create a city function with all category scores
 test('can create city function with all category scores', function () {
     $function = CityFunction::create([
-        'name' => 'Police Station',
-        'category' => 'Safety',
-        'Safety' => 5,
-        'Recreation' => 1,
-        'Environment Quality' => 0,
-        'Facilities' => 1,
-        'Mobility' => 2,
-        'image_path' => 'police_station.png',
+        'name'                => 'Hospital',
+        'category'            => 'Facilities',
+        'Safety'              => 10,
+        'Recreation'          => 5,
+        'Environment Quality' => 3,
+        'Facilities'          => 4,
+        'Mobility'            => 8,
+        'image_path'          => 'hospital.jpg',
     ]);
 
-    expect($function->name)->toBe('Police Station');
-    expect($function->Safety)->toBe(5);
+    expect($function->name)->toBe('Hospital');
+    expect($function->{'Safety'})->toBe(10);
 });
 
 // 2: verify function has all required fields stored correctly
 test('city function has all required fields stored', function () {
     $function = CityFunction::create([
-        'name' => 'Park',
-        'category' => 'Recreation',
-        'Safety' => -2,
-        'Recreation' => 5,
-        'Environment Quality' => 4,
-        'Facilities' => 0,
-        'Mobility' => 1,
-        'image_path' => 'park.png',
-        'description' => 'A public green space for recreation.',
+        'name'                => 'School',
+        'category'            => 'Facilities',
+        'Safety'              => 2,
+        'Recreation'          => 4,
+        'Environment Quality' => 5,
+        'Facilities'          => 3,
+        'Mobility'            => 6,
+        'image_path'          => 'school.jpg',
+        'description'         => 'Primary school',
     ]);
 
     expect($function)->toHaveKeys(['id', 'name', 'category', 'Safety', 'Recreation', 'Environment Quality', 'Facilities', 'Mobility']);

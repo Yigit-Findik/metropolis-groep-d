@@ -13,7 +13,6 @@ class CityFunction extends Model
     protected $fillable = [
         'name',
         'category',
-        'qol_score',
         'Safety',
         'Recreation',
         'Environment Quality',

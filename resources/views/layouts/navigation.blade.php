@@ -20,6 +20,11 @@
                             {{ __('Grid') }}
                         </x-nav-link>
                     @endif
+                    @if(Auth::user()->role?->name === 'Administrator')
+                        <x-nav-link :href="route('city_functions')" :active="request()->routeIs('city_functions')">
+                            {{ __('City Functions') }}
+                        </x-nav-link>
+                    @endif
                     @if(in_array(Auth::user()->role?->name, ['Administrator', 'Expert in effects'], true))
                         <x-nav-link :href="route('effects.index')" :active="request()->routeIs('effects.index')">
                             {{ __('Effects') }}
@@ -86,6 +91,11 @@
             @if(in_array(Auth::user()->role?->name, ['Administrator', 'City planner'], true))
                 <x-responsive-nav-link :href="route('grid')" :active="request()->routeIs('grid')">
                     {{ __('Grid') }}
+                </x-responsive-nav-link>
+            @endif
+            @if(Auth::user()->role?->name === 'Administrator')
+                <x-responsive-nav-link :href="route('city_functions')" :active="request()->routeIs('city_functions')">
+                    {{ __('City Functions') }}
                 </x-responsive-nav-link>
             @endif
             @if(in_array(Auth::user()->role?->name, ['Administrator', 'Expert in effects'], true))
