@@ -28,6 +28,13 @@ const showToast = (functionName, qolScore) => {
 };
 
 const refreshQolScore = () => {
+
+    //Show loading state
+    const total = document.getElementById("qol-score-value");
+    if (total) {
+        total.textContent = "Calculating...";
+    }
+
     fetch("/grid/qol-score")
         .then((r) => r.json())
         .then((data) => {
@@ -245,6 +252,10 @@ const initializeCityGrid = () => {
                     return response.json();
                 })
                 .then((data) => {
+
+                    const functionName = cellElement.dataset.function ?? "Function";
+                    const oldQolScore = parseInt(cellElement.dataset.qolScore ?? "0", 10);
+
                     // Success! Now clear the cell visually
                     // Clear the cell's inner HTML to remove the image and label
                     cellElement.innerHTML = "";
@@ -258,6 +269,9 @@ const initializeCityGrid = () => {
                     cellElement.dataset.functionId = "";
 
                     refreshQolScore();
+
+                    // Show toast with negative score for removal
+                    showToast(functionName, -oldQolScore);
                 })
                 .catch((error) => {
                     console.error("Error removing function:", error);
