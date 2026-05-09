@@ -3,13 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CityFunction extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'name',
         'category',
-        'qol_score',
         'Safety',
         'Recreation',
         'Environment Quality',

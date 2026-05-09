@@ -39,6 +39,13 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::get('/effects', [EffectController::class, 'index'])->name('effects.index');
     Route::post('/effects/{functionId}', [EffectController::class, 'update'])->name('effects.update');
 });
+// BES.2 - City functions management
+Route::middleware(['auth', 'verified', 'role:Administrator'])->group(function () {
+    Route::get('/city_functions', [CityFunctionController::class, 'index'])->name('city_functions');
+    Route::post('/city_functions', [CityFunctionController::class, 'store']);
+    Route::put('/city_functions/{id}', [CityFunctionController::class, 'update']);
+    Route::delete('/city_functions/{id}', [CityFunctionController::class, 'destroy']);
+});
 
 // Profile management — auth only, no role restriction so all users can manage their own account
 Route::middleware('auth')->group(function () {
