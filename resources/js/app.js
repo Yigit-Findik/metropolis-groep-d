@@ -62,6 +62,12 @@ const initializeCityGrid = () => {
             e.dataTransfer.setData("function_id", card.dataset.functionId);
             e.dataTransfer.setData("image", card.dataset.image);
             e.dataTransfer.setData("qol_score", card.dataset.qolScore);
+            // Also include per-category effect values so the cell can show them after drop
+            e.dataTransfer.setData("safety", card.dataset.safety ?? 0);
+            e.dataTransfer.setData("recreation", card.dataset.recreation ?? 0);
+            e.dataTransfer.setData("environmentQuality", card.dataset.environmentQuality ?? card.dataset['environment-quality'] ?? 0);
+            e.dataTransfer.setData("facilities", card.dataset.facilities ?? 0);
+            e.dataTransfer.setData("mobility", card.dataset.mobility ?? 0);
 
             // Use the card's image as the drag ghost
             const img = card.querySelector("img");
@@ -113,6 +119,11 @@ const initializeCityGrid = () => {
             const functionId = e.dataTransfer.getData("function_id");
             const image = e.dataTransfer.getData("image");
             const qolScore = parseInt(e.dataTransfer.getData("qol_score"), 10);
+            const safety = e.dataTransfer.getData("safety") ?? 0;
+            const recreation = e.dataTransfer.getData("recreation") ?? 0;
+            const environmentQuality = e.dataTransfer.getData("environmentQuality") ?? e.dataTransfer.getData("environment-quality") ?? 0;
+            const facilities = e.dataTransfer.getData("facilities") ?? 0;
+            const mobility = e.dataTransfer.getData("mobility") ?? 0;
             const cellId = cell.dataset.cellId;
 
             // Clear whatever was in the cell before and remove the highlight
@@ -144,6 +155,13 @@ const initializeCityGrid = () => {
             cell.classList.add("is-occupied");
             cell.dataset.function = functionName;
             cell.dataset.functionId = functionId;
+            // Store individual effect values on the cell so the hover popup can read them
+            cell.dataset.safety = safety;
+            cell.dataset.recreation = recreation;
+            // DOM dataset maps data-environment-quality to environmentQuality
+            cell.dataset.environmentQuality = environmentQuality;
+            cell.dataset.facilities = facilities;
+            cell.dataset.mobility = mobility;
 
             // Send the assignment to the server so it is saved in the database
             const csrfToken = document
@@ -275,6 +293,11 @@ const initializeCityGrid = () => {
                     // Clear the data attributes
                     cellElement.dataset.function = "";
                     cellElement.dataset.functionId = "";
+                    cellElement.dataset.safety = "";
+                    cellElement.dataset.recreation = "";
+                    cellElement.dataset.environmentQuality = "";
+                    cellElement.dataset.facilities = "";
+                    cellElement.dataset.mobility = "";
 
                     refreshQolScore();
                 })
@@ -289,4 +312,92 @@ const initializeCityGrid = () => {
 document.addEventListener("DOMContentLoaded", () => {
     initializeCityGrid();
     refreshQolScore();
+});
+
+// Hover popup: show small effect badges when hovering any element with `data-function`
+const createHoverPopup = () => {
+    let popup = document.getElementById("function-hover-popup");
+    if (popup) return popup;
+
+    popup = document.createElement("div");
+    popup.id = "function-hover-popup";
+    popup.style.position = "fixed";
+    popup.style.pointerEvents = "none";
+    popup.style.zIndex = "9999";
+    popup.className = "hidden bg-white dark:bg-gray-800 text-xs rounded-md shadow-lg p-2 text-gray-900 dark:text-gray-100";
+    document.body.appendChild(popup);
+    return popup;
+};
+
+const formatBadge = (value) => {
+    const n = parseInt(value || 0, 10);
+    const sign = n > 0 ? `+${n}` : `${n}`;
+    const bg = n > 0 ? 'bg-green-500 text-white' : n < 0 ? 'bg-red-500 text-white' : 'bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-100';
+    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] ${bg}">${sign}</span>`;
+};
+
+    const setupHoverPopup = () => {
+    const popup = createHoverPopup();
+
+    const buildHtml = (el) => {
+        const ds = el.dataset || {};
+        const name = ds.function || '';
+        const parts = [];
+        parts.push(`<div class="font-semibold mb-1 text-xs">${name}</div>`);
+
+        const mapping = [
+            ['safety', 'Saf'],
+            ['recreation', 'Rec'],
+            ['environmentQuality', 'EnQ'],
+            ['facilities', 'Fac'],
+            ['mobility', 'Mob'],
+        ];
+
+        const badges = mapping.map(([key, label]) => {
+            const val = ds[key] ?? 0;
+            const b = formatBadge(val);
+            return `<div class="flex items-center gap-2"><div class="w-8 text-[10px] text-gray-500 dark:text-gray-400">${label}</div>${b}</div>`;
+        }).join('');
+
+        parts.push(`<div class="grid gap-1">${badges}</div>`);
+        return parts.join('');
+    };
+
+    let visible = false;
+
+    const show = (el, e) => {
+        // Only show for occupied grid cells (cells have a non-empty `data-function`)
+        if (!el.dataset || !el.dataset.function || el.dataset.function === '') return;
+
+        popup.innerHTML = buildHtml(el);
+        popup.classList.remove('hidden');
+        visible = true;
+        move(e);
+    };
+
+    const hide = () => {
+        popup.classList.add('hidden');
+        visible = false;
+    };
+
+    const move = (e) => {
+        if (!visible) return;
+        const x = e.clientX + 12;
+        const y = e.clientY + 12;
+        popup.style.left = `${x}px`;
+        popup.style.top = `${y}px`;
+    };
+
+    // Attach listeners only to grid cells, not to library cards
+    const elements = Array.from(document.querySelectorAll('[data-grid-cell]'));
+    elements.forEach((el) => {
+        el.addEventListener('mouseenter', (e) => show(el, e));
+        el.addEventListener('mousemove', (e) => move(e));
+        el.addEventListener('mouseleave', () => hide());
+    });
+};
+
+// Initialize hover popup after DOM is ready and grid initialized
+document.addEventListener('DOMContentLoaded', () => {
+    setupHoverPopup();
 });

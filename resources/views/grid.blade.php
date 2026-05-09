@@ -94,6 +94,11 @@
                                         data-column="{{ $cell->column_index }}"
                                         data-function="{{ $fn?->name ?? '' }}"
                                         data-function-id="{{ $cell->function_id ?? '' }}"
+                                        data-safety="{{ $fn?->Safety ?? 0 }}"
+                                        data-recreation="{{ $fn?->Recreation ?? 0 }}"
+                                        data-environment-quality="{{ $fn?->{'Environment Quality'} ?? 0 }}"
+                                        data-facilities="{{ $fn?->Facilities ?? 0 }}"
+                                        data-mobility="{{ $fn?->Mobility ?? 0 }}"
                                         aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_id) ? ', occupied' : ', available' }}"
                                     >
                                         @if($fn?->image_path)
@@ -160,7 +165,12 @@
                                     data-function="{{ $cityFunction->name }}"
                                     data-function-id="{{ $cityFunction->id }}"
                                     data-image="{{ $cityFunction->image_path }}"
-                                    data-qol-score="{{ ($cityFunction->Safety ?? 0) + ($cityFunction->Recreation ?? 0) + ($cityFunction->{'Environment Quality'} ?? 0) + ($cityFunction->Facilities ?? 0) + ($cityFunction->Mobility ?? 0) }}">
+                                    data-qol-score="{{ ($cityFunction->Safety ?? 0) + ($cityFunction->Recreation ?? 0) + ($cityFunction->{'Environment Quality'} ?? 0) + ($cityFunction->Facilities ?? 0) + ($cityFunction->Mobility ?? 0) }}"
+                                    data-safety="{{ $cityFunction->Safety ?? 0 }}"
+                                    data-recreation="{{ $cityFunction->Recreation ?? 0 }}"
+                                    data-environment-quality="{{ $cityFunction->{'Environment Quality'} ?? 0 }}"
+                                    data-facilities="{{ $cityFunction->Facilities ?? 0 }}"
+                                    data-mobility="{{ $cityFunction->Mobility ?? 0 }}">
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
                                              alt="{{ $cityFunction->name }}"
