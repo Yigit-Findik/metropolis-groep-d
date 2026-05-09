@@ -33,6 +33,11 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::delete('/grid/{id}/remove', [CityGridCellController::class, 'removeFunction']);
 
 });
+
+// EFF.1 - Effect management table
+Route::get('/effects', [EffectController::class, 'index'])->name('effects.index');
+Route::post('/effects/{functionId}', [EffectController::class, 'update'])->name('effects.update');
+
 // BES.2 - City functions management
 Route::middleware(['auth', 'verified', 'role:Administrator'])->group(function () {
     Route::get('/city_functions', [CityFunctionController::class, 'index'])->name('city_functions');
