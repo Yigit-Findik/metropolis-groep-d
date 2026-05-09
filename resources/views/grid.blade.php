@@ -1,8 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Grid') }}
-        </h2>
+        <div class="flex justify-between items-center w-full">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                {{ __('Grid') }}
+            </h2>
+            <button id="undo-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm">Undo Last Action</button>
+        </div>
     </x-slot>
 
     <div class="py-12">

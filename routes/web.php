@@ -32,6 +32,9 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     // SIM.3 - Remove a function from a cell
     Route::delete('/grid/{id}/remove', [CityGridCellController::class, 'removeFunction']);
 
+    // SIM.5 - Undo a function from a cell
+    Route::post('/grid/undo', [CityGridCellController::class, 'undo']);
+
     // EFF.1 - Effect management table
     Route::get('/effects', [EffectController::class, 'index'])->name('effects.index');
     Route::post('/effects/{functionId}', [EffectController::class, 'update'])->name('effects.update');
