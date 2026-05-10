@@ -18,6 +18,9 @@
                     <x-nav-link :href="route('grid')" :active="request()->routeIs('grid')">
                         {{ __('Grid') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('effects.index')" :active="request()->routeIs('effects.index')">
+                        {{ __('Effects') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('city_functions')" :active="request()->routeIs('city_functions')">
                         {{ __('City Functions') }}
                     </x-nav-link>
@@ -78,6 +81,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('grid')" :active="request()->routeIs('grid')">
                         {{ __('Grid') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('effects.index')" :active="request()->routeIs('effects.index')">
+                {{ __('Effects') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('city_functions')" :active="request()->routeIs('city_functions')">
                 {{ __('City Functions') }}
