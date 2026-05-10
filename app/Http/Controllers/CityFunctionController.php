@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewFunctionAdded;
 use App\Models\CityFunction;
 use Illuminate\Http\Request;
 
@@ -37,7 +38,7 @@ class CityFunctionController extends Controller
             $imagePath = 'images/city_functions/' . $filename;
         }
 
-        CityFunction::create([
+        $cityFunction = CityFunction::create([
             'name'                => $request->name,
             'category'            => $request->category,
             'description'         => $request->description,
@@ -48,6 +49,8 @@ class CityFunctionController extends Controller
             'Facilities'          => $request->facilities ?? 0,
             'Mobility'            => $request->mobility ?? 0,
         ]);
+
+        NewFunctionAdded::dispatch($cityFunction);
 
         return redirect()->route('city_functions')->with('success', 'City function created.');
     }
