@@ -14,8 +14,9 @@ class SendNewFunctionNotification implements ShouldQueue
     {
         $experts = User::whereHas('role', fn ($q) => $q->where('name', 'Expert in effects'))->get();
 
-        foreach ($experts as $expert) {
-            Mail::to($expert->email)->send(new NewFunctionAddedMail($event->cityFunction));
+        foreach ($experts as $index => $expert) {
+            Mail::to($expert->email)
+                ->later(now()->addSeconds($index), new NewFunctionAddedMail($event->cityFunction));
         }
     }
 }
