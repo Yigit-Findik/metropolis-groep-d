@@ -1,3 +1,5 @@
+{{-- EFF.2 Email sent to every "Expert in effects" user when an admin adds a new city function.
+     The $cityFunction variable is passed in automatically by NewFunctionAddedMail (public property). --}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +11,7 @@
     <h2>New City Function Added</h2>
     <p>A new function has been added to the system and the effects table may need updating.</p>
 
+    {{-- Display the key details of the new function so the expert knows what to update. --}}
     <table style="border-collapse: collapse; width: 100%; margin: 16px 0;">
         <tr>
             <th style="text-align: left; padding: 8px; background: #f4f4f4; border: 1px solid #ddd;">Name</th>
@@ -20,6 +23,7 @@
         </tr>
     </table>
 
+    {{-- Direct link to the effects table so the expert can act immediately. --}}
     <p>
         Please update the effects table to keep the simulation accurate:<br>
         <a href="{{ url('/effects') }}" style="color: #1a73e8;">Go to Effects Table</a>

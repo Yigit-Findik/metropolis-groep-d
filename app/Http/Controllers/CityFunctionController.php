@@ -50,6 +50,8 @@ class CityFunctionController extends Controller
             'Mobility'            => $request->mobility ?? 0,
         ]);
 
+        // EFF.2 Fire the event so effects experts are notified asynchronously.
+        // The listener runs on the queue, so this line does not delay the redirect.
         NewFunctionAdded::dispatch($cityFunction);
 
         return redirect()->route('city_functions')->with('success', 'City function created.');
