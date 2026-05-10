@@ -329,6 +329,51 @@ const createHoverPopup = () => {
     return popup;
 };
 
+const HOVER_HIGHLIGHT_CLASSES = [
+    "ring-4",
+    "ring-amber-400",
+    "bg-amber-50",
+    "dark:bg-amber-400/10",
+];
+
+const NEIGHBOR_HIGHLIGHT_CLASSES = [
+    "ring-2",
+    "ring-amber-300",
+    "bg-amber-50/70",
+    "dark:bg-amber-400/5",
+];
+
+const clearHoverHighlights = (cells) => {
+    cells.forEach((cell) => {
+        cell.classList.remove(...HOVER_HIGHLIGHT_CLASSES, ...NEIGHBOR_HIGHLIGHT_CLASSES);
+    });
+};
+
+const getOrthogonalNeighbors = (cells, sourceCell) => {
+    const row = Number.parseInt(sourceCell.dataset.row || "", 10);
+    const column = Number.parseInt(sourceCell.dataset.column || "", 10);
+
+    if (Number.isNaN(row) || Number.isNaN(column)) {
+        return [];
+    }
+
+    return cells.filter((cell) => {
+        if (cell === sourceCell) return false;
+
+        if (!cell.dataset || !cell.dataset.function || cell.dataset.function === '') {
+            return false;
+        }
+
+        const cellRow = Number.parseInt(cell.dataset.row || "", 10);
+        const cellColumn = Number.parseInt(cell.dataset.column || "", 10);
+
+        return (
+            (cellRow === row && Math.abs(cellColumn - column) === 1) ||
+            (cellColumn === column && Math.abs(cellRow - row) === 1)
+        );
+    });
+};
+
 const formatBadge = (value) => {
     const n = parseInt(value || 0, 10);
     const sign = n > 0 ? `+${n}` : `${n}`;
@@ -336,8 +381,9 @@ const formatBadge = (value) => {
     return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] ${bg}">${sign}</span>`;
 };
 
-    const setupHoverPopup = () => {
+const setupHoverPopup = () => {
     const popup = createHoverPopup();
+    const cells = Array.from(document.querySelectorAll('[data-grid-cell]'));
 
     const buildHtml = (el) => {
         const ds = el.dataset || {};
@@ -369,6 +415,14 @@ const formatBadge = (value) => {
         // Only show for occupied grid cells (cells have a non-empty `data-function`)
         if (!el.dataset || !el.dataset.function || el.dataset.function === '') return;
 
+        clearHoverHighlights(cells);
+        el.classList.add(...HOVER_HIGHLIGHT_CLASSES);
+
+        const neighbors = getOrthogonalNeighbors(cells, el);
+        neighbors.forEach((neighbor) => {
+            neighbor.classList.add(...NEIGHBOR_HIGHLIGHT_CLASSES);
+        });
+
         popup.innerHTML = buildHtml(el);
         popup.classList.remove('hidden');
         visible = true;
@@ -376,6 +430,7 @@ const formatBadge = (value) => {
     };
 
     const hide = () => {
+        clearHoverHighlights(cells);
         popup.classList.add('hidden');
         visible = false;
     };
