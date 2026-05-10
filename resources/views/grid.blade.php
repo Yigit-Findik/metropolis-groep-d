@@ -94,6 +94,7 @@
                                         data-column="{{ $cell->column_index }}"
                                         data-function="{{ $fn?->name ?? '' }}"
                                         data-function-id="{{ $cell->function_id ?? '' }}"
+                                        data-conditions="{{ $fn ? $fn->functionConditions->toJson() : '[]' }}"
                                         aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_id) ? ', occupied' : ', available' }}"
                                     >
                                         @if($fn?->image_path)
@@ -160,6 +161,7 @@
                                     data-function="{{ $cityFunction->name }}"
                                     data-function-id="{{ $cityFunction->id }}"
                                     data-image="{{ $cityFunction->image_path }}"
+                                    data-conditions="{{ $cityFunction->functionConditions->toJson() }}"
                                     data-qol-score="{{ ($cityFunction->Safety ?? 0) + ($cityFunction->Recreation ?? 0) + ($cityFunction->{'Environment Quality'} ?? 0) + ($cityFunction->Facilities ?? 0) + ($cityFunction->Mobility ?? 0) }}">
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
@@ -182,5 +184,119 @@
     <div id="qol-toast"
          class="fixed bottom-6 right-6 z-50 hidden px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all duration-300">
     </div>
+
+    <style>
+        .grid-cell.blocked-forbidden {
+            background-color: #ef4444 !important; /* red-500 */
+            border: 2px solid #dc2626; /* red-600 */
+        }
+        .grid-cell.blocked-required {
+            background-color: #f97316 !important; /* orange-500 */
+            border: 2px solid #ea580c; /* orange-600 */
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const gridCells = document.querySelectorAll('[data-grid-cell]');
+            const functionCards = document.querySelectorAll('[data-function-id]');
+
+            let highlightedCells = [];
+
+            function clearHighlights() {
+                highlightedCells.forEach(cell => {
+                    cell.classList.remove('blocked-forbidden', 'blocked-required');
+                });
+                highlightedCells = [];
+            }
+
+            function getNeighbors(row, col) {
+                const neighbors = [];
+                const directions = [
+                    [-1, 0], [1, 0], [0, -1], [0, 1] // up, down, left, right
+                ];
+                directions.forEach(([dr, dc]) => {
+                    const nr = row + dr;
+                    const nc = col + dc;
+                    if (nr >= 1 && nr <= 3 && nc >= 1 && nc <= 4) {
+                        neighbors.push({ row: nr, col: nc });
+                    }
+                });
+                return neighbors;
+            }
+
+            function highlightViolations(functionId, conditions) {
+                clearHighlights();
+                gridCells.forEach(cell => {
+                    const cellRow = parseInt(cell.dataset.row);
+                    const cellCol = parseInt(cell.dataset.column);
+                    const cellFunctionId = cell.dataset.functionId;
+
+                    // Only check empty cells
+                    if (cellFunctionId) return;
+
+                    const neighbors = getNeighbors(cellRow, cellCol);
+                    let hasForbidden = false;
+                    let missingRequired = false;
+
+                    // Check conditions of the function being hovered
+                    conditions.forEach(condition => {
+                        if (condition.type === 'forbidden') {
+                            neighbors.forEach(neigh => {
+                                const neighCell = document.querySelector(`[data-row="${neigh.row}"][data-column="${neigh.col}"]`);
+                                if (neighCell && neighCell.dataset.functionId == condition.target_function_id) {
+                                    hasForbidden = true;
+                                }
+                            });
+                        } else if (condition.type === 'required') {
+                            let found = false;
+                            neighbors.forEach(neigh => {
+                                const neighCell = document.querySelector(`[data-row="${neigh.row}"][data-column="${neigh.col}"]`);
+                                if (neighCell && neighCell.dataset.functionId == condition.target_function_id) {
+                                    found = true;
+                                }
+                            });
+                            if (!found) {
+                                missingRequired = true;
+                            }
+                        }
+                    });
+
+                    // Also check if any neighbor forbids this function
+                    neighbors.forEach(neigh => {
+                        const neighCell = document.querySelector(`[data-row="${neigh.row}"][data-column="${neigh.col}"]`);
+                        if (neighCell && neighCell.dataset.functionId) {
+                            const neighConditions = JSON.parse(neighCell.dataset.conditions || '[]');
+                            neighConditions.forEach(condition => {
+                                if (condition.type === 'forbidden' && condition.target_function_id == functionId) {
+                                    hasForbidden = true;
+                                }
+                            });
+                        }
+                    });
+
+                    if (hasForbidden) {
+                        cell.classList.add('blocked-forbidden');
+                        highlightedCells.push(cell);
+                    } else if (missingRequired) {
+                        cell.classList.add('blocked-required');
+                        highlightedCells.push(cell);
+                    }
+                });
+            }
+
+            functionCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    const functionId = this.dataset.functionId;
+                    const conditions = JSON.parse(this.dataset.conditions || '[]');
+                    highlightViolations(functionId, conditions);
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    clearHighlights();
+                });
+            });
+        });
+    </script>
 
 </x-app-layout>

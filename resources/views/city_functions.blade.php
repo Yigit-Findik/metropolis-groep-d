@@ -14,9 +14,87 @@
         open: false,
         editOpen: false,
         editing: {},
+        backendErrors: {},
+        newConditionTarget: null,
+        newConditionType: 'required',
+        isSubmitting: false,
+        availableFunctions: @js($cityFunctions->map(function ($fn) {
+            return ['id' => $fn->id, 'name' => $fn->name];
+        })),
         openEdit(fn) {
-            this.editing = fn;
+            fn.conditions = fn.conditions || [];
+            this.editing = JSON.parse(JSON.stringify(fn));
+            this.editing.newConditionTarget = null;
+            this.editing.newConditionType = 'required';
+            this.backendErrors = {};
+            this.isSubmitting = false;
             this.editOpen = true;
+        },
+        addCondition() {
+            if (!this.editing.newConditionTarget || !this.editing.newConditionType) {
+                return;
+            }
+            this.backendErrors = {};
+
+            const exists = this.editing.conditions.some(c => c.target_function_id === this.editing.newConditionTarget);
+            if (exists) {
+                return;
+            }
+
+            this.editing.conditions.push({
+                id: null,
+                target_function_id: this.editing.newConditionTarget,
+                type: this.editing.newConditionType,
+            });
+            this.editing.newConditionTarget = null;
+            this.editing.newConditionType = 'required';
+        },
+        removeCondition(index) {
+            this.editing.conditions.splice(index, 1);
+        },
+        async submitEditForm(event) {
+            event.preventDefault();
+            if (this.isSubmitting) return; // Prevent double-submission
+            
+            this.isSubmitting = true;
+            this.backendErrors = {};
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    this.editOpen = false;
+                    // Small delay to ensure modal closes before reload
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 100);
+                    return;
+                }
+
+                if (response.status === 422) {
+                    const data = await response.json();
+                    this.backendErrors = data.errors || { message: data.message };
+                    this.isSubmitting = false;
+                    return;
+                }
+
+                const fallback = await response.text();
+                this.backendErrors = { message: 'Unable to save changes.' };
+                this.isSubmitting = false;
+                console.error('Unexpected response', response.status, fallback);
+            } catch (error) {
+                this.backendErrors = { message: 'Network error: ' + error.message };
+                this.isSubmitting = false;
+                console.error('Form submission error:', error);
+            }
         }
     }">
         <div class="px-4 sm:px-6 lg:px-8 flex flex-col items-center gap-4">
@@ -87,12 +165,14 @@
                                                         name: @js($fn->name),
                                                         category: @js($fn->category),
                                                         description: @js($fn->description ?? ''),
-                                                        safety: {{ $fn->Safety ?? 0 }},
-                                                        recreation: {{ $fn->Recreation ?? 0 }},
-                                                        environment_quality: {{ $fn->{'Environment Quality'} ?? 0 }},
-                                                        facilities: {{ $fn->Facilities ?? 0 }},
-                                                        mobility: {{ $fn->Mobility ?? 0 }},
-                                                        image_path: @js($fn->image_path ?? '')
+                                                        image_path: @js($fn->image_path ?? ''),
+                                                        conditions: @js($fn->functionConditions->map(function ($condition) {
+                                                            return [
+                                                                'id' => $condition->id,
+                                                                'target_function_id' => $condition->target_function_id,
+                                                                'type' => $condition->type,
+                                                            ];
+                                                        }))
                                                     })"
                                                     class="px-3 py-1 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-semibold rounded-lg transition">
                                                 Edit
@@ -232,39 +312,34 @@
                 <h3 class="text-lg font-bold text-white mb-6">Edit City Function</h3>
 
                 {{-- PUT request via method spoofing — HTML forms only support GET/POST --}}
-                <form method="POST" :action="'/city_functions/' + editing.id" enctype="multipart/form-data" class="[color-scheme:dark]">
+                <form method="POST" :action="'/city_functions/' + editing.id" enctype="multipart/form-data" class="[color-scheme:dark]" @submit.prevent="submitEditForm($event)">
                     @csrf
                     @method('PUT')
 
-                    {{-- Image: shows the current image if one exists; leave the file input empty to keep it --}}
+                    {{-- Image: shows the current image if one exists --}}
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-300 mb-1">Image</label>
                         <template x-if="editing.image_path">
                             <img :src="'/' + editing.image_path" class="w-12 h-12 object-contain rounded mb-2">
                         </template>
-                        <input type="file" name="image" accept="image/*"
-                               class="w-full text-sm text-white bg-gray-700 rounded-lg border border-gray-600 px-3 py-2
-                                      file:mr-3 file:py-1 file:px-3 file:rounded file:border-0
-                                      file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
-                        <p class="text-xs text-gray-400 mt-1">Leave empty to keep the current image.</p>
+                        <template x-if="!editing.image_path">
+                            <p class="text-xs text-gray-400">No image</p>
+                        </template>
                     </div>
 
                     {{-- Name pre-filled via x-model --}}
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Name <span class="text-red-400">*</span></label>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Name</label>
                         <input type="text" name="name" required x-model="editing.name"
                                class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
 
                     {{-- Category pre-selected via x-model --}}
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Category <span class="text-red-400">*</span></label>
-                        <select name="category" required x-model="editing.category"
-                                class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            @foreach($categories as $cat)
-                                <option value="{{ $cat }}">{{ $cat }}</option>
-                            @endforeach
-                        </select>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Category</label>
+                        <input type="text" x-model="editing.category" readonly
+                               class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-not-allowed">
+                        <input type="hidden" name="category" :value="editing.category">
                     </div>
 
                     {{-- Description pre-filled via x-model --}}
@@ -274,48 +349,103 @@
                                   class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
                     </div>
 
-                    {{-- QoL values: always visible in the edit form so the admin can update them at any time.
-                         Each field is pre-filled with the function's stored score via x-model. --}}
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-300 mb-2">QoL Values</label>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="flex items-center justify-between mb-3">
                             <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Safety</label>
-                                <input type="number" name="safety" min="0" x-model="editing.safety"
-                                       class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <p class="text-sm font-medium text-gray-300">Adjacency Rules</p>
+                                <p class="text-xs text-gray-500">Add required or forbidden neighbors for this function.</p>
+                            </div>
+                            <button type="button" @click="addCondition()"
+                                    class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition">
+                                Add Rule
+                            </button>
+                        </div>
+                        <template x-if="backendErrors.target_function_id">
+                            <div class="text-sm text-red-400 mb-3" x-text="Array.isArray(backendErrors.target_function_id) ? backendErrors.target_function_id[0] : backendErrors.target_function_id"></div>
+                        </template>
+                        <template x-if="backendErrors.message && !backendErrors.target_function_id">
+                            <div class="text-sm text-red-400 mb-3" x-text="backendErrors.message"></div>
+                        </template>
+
+                        <div class="grid grid-cols-1 gap-3">
+                            <template x-for="(condition, index) in editing.conditions" :key="index">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:gap-3 bg-gray-700 rounded-xl border border-gray-600 p-3">
+                                    <div class="flex-1 grid gap-3 sm:grid-cols-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-400 mb-1">Target Function</label>
+                                            <select x-model.number="condition.target_function_id"
+                                                    class="!bg-gray-800 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                <option value="">Select target</option>
+                                                <template x-for="functionOption in availableFunctions.filter(f => f.id !== editing.id)" :key="functionOption.id">
+                                                    <option :value="functionOption.id" x-text="functionOption.name"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-400 mb-1">Type</label>
+                                            <select x-model="condition.type"
+                                                    class="!bg-gray-800 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                <option value="required">Required</option>
+                                                <option value="forbidden">Forbidden</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-3 sm:mt-0 sm:flex-none">
+                                        <button type="button" @click="removeCondition(index)"
+                                                class="px-3 py-2 bg-red-700 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition">
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template x-if="editing.conditions.length === 0">
+                                <div class="text-sm text-gray-400">No adjacency rules yet.</div>
+                            </template>
+                        </div>
+
+                        <template x-for="(condition, index) in editing.conditions" :key="index">
+                            <div class="hidden">
+                                <input type="hidden" :name="`conditions[${index}][target_function_id]`" :value="condition.target_function_id">
+                                <input type="hidden" :name="`conditions[${index}][type]`" :value="condition.type">
+                                <input type="hidden" :name="`conditions[${index}][id]`" :value="condition.id">
+                            </div>
+                        </template>
+
+                        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">New target</label>
+                                <select x-model.number="editing.newConditionTarget"
+                                        class="!bg-gray-800 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select target</option>
+                                    <template x-for="functionOption in availableFunctions.filter(f => f.id !== editing.id)" :key="functionOption.id">
+                                        <option :value="functionOption.id" x-text="functionOption.name"></option>
+                                    </template>
+                                </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Recreation</label>
-                                <input type="number" name="recreation" min="0" x-model="editing.recreation"
-                                       class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Environment Quality</label>
-                                <input type="number" name="environment_quality" min="0" x-model="editing.environment_quality"
-                                       class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Facilities</label>
-                                <input type="number" name="facilities" min="0" x-model="editing.facilities"
-                                       class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Mobility</label>
-                                <input type="number" name="mobility" min="0" x-model="editing.mobility"
-                                       class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Rule type</label>
+                                <select x-model="editing.newConditionType"
+                                        class="!bg-gray-800 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="required">Required</option>
+                                    <option value="forbidden">Forbidden</option>
+                                </select>
                             </div>
                         </div>
                     </div>
 
                     {{-- Form actions: Cancel closes the modal without saving; Save Changes submits the PUT request --}}
                     <div class="flex justify-between mt-6">
-                        <button type="button" @click="editOpen = false"
-                                class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-semibold rounded-lg transition">
+                        <button type="button" @click="editOpen = false" :disabled="isSubmitting"
+                                class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
                             Cancel
                         </button>
-                        <button type="submit"
-                                class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 text-white text-sm font-semibold rounded-lg transition">
-                            Save Changes
+                        <button type="submit" :disabled="isSubmitting"
+                                class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 text-white text-sm font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                :class="{ 'opacity-50 cursor-not-allowed': isSubmitting }">
+                            <span x-show="!isSubmitting">Save Changes</span>
+                            <span x-show="isSubmitting">Saving...</span>
                         </button>
                     </div>
                 </form>

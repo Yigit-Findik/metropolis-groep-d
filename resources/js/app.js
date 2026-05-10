@@ -116,6 +116,10 @@ const initializeCityGrid = () => {
             const image = e.dataTransfer.getData("image");
             const qolScore = parseInt(e.dataTransfer.getData("qol_score"), 10);
             const cellId = cell.dataset.cellId;
+            
+            // Get conditions from the library card being dragged
+            const sourceCard = Array.from(cards).find(c => c.dataset.functionId === functionId);
+            const conditions = sourceCard ? JSON.parse(sourceCard.dataset.conditions || '[]') : [];
 
             // Clear whatever was in the cell before and remove the highlight
             cell.innerHTML = "";
@@ -146,6 +150,7 @@ const initializeCityGrid = () => {
             cell.classList.add("is-occupied");
             cell.dataset.function = functionName;
             cell.dataset.functionId = functionId;
+            cell.dataset.conditions = JSON.stringify(conditions);
 
             // Send the assignment to the server so it is saved in the database
             const csrfToken = document
@@ -159,11 +164,37 @@ const initializeCityGrid = () => {
                 },
                 body: JSON.stringify({ function_id: parseInt(functionId) }),
             })
-                .then(() => {
-                    refreshQolScore();
-                    showToast(functionName, qolScore);
+                .then((response) => {
+                    if (response.ok) {
+                        refreshQolScore();
+                        showToast(functionName, qolScore);
+                    } else if (response.status === 422) {
+                        return response.json().then((data) => {
+                            // Undo the placement
+                            cell.innerHTML = "";
+                            cell.classList.remove("is-occupied");
+                            cell.classList.add("is-empty");
+                            cell.dataset.function = "";
+                            cell.dataset.functionId = "";
+                            cell.dataset.conditions = "[]";
+                            
+                            // Show error message
+                            const errorMsg = data.errors?.[0] || data.message || "Placement blocked by adjacency conditions";
+                            alert("Cannot place here: " + errorMsg);
+                        });
+                    } else {
+                        alert("Failed to save — please refresh and try again.");
+                    }
                 })
-                .catch(() => {
+                .catch((error) => {
+                    // Undo the placement on error
+                    cell.innerHTML = "";
+                    cell.classList.remove("is-occupied");
+                    cell.classList.add("is-empty");
+                    cell.dataset.function = "";
+                    cell.dataset.functionId = "";
+                    cell.dataset.conditions = "[]";
+                    
                     alert("Failed to save — please refresh and try again.");
                 });
         });
@@ -277,6 +308,7 @@ const initializeCityGrid = () => {
                     // Clear the data attributes
                     cellElement.dataset.function = "";
                     cellElement.dataset.functionId = "";
+                    cellElement.dataset.conditions = "[]";
 
                     refreshQolScore();
                 })

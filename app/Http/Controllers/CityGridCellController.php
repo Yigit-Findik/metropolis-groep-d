@@ -14,7 +14,7 @@ class CityGridCellController extends Controller
         $cells = CityGridCell::ensureGridExists();
 
         // return response()->json($cells);
-        $cityFunctions = CityFunction::all();
+        $cityFunctions = CityFunction::with('functionConditions')->get();
         $categories = $cityFunctions->pluck('category')->unique()->filter()->values();
 
         return view('grid', [
@@ -55,6 +55,21 @@ class CityGridCellController extends Controller
         ]);
 
         $cell = CityGridCell::findOrFail($id);
+        $placedFunction = CityFunction::with('functionConditions')->findOrFail($request->function_id);
+        $neighborCells = $this->getAdjacentCells($cell);
+        $neighborFunctionIds = $neighborCells->pluck('function_id')->filter()->values()->all();
+
+        // Check if placed function violates its own rules
+        $errors = $this->validatePlacementConditions($placedFunction, $neighborFunctionIds);
+        if (! empty($errors)) {
+            return response()->json(['message' => 'Placement blocked by adjacency conditions', 'errors' => $errors], 422);
+        }
+
+        // Check if neighbors would have violated by this placement
+        $neighborErrors = $this->validateNeighborConditions($placedFunction, $neighborCells);
+        if (! empty($neighborErrors)) {
+            return response()->json(['message' => 'Placement blocked by neighbor adjacency conditions', 'errors' => $neighborErrors], 422);
+        }
 
         $cell->update([
             'function_id' => $request->function_id,
@@ -64,6 +79,69 @@ class CityGridCellController extends Controller
             'message' => 'Function assigned',
             'cell' => $cell
         ]);
+    }
+
+    private function getAdjacentCells(CityGridCell $cell)
+    {
+        $adjacentPositions = [
+            ['row' => $cell->row_index - 1, 'column' => $cell->column_index],
+            ['row' => $cell->row_index + 1, 'column' => $cell->column_index],
+            ['row' => $cell->row_index, 'column' => $cell->column_index - 1],
+            ['row' => $cell->row_index, 'column' => $cell->column_index + 1],
+        ];
+
+        $query = CityGridCell::query();
+
+        foreach ($adjacentPositions as $position) {
+            $query->orWhere(function ($query) use ($position) {
+                $query->where('row_index', $position['row'])
+                      ->where('column_index', $position['column']);
+            });
+        }
+
+        return $query->get();
+    }
+
+    private function validatePlacementConditions(CityFunction $function, array $neighborFunctionIds)
+    {
+        $errors = [];
+
+        foreach ($function->functionConditions as $condition) {
+            if ($condition->type === 'forbidden' && in_array($condition->target_function_id, $neighborFunctionIds, true)) {
+                $errors[] = "Forbidden neighbor function id {$condition->target_function_id} is present next to this cell.";
+            }
+
+            if ($condition->type === 'required' && ! in_array($condition->target_function_id, $neighborFunctionIds, true)) {
+                $errors[] = "Required neighbor function id {$condition->target_function_id} is missing from adjacent cells.";
+            }
+        }
+
+        return $errors;
+    }
+
+    private function validateNeighborConditions(CityFunction $placedFunction, $neighborCells)
+    {
+        $errors = [];
+
+        foreach ($neighborCells as $neighborCell) {
+            if (!$neighborCell->function_id) {
+                continue; // Skip empty cells
+            }
+
+            $neighborFunction = CityFunction::with('functionConditions')->find($neighborCell->function_id);
+            if (!$neighborFunction) {
+                continue;
+            }
+
+            // Check if the neighbor has rules that would be violated by placing this function
+            foreach ($neighborFunction->functionConditions as $condition) {
+                if ($condition->type === 'forbidden' && $condition->target_function_id == $placedFunction->id) {
+                    $errors[] = "Neighbor {$neighborFunction->name} forbids {$placedFunction->name}.";
+                }
+            }
+        }
+
+        return $errors;
     }
 
     /**
