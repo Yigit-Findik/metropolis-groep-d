@@ -318,6 +318,106 @@ const initializeCityGrid = () => {
                 });
         });
     }
+
+    // Highlight violations on hover
+    const gridCells = document.querySelectorAll('[data-grid-cell]');
+    const functionCards = document.querySelectorAll('[data-function-id]');
+
+    let highlightedCells = [];
+
+    function clearHighlights() {
+        highlightedCells.forEach(cell => {
+            cell.classList.remove('bg-red-500', 'border-2', 'border-red-600', 'bg-orange-500', 'border-orange-600');
+        });
+        highlightedCells = [];
+    }
+
+    function getNeighbors(row, col) {
+        const neighbors = [];
+        const directions = [
+            [-1, 0], [1, 0], [0, -1], [0, 1] // up, down, left, right
+        ];
+        directions.forEach(([dr, dc]) => {
+            const nr = row + dr;
+            const nc = col + dc;
+            if (nr >= 1 && nr <= 3 && nc >= 1 && nc <= 4) {
+                neighbors.push({ row: nr, col: nc });
+            }
+        });
+        return neighbors;
+    }
+
+    function highlightViolations(functionId, conditions) {
+        clearHighlights();
+        gridCells.forEach(cell => {
+            const cellRow = parseInt(cell.dataset.row);
+            const cellCol = parseInt(cell.dataset.column);
+            const cellFunctionId = cell.dataset.functionId;
+
+            // Only check empty cells
+            if (cellFunctionId) return;
+
+            const neighbors = getNeighbors(cellRow, cellCol);
+            let hasForbidden = false;
+            let missingRequired = false;
+
+            // Check conditions of the function being hovered
+            conditions.forEach(condition => {
+                if (condition.type === 'forbidden') {
+                    neighbors.forEach(neigh => {
+                        const neighCell = document.querySelector(`[data-row="${neigh.row}"][data-column="${neigh.col}"]`);
+                        if (neighCell && neighCell.dataset.functionId == condition.target_function_id) {
+                            hasForbidden = true;
+                        }
+                    });
+                } else if (condition.type === 'required') {
+                    let found = false;
+                    neighbors.forEach(neigh => {
+                        const neighCell = document.querySelector(`[data-row="${neigh.row}"][data-column="${neigh.col}"]`);
+                        if (neighCell && neighCell.dataset.functionId == condition.target_function_id) {
+                            found = true;
+                        }
+                    });
+                    if (!found) {
+                        missingRequired = true;
+                    }
+                }
+            });
+
+            // Also check if any neighbor forbids this function
+            neighbors.forEach(neigh => {
+                const neighCell = document.querySelector(`[data-row="${neigh.row}"][data-column="${neigh.col}"]`);
+                if (neighCell && neighCell.dataset.functionId) {
+                    const neighConditions = JSON.parse(neighCell.dataset.conditions || '[]');
+                    neighConditions.forEach(condition => {
+                        if (condition.type === 'forbidden' && condition.target_function_id == functionId) {
+                            hasForbidden = true;
+                        }
+                    });
+                }
+            });
+
+            if (hasForbidden) {
+                cell.classList.add('bg-red-500', 'border-2', 'border-red-600');
+                highlightedCells.push(cell);
+            } else if (missingRequired) {
+                cell.classList.add('bg-orange-500', 'border-2', 'border-orange-600');
+                highlightedCells.push(cell);
+            }
+        });
+    }
+
+    functionCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            const functionId = this.dataset.functionId;
+            const conditions = JSON.parse(this.dataset.conditions || '[]');
+            highlightViolations(functionId, conditions);
+        });
+
+        card.addEventListener('mouseleave', function() {
+            clearHighlights();
+        });
+    });
 };
 
 document.addEventListener("DOMContentLoaded", () => {

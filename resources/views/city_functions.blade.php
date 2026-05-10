@@ -24,6 +24,7 @@
         openEdit(fn) {
             fn.conditions = fn.conditions || [];
             this.editing = JSON.parse(JSON.stringify(fn));
+            this.editing.conditions = this.editing.conditions.map(c => ({...c, isEditing: false}));
             this.editing.newConditionTarget = null;
             this.editing.newConditionType = 'required';
             this.backendErrors = {};
@@ -355,10 +356,6 @@
                                 <p class="text-sm font-medium text-gray-300">Adjacency Rules</p>
                                 <p class="text-xs text-gray-500">Add required or forbidden neighbors for this function.</p>
                             </div>
-                            <button type="button" @click="addCondition()"
-                                    class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition">
-                                Add Rule
-                            </button>
                         </div>
                         <template x-if="backendErrors.target_function_id">
                             <div class="text-sm text-red-400 mb-3" x-text="Array.isArray(backendErrors.target_function_id) ? backendErrors.target_function_id[0] : backendErrors.target_function_id"></div>
@@ -369,34 +366,58 @@
 
                         <div class="grid grid-cols-1 gap-3">
                             <template x-for="(condition, index) in editing.conditions" :key="index">
-                                <div class="flex flex-col sm:flex-row sm:items-center sm:gap-3 bg-gray-700 rounded-xl border border-gray-600 p-3">
-                                    <div class="flex-1 grid gap-3 sm:grid-cols-3">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-400 mb-1">Target Function</label>
-                                            <select x-model.number="condition.target_function_id"
-                                                    class="!bg-gray-800 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                <option value="">Select target</option>
-                                                <template x-for="functionOption in availableFunctions.filter(f => f.id !== editing.id)" :key="functionOption.id">
-                                                    <option :value="functionOption.id" x-text="functionOption.name"></option>
-                                                </template>
-                                            </select>
+                                <div class="bg-gray-700 rounded-xl border border-gray-600 p-3">
+                                    <template x-if="!condition.isEditing">
+                                        <div class="flex items-center justify-between">
+                                            <div class="text-sm text-gray-300">
+                                                <span x-text="availableFunctions.find(f => f.id === condition.target_function_id)?.name || 'Unknown'"></span>
+                                                (<span x-text="condition.type"></span>)
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <button type="button" @click="condition.isEditing = true"
+                                                        class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition">
+                                                    Edit
+                                                </button>
+                                                <button type="button" @click="removeCondition(index)"
+                                                        class="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg transition">
+                                                    Remove
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-400 mb-1">Type</label>
-                                            <select x-model="condition.type"
-                                                    class="!bg-gray-800 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                <option value="required">Required</option>
-                                                <option value="forbidden">Forbidden</option>
-                                            </select>
+                                    </template>
+                                    <template x-if="condition.isEditing">
+                                        <div class="grid gap-3 sm:grid-cols-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-400 mb-1">Target Function</label>
+                                                <select x-bind:value="condition.target_function_id"
+                                                        x-on:change="condition.target_function_id = parseInt($event.target.value)"
+                                                        class="!bg-gray-800 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    <option value="">Select target</option>
+                                                    <template x-for="functionOption in availableFunctions" :key="functionOption.id">
+                                                        <option :value="functionOption.id" x-text="functionOption.name"></option>
+                                                    </template>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-400 mb-1">Type</label>
+                                                <select x-model="condition.type"
+                                                        class="!bg-gray-800 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    <option value="required">Required</option>
+                                                    <option value="forbidden">Forbidden</option>
+                                                </select>
+                                            </div>
+                                            <div class="flex items-end gap-2">
+                                                <button type="button" @click="condition.isEditing = false"
+                                                        class="px-2 py-2 bg-gray-600 hover:bg-gray-700 text-white text-xs font-semibold rounded-lg transition">
+                                                    Done
+                                                </button>
+                                                <button type="button" @click="removeCondition(index)"
+                                                        class="px-2 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg transition">
+                                                    Remove
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-
-                                    <div class="mt-3 sm:mt-0 sm:flex-none">
-                                        <button type="button" @click="removeCondition(index)"
-                                                class="px-3 py-2 bg-red-700 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition">
-                                            Remove
-                                        </button>
-                                    </div>
+                                    </template>
                                 </div>
                             </template>
 
@@ -432,6 +453,12 @@
                                     <option value="forbidden">Forbidden</option>
                                 </select>
                             </div>
+                        </div>
+                        <div class="mt-3">
+                            <button type="button" @click="addCondition()"
+                                    class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition">
+                                Add Rule
+                            </button>
                         </div>
                     </div>
 
