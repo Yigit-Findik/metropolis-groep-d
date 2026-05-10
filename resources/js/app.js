@@ -628,8 +628,8 @@ const setupHoverPopup = () => {
 
     grid.addEventListener('mouseout', (e) => {
         const relatedTarget = e.relatedTarget;
-        if (relatedTarget && (grid.contains(relatedTarget) || relatedTarget.closest('.bonus-badge'))) {
-            // Still inside grid or moved into a bonus badge — keep popup visible
+        if (relatedTarget && relatedTarget.closest('[data-grid-cell]')?.dataset?.function) {
+            // Moving straight into another occupied cell will trigger mouseover on that cell.
             return;
         }
 
