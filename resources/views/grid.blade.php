@@ -4,7 +4,6 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Grid') }}
             </h2>
-            <button id="undo-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm">Undo Last Action</button>
         </div>
     </x-slot>
 
@@ -56,16 +55,21 @@
                      }">
 
                     {{-- Sticky so the title and zoom slider stay visible when scrolling down --}}
-                    <div class="flex items-center gap-4 mb-4 sticky top-0 z-10 bg-blue-50 dark:bg-gray-700 py-2">
-                        <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">City Grid</h3>
+                    <div class="flex justify-between items-center w-full">
+                        <div class="flex items-center gap-4 mb-4 sticky top-0 z-10 bg-blue-50 dark:bg-gray-700 py-2">
+                            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">City Grid</h3>
 
-                        {{-- Zoom slider only shown on desktop --}}
-                        <div class="hidden lg:flex items-center gap-3">
-                            <label for="grid-size" class="text-sm text-gray-600 dark:text-gray-300">Zoom</label>
-                            <input id="grid-size" type="range" min="64" max="224" step="16"
-                                   x-model="size"
-                                   class="w-28 accent-blue-500"
-                                   aria-label="Adjust grid size">
+                            {{-- Zoom slider only shown on desktop --}}
+                            <div class="hidden lg:flex items-center gap-3">
+                                <label for="grid-size" class="text-sm text-gray-600 dark:text-gray-300">Zoom</label>
+                                <input id="grid-size" type="range" min="64" max="224" step="16"
+                                    x-model="size"
+                                    class="w-28 accent-blue-500"
+                                    aria-label="Adjust grid size">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <button id="undo-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm">Undo Last Action</button>
                         </div>
                     </div>
 
