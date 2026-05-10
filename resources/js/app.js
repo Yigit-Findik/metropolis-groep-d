@@ -385,6 +385,15 @@ const setupHoverPopup = () => {
     const popup = createHoverPopup();
     const cells = Array.from(document.querySelectorAll('[data-grid-cell]'));
 
+    const setPopupScale = (el) => {
+        const baseSize = 96;
+        const cellSize = el.getBoundingClientRect().width || baseSize;
+        const scale = Math.max(0.75, Math.min(2.5, cellSize / baseSize));
+
+        popup.style.transformOrigin = 'top left';
+        popup.style.transform = `scale(${scale})`;
+    };
+
     const buildHtml = (el) => {
         const ds = el.dataset || {};
         const name = ds.function || '';
@@ -417,6 +426,7 @@ const setupHoverPopup = () => {
 
         clearHoverHighlights(cells);
         el.classList.add(...HOVER_HIGHLIGHT_CLASSES);
+        setPopupScale(el);
 
         const neighbors = getOrthogonalNeighbors(cells, el);
         neighbors.forEach((neighbor) => {
@@ -432,6 +442,7 @@ const setupHoverPopup = () => {
     const hide = () => {
         clearHoverHighlights(cells);
         popup.classList.add('hidden');
+        popup.style.transform = '';
         visible = false;
     };
 
