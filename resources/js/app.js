@@ -60,6 +60,7 @@ const initializeCityGrid = () => {
         card.addEventListener("dragstart", (e) => {
             e.dataTransfer.setData("function", card.dataset.function);
             e.dataTransfer.setData("function_id", card.dataset.functionId);
+            e.dataTransfer.setData("category", card.dataset.category ?? "");
             e.dataTransfer.setData("image", card.dataset.image);
             e.dataTransfer.setData("qol_score", card.dataset.qolScore);
             // Also include per-category effect values so the cell can show them after drop
@@ -117,6 +118,7 @@ const initializeCityGrid = () => {
             // Read the data that was stored when the drag started
             const functionName = e.dataTransfer.getData("function");
             const functionId = e.dataTransfer.getData("function_id");
+            const category = e.dataTransfer.getData("category");
             const image = e.dataTransfer.getData("image");
             const qolScore = parseInt(e.dataTransfer.getData("qol_score"), 10);
             const safety = e.dataTransfer.getData("safety") ?? 0;
@@ -155,6 +157,7 @@ const initializeCityGrid = () => {
             cell.classList.add("is-occupied");
             cell.dataset.function = functionName;
             cell.dataset.functionId = functionId;
+            cell.dataset.category = category;
             // Store individual effect values on the cell so the hover popup can read them
             cell.dataset.safety = safety;
             cell.dataset.recreation = recreation;
@@ -293,6 +296,7 @@ const initializeCityGrid = () => {
                     // Clear the data attributes
                     cellElement.dataset.function = "";
                     cellElement.dataset.functionId = "";
+                    cellElement.dataset.category = "";
                     cellElement.dataset.safety = "";
                     cellElement.dataset.recreation = "";
                     cellElement.dataset.environmentQuality = "";
@@ -352,26 +356,51 @@ const clearHoverHighlights = (cells) => {
 const getOrthogonalNeighbors = (cells, sourceCell) => {
     const row = Number.parseInt(sourceCell.dataset.row || "", 10);
     const column = Number.parseInt(sourceCell.dataset.column || "", 10);
+    const sourceCategory = sourceCell.dataset.category || "";
 
     if (Number.isNaN(row) || Number.isNaN(column)) {
         return [];
     }
 
-    return cells.filter((cell) => {
+    const neighbors = [];
+
+    cells.forEach((cell) => {
         if (cell === sourceCell) return false;
 
         if (!cell.dataset || !cell.dataset.function || cell.dataset.function === '') {
-            return false;
+            return;
         }
 
         const cellRow = Number.parseInt(cell.dataset.row || "", 10);
         const cellColumn = Number.parseInt(cell.dataset.column || "", 10);
 
-        return (
-            (cellRow === row && Math.abs(cellColumn - column) === 1) ||
-            (cellColumn === column && Math.abs(cellRow - row) === 1)
-        );
+        const rowDelta = cellRow - row;
+        const columnDelta = cellColumn - column;
+        const isOrthogonal =
+            (cellRow === row && Math.abs(columnDelta) === 1) ||
+            (cellColumn === column && Math.abs(rowDelta) === 1);
+
+        if (!isOrthogonal) return;
+
+        const sameCategory = sourceCategory !== "" && sourceCategory === (cell.dataset.category || "");
+        const bonus = sameCategory ? 2 : 0;
+        const direction = rowDelta === -1
+            ? "top"
+            : rowDelta === 1
+                ? "bottom"
+                : columnDelta === -1
+                    ? "left"
+                    : "right";
+
+        neighbors.push({
+            cell,
+            direction,
+            bonus,
+            sameCategory,
+        });
     });
+
+    return neighbors;
 };
 
 const formatBadge = (value) => {
@@ -383,22 +412,121 @@ const formatBadge = (value) => {
 
 const setupHoverPopup = () => {
     const popup = createHoverPopup();
-    const cells = Array.from(document.querySelectorAll('[data-grid-cell]'));
+    const grid = document.querySelector('[data-city-grid]');
+    let activeCell = null;
+    const BASE_CELL_SIZE = 96;
+
+    const getCells = () => Array.from(document.querySelectorAll('[data-grid-cell]'));
+    // Only these function names receive penalty badges and adjusted popup values.
+    const SENSITIVE_FUNCTIONS = new Set(['park', 'school', 'hospital']);
+
+    // Polluting function names (lowercase) that cause penalties when adjacent
+    const POLLUTERS = ['road', 'store', 'gas station'];
 
     const setPopupScale = (el) => {
-        const baseSize = 96;
-        const cellSize = el.getBoundingClientRect().width || baseSize;
-        const scale = Math.max(0.75, Math.min(2.5, cellSize / baseSize));
+        const cellSize = el.getBoundingClientRect().width || BASE_CELL_SIZE;
+        const scale = Math.max(0.75, Math.min(2.5, cellSize / BASE_CELL_SIZE));
 
         popup.style.transformOrigin = 'top left';
         popup.style.transform = `scale(${scale})`;
+        return scale;
+    };
+
+    const getCategoryKey = (category) => {
+        const normalized = (category || '').trim().toLowerCase();
+        if (normalized === 'environment quality') return 'environmentQuality';
+        return normalized;
+    };
+
+    const createBadgeForCell = ({ cell, amount }) => {
+        const id = cell.dataset.cellId || cell.getAttribute('data-cell-id') || '';
+        const existing = document.querySelector(`.bonus-badge[data-target="${id}"]`);
+        if (existing) existing.remove();
+
+        const badge = document.createElement('div');
+        const isPositive = amount > 0;
+        badge.className = `bonus-badge ${isPositive ? 'bonus-badge--positive' : 'bonus-badge--negative'}`;
+        badge.textContent = isPositive ? `+${amount}` : `${amount}`;
+        badge.setAttribute('data-target', id);
+        badge.style.position = 'fixed';
+        badge.style.zIndex = 60;
+        badge.style.pointerEvents = 'auto'; // allow hover so popup stays visible when moving into badge
+
+        // Position on the sensitive cell itself so the penalty is easy to see.
+        const rect = cell.getBoundingClientRect();
+        const left = rect.left + rect.width * 0.68;
+        const top = rect.top - rect.height * 0.12;
+
+        badge.style.left = `${Math.round(left)}px`;
+        badge.style.top = `${Math.round(top)}px`;
+
+        // Scale badge to match grid scaling based on neighbor cell size
+        const cellSize = rect.width || BASE_CELL_SIZE;
+        const scale = Math.max(0.75, Math.min(2.5, cellSize / BASE_CELL_SIZE));
+        badge.style.transformOrigin = 'top left';
+        badge.style.transform = `scale(${scale})`;
+
+        document.body.appendChild(badge);
+        return badge;
+    };
+
+    const updateBonusBadges = (activeCell) => {
+        // Remove existing badges then recreate
+        document.querySelectorAll('.bonus-badge').forEach((n) => n.remove());
+        if (!activeCell) return;
+
+        const cells = getCells();
+        const activeCategory = getCategoryKey(activeCell.dataset.category);
+
+        const sameCategoryNeighbors = getOrthogonalNeighbors(cells, activeCell)
+            .map((neighbor) => neighbor.cell)
+            .filter((cell) => getCategoryKey(cell.dataset.category) === activeCategory);
+
+        sameCategoryNeighbors.forEach((cell) => {
+            createBadgeForCell({ cell, amount: 2 });
+        });
+
+        const sensitiveNeighbors = getOrthogonalNeighbors(cells, activeCell)
+            .map((neighbor) => neighbor.cell)
+            .filter((cell) => SENSITIVE_FUNCTIONS.has((cell.dataset.function || '').trim().toLowerCase()));
+
+        sensitiveNeighbors.forEach((cell) => {
+            const penalty = getOrthogonalNeighbors(cells, cell).filter((neighbor) => {
+                const fn = (neighbor.cell.dataset.function || '').trim().toLowerCase();
+                return POLLUTERS.some((p) => fn.includes(p));
+            }).length * 2;
+
+            if (penalty > 0) {
+                createBadgeForCell({ cell, amount: -penalty });
+            }
+        });
+    };
+
+    const removeBonusBadges = () => {
+        document.querySelectorAll('.bonus-badge').forEach((n) => n.remove());
     };
 
     const buildHtml = (el) => {
         const ds = el.dataset || {};
         const name = ds.function || '';
+        const category = ds.category || 'Uncategorized';
+        // Compute sensitive penalties from orthogonal polluting neighbors
+        const orthNeighbors = getOrthogonalNeighbors(getCells(), el).map(n => n.cell);
+        const pollutingCount = orthNeighbors.filter((c) => {
+            const fn = (c.dataset.function || '').trim().toLowerCase();
+            return POLLUTERS.some((p) => fn.includes(p));
+        }).length;
+        const sensitiveKey = SENSITIVE_FUNCTIONS.has((name || '').trim().toLowerCase())
+            ? getCategoryKey(ds.category)
+            : null;
+        const penalty = pollutingCount * 2;
+        const bonusCount = getOrthogonalNeighbors(getCells(), el)
+            .filter((neighbor) => getCategoryKey(neighbor.cell.dataset.category) === getCategoryKey(ds.category))
+            .length;
+        const bonus = bonusCount * 2;
         const parts = [];
         parts.push(`<div class="font-semibold mb-1 text-xs">${name}</div>`);
+        parts.push(`<div class="mb-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-100">${category}</div>`);
 
         const mapping = [
             ['safety', 'Saf'],
@@ -409,12 +537,22 @@ const setupHoverPopup = () => {
         ];
 
         const badges = mapping.map(([key, label]) => {
-            const val = ds[key] ?? 0;
+            let val = parseInt(ds[key] ?? 0, 10);
+            if (sensitiveKey && key === sensitiveKey && penalty > 0) {
+                val = val - penalty;
+            } else if (key === getCategoryKey(ds.category) && bonus > 0) {
+                val = val + bonus;
+            }
             const b = formatBadge(val);
             return `<div class="flex items-center gap-2"><div class="w-8 text-[10px] text-gray-500 dark:text-gray-400">${label}</div>${b}</div>`;
         }).join('');
 
         parts.push(`<div class="grid gap-1">${badges}</div>`);
+
+        // NOTE: Orthogonal bonuses are shown as badges attached to the neighbor cells
+        // rather than inside this popup. This keeps the popup focused on the hovered
+        // function's own effects. The badge rendering is handled elsewhere in the
+        // hover flow so we don't add bonus rows here.
         return parts.join('');
     };
 
@@ -424,14 +562,26 @@ const setupHoverPopup = () => {
         // Only show for occupied grid cells (cells have a non-empty `data-function`)
         if (!el.dataset || !el.dataset.function || el.dataset.function === '') return;
 
+        if (activeCell === el && !popup.classList.contains('hidden')) {
+            setPopupScale(el);
+            move(e);
+            return;
+        }
+
+        activeCell = el;
+
+        const cells = getCells();
         clearHoverHighlights(cells);
         el.classList.add(...HOVER_HIGHLIGHT_CLASSES);
         setPopupScale(el);
 
         const neighbors = getOrthogonalNeighbors(cells, el);
-        neighbors.forEach((neighbor) => {
+        neighbors.forEach(({ cell: neighbor }) => {
             neighbor.classList.add(...NEIGHBOR_HIGHLIGHT_CLASSES);
         });
+
+        // Render bonus badges on the hovered cell and penalty badges on adjacent sensitive cells.
+        updateBonusBadges(el);
 
         popup.innerHTML = buildHtml(el);
         popup.classList.remove('hidden');
@@ -440,9 +590,11 @@ const setupHoverPopup = () => {
     };
 
     const hide = () => {
-        clearHoverHighlights(cells);
+        clearHoverHighlights(getCells());
         popup.classList.add('hidden');
         popup.style.transform = '';
+        removeBonusBadges();
+        activeCell = null;
         visible = false;
     };
 
@@ -454,12 +606,37 @@ const setupHoverPopup = () => {
         popup.style.top = `${y}px`;
     };
 
-    // Attach listeners only to grid cells, not to library cards
-    const elements = Array.from(document.querySelectorAll('[data-grid-cell]'));
-    elements.forEach((el) => {
-        el.addEventListener('mouseenter', (e) => show(el, e));
-        el.addEventListener('mousemove', (e) => move(e));
-        el.addEventListener('mouseleave', () => hide());
+    // Attach listeners through the grid so changes to the cell DOM keep working without re-binding.
+    if (!grid) return;
+
+    grid.addEventListener('mouseover', (e) => {
+        const el = e.target.closest('[data-grid-cell]');
+        if (!el || !grid.contains(el)) return;
+        show(el, e);
+    });
+
+    grid.addEventListener('mousemove', (e) => {
+        if (!visible) return;
+        move(e);
+        // Reposition badges dynamically while moving
+        if (activeCell) {
+            updateBonusBadges(activeCell);
+            // Rebuild popup contents to reflect any dynamic penalties
+            popup.innerHTML = buildHtml(activeCell);
+        }
+    });
+
+    grid.addEventListener('mouseout', (e) => {
+        const relatedTarget = e.relatedTarget;
+        if (relatedTarget && (grid.contains(relatedTarget) || relatedTarget.closest('.bonus-badge'))) {
+            // Still inside grid or moved into a bonus badge — keep popup visible
+            return;
+        }
+
+        const el = e.target.closest('[data-grid-cell]');
+        if (!el || !grid.contains(el)) return;
+
+        hide();
     });
 };
 
