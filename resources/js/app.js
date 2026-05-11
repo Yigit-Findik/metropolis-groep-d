@@ -15,9 +15,9 @@ const showToast = (functionName, qolScore) => {
     const isPositive = qolScore >= 0;
     const sign = isPositive ? "+" : "";
 
-    // Keep the visual styling in CSS and only switch between semantic modifier classes here.
+    // Build the toast classes inline now that component CSS helpers are removed.
     toast.textContent = `${functionName}: ${sign}${qolScore} `;
-    toast.className = `qol-toast ${isPositive ? "qol-toast--positive" : "qol-toast--negative"}`;
+    toast.className = `fixed bottom-6 right-6 z-50 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 ${isPositive ? "bg-green-500" : "bg-red-500"}`;
 
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
@@ -39,7 +39,7 @@ const refreshQolScore = () => {
                     const el = document.getElementById(elementId);
                     if (el) {
                         el.textContent = (score >= 0 ? "+" : "") + score;
-                        el.className = `qol-score-value ${score >= 0 ? "qol-score-value--positive" : "qol-score-value--negative"}`;
+                        el.className = `mt-0.5 text-xl font-semibold ${score >= 0 ? "text-green-300" : "text-red-300"}`;
                     }
                 }
             }
