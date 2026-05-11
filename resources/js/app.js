@@ -414,6 +414,7 @@ const setupHoverPopup = () => {
     const popup = createHoverPopup();
     const grid = document.querySelector('[data-city-grid]');
     let activeCell = null;
+    const isMobileViewport = () => window.matchMedia('(max-width: 1023px)').matches;
     const BASE_CELL_SIZE = 96;
 
     const getCells = () => Array.from(document.querySelectorAll('[data-grid-cell]'));
@@ -578,6 +579,13 @@ const setupHoverPopup = () => {
         visible = false;
     };
 
+    const hideOnMobileScroll = () => {
+        if (!visible || !activeCell) return;
+        if (!isMobileViewport()) return;
+
+        hide();
+    };
+
     const move = (e) => {
         if (!visible) return;
         const x = e.clientX + 12;
@@ -589,9 +597,21 @@ const setupHoverPopup = () => {
     // Attach listeners through the grid so changes to the cell DOM keep working without re-binding.
     if (!grid) return;
 
+    window.addEventListener('scroll', hideOnMobileScroll, { passive: true });
+    window.addEventListener('touchmove', hideOnMobileScroll, { passive: true });
+
     grid.addEventListener('mouseover', (e) => {
         const el = e.target.closest('[data-grid-cell]');
         if (!el || !grid.contains(el)) return;
+        show(el, e);
+    });
+
+    grid.addEventListener('click', (e) => {
+        if (!isMobileViewport()) return;
+
+        const el = e.target.closest('[data-grid-cell]');
+        if (!el || !grid.contains(el)) return;
+
         show(el, e);
     });
 
