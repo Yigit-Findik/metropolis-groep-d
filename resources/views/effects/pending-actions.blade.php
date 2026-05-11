@@ -76,18 +76,22 @@
                                     <td class="px-6 py-4">
                                         <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Related function</div>
                                         <div class="mt-1 font-medium text-gray-900 dark:text-gray-100">{{ $pendingAction->resolved_function_name }}</div>
+                                        @if($pendingAction->cityFunction?->category)
+                                            <div class="mt-1 text-xs text-gray-600 dark:text-gray-300">Category: {{ $pendingAction->cityFunction?->category }}</div>
+                                        @endif
                                         @if($pendingAction->function_name && $pendingAction->function_name !== $pendingAction->resolved_function_name)
                                             <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Stored snapshot: {{ $pendingAction->function_name }}</div>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
                                         <div class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Trigger</div>
-                                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200">
-                                            {{ $pendingAction->trigger_label }}
-                                        </span>
+                                        <div class="flex items-center gap-3">
+                                            <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200">{{ $pendingAction->trigger_label }}</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">({{ $pendingAction->trigger_type }})</span>
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
-                                        <div class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Created at</div>
+                                        <div class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Created</div>
                                         <time datetime="{{ $pendingAction->created_at?->toIso8601String() }}">{{ $pendingAction->created_at?->format('d-m-Y H:i') }}</time>
                                         <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $pendingAction->created_at?->diffForHumans() }}</div>
                                     </td>

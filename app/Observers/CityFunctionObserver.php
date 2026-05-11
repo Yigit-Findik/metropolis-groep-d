@@ -34,11 +34,6 @@ class CityFunctionObserver
             return;
         }
 
-        // Only queue a creation follow-up when required effect values are still missing or invalid.
-        if ($this->effectValueService()->hasCompleteValues($cityFunction)) {
-            return;
-        }
-
         $this->pendingActionService()->registerTrigger(
             $cityFunction,
             PendingAction::TRIGGER_CREATED,

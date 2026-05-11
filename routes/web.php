@@ -46,8 +46,8 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::get('/grid', [CityGridCellController::class, 'index'])->name('grid');
 
     // SIM.2 - Cell selection and function assignment
-    Route::get('/grid/select/{id}', [CityGridCellController::class, 'select']);
-    Route::get('/grid/{id}/assign', [CityGridCellController::class, 'assignFunction']);
+    Route::post('/grid/select/{id}', [CityGridCellController::class, 'select']);
+    Route::post('/grid/{id}/assign', [CityGridCellController::class, 'assignFunction']);
 
     // SIM.1.4 - QoL score calculation
     Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);

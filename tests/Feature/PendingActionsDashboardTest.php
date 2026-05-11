@@ -48,7 +48,7 @@ test('planner cannot open the pending actions dashboard', function () {
         ->assertForbidden();
 });
 
-test('creating a city function with complete effects does not create a pending action', function () {
+test('creating a city function always creates a pending action', function () {
     $admin = createUserWithRole('Administrator', 'admin-trigger@metropolis.test');
 
     $this->actingAs($admin);
@@ -64,40 +64,20 @@ test('creating a city function with complete effects does not create a pending a
         'image_path' => 'images/test.png',
     ]);
 
-    expect(PendingAction::query()->count())->toBe(0);
+    expect(PendingAction::query()->count())->toBe(1);
+    expect(PendingAction::query()->first()->trigger_type)->toBe(PendingAction::TRIGGER_CREATED);
 
     $function->update(['name' => 'Test Function Updated']);
 
-    expect(PendingAction::query()->count())->toBe(0);
+    expect(PendingAction::query()->count())->toBe(1);
 
     $function->update(['name' => 'Test Function Updated Again']);
 
-    expect(PendingAction::query()->count())->toBe(0);
+    expect(PendingAction::query()->count())->toBe(1);
 
     $function->delete();
 
-    expect(PendingAction::query()->count())->toBe(0);
-});
-
-test('creating a city function with missing effects creates a pending action', function () {
-    $admin = createUserWithRole('Administrator', 'admin-created-missing@metropolis.test');
-
-    $this->actingAs($admin);
-
-    $function = CityFunction::create([
-        'name' => 'Missing Effects Function',
-        'category' => 'Safety',
-        'Safety' => 1,
-        'Recreation' => null,
-        'Environment Quality' => 1,
-        'Facilities' => 1,
-        'Mobility' => 1,
-        'image_path' => 'images/test.png',
-    ]);
-
-    expect($function->exists)->toBeTrue();
     expect(PendingAction::query()->count())->toBe(1);
-    expect(PendingAction::query()->first()->trigger_type)->toBe(PendingAction::TRIGGER_CREATED);
 });
 
 test('non administrators do not generate pending actions for city function changes', function () {
