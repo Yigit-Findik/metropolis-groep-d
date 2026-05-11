@@ -510,20 +510,6 @@ const setupHoverPopup = () => {
         const ds = el.dataset || {};
         const name = ds.function || '';
         const category = ds.category || 'Uncategorized';
-        // Compute sensitive penalties from orthogonal polluting neighbors
-        const orthNeighbors = getOrthogonalNeighbors(getCells(), el).map(n => n.cell);
-        const pollutingCount = orthNeighbors.filter((c) => {
-            const fn = (c.dataset.function || '').trim().toLowerCase();
-            return POLLUTERS.some((p) => fn.includes(p));
-        }).length;
-        const sensitiveKey = SENSITIVE_FUNCTIONS.has((name || '').trim().toLowerCase())
-            ? getCategoryKey(ds.category)
-            : null;
-        const penalty = pollutingCount * 2;
-        const bonusCount = getOrthogonalNeighbors(getCells(), el)
-            .filter((neighbor) => getCategoryKey(neighbor.cell.dataset.category) === getCategoryKey(ds.category))
-            .length;
-        const bonus = bonusCount * 2;
         const parts = [];
         parts.push(`<div class="font-semibold mb-1 text-xs">${name}</div>`);
         parts.push(`<div class="mb-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-100">${category}</div>`);
@@ -537,13 +523,7 @@ const setupHoverPopup = () => {
         ];
 
         const badges = mapping.map(([key, label]) => {
-            let val = parseInt(ds[key] ?? 0, 10);
-            if (sensitiveKey && key === sensitiveKey && penalty > 0) {
-                val = val - penalty;
-            } else if (key === getCategoryKey(ds.category) && bonus > 0) {
-                val = val + bonus;
-            }
-            const b = formatBadge(val);
+            const b = formatBadge(ds[key] ?? 0);
             return `<div class="flex items-center gap-2"><div class="w-8 text-[10px] text-gray-500 dark:text-gray-400">${label}</div>${b}</div>`;
         }).join('');
 
