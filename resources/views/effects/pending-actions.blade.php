@@ -66,6 +66,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">Trigger type</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">Created at</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">Still needed</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">User</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 text-right dark:text-gray-300">Action</th>
                             </tr>
@@ -106,6 +107,18 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
+                                        @if(count($pendingAction->missing_effect_columns ?? []) > 0)
+                                            <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Missing values</div>
+                                            <div class="flex flex-wrap gap-1">
+                                                @foreach($pendingAction->missing_effect_columns as $column)
+                                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-200">{{ $column }}</span>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">All values filled</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
                                         {{ $pendingAction->createdBy?->name ?? __('Unknown') }}
                                     </td>
                                     <td class="px-6 py-4 text-right text-sm">
@@ -122,7 +135,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-16 text-center">
+                                    <td colspan="7" class="px-6 py-16 text-center">
                                         <div class="mx-auto max-w-md">
                                             <div class="text-lg font-semibold text-gray-900 dark:text-gray-100">No actions found</div>
                                             <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">There are no items for the selected filters.</p>

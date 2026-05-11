@@ -3,11 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\PendingAction;
+use App\Services\CityFunctionEffectValueService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class PendingActionController extends Controller
 {
+    public function __construct(
+        private readonly CityFunctionEffectValueService $effectValueService,
+    ) {
+    }
+
     public function index(Request $request)
     {
         Gate::authorize('viewAny', PendingAction::class);
@@ -53,8 +59,16 @@ class PendingActionController extends Controller
 
         $pendingActions = $query->get();
 
+        // Enrich each pending action with missing effect columns so the view can display what still needs to be done.
+        $pendingActionsWithMissing = $pendingActions->map(function ($pendingAction) {
+            $pendingAction->missing_effect_columns = $pendingAction->cityFunction
+                ? $this->effectValueService->missingEffectColumns($pendingAction->cityFunction)
+                : [];
+            return $pendingAction;
+        });
+
         return view('effects.pending-actions', [
-            'pendingActions' => $pendingActions,
+            'pendingActions' => $pendingActionsWithMissing,
             'statusFilter' => $statusFilter,
             'triggerTypeFilter' => $triggerTypeFilter,
             'statusOptions' => $statusOptions,
