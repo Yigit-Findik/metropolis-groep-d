@@ -26,6 +26,13 @@ const showToast = (functionName, qolScore) => {
 };
 
 const refreshQolScore = () => {
+
+    //Show loading state
+    const total = document.getElementById("qol-score-value");
+    if (total) {
+        total.textContent = "Calculating...";
+    }
+
     fetch("/grid/qol-score")
         .then((r) => r.json())
         .then((data) => {
@@ -264,6 +271,10 @@ const initializeCityGrid = () => {
                     return response.json();
                 })
                 .then((data) => {
+
+                    const functionName = cellElement.dataset.function ?? "Function";
+                    const oldQolScore = parseInt(cellElement.dataset.qolScore ?? "0", 10);
+
                     // Success! Now clear the cell visually
                     // Clear the cell's inner HTML to remove the image and label
                     cellElement.innerHTML = "";
@@ -277,6 +288,9 @@ const initializeCityGrid = () => {
                     cellElement.dataset.functionId = "";
 
                     refreshQolScore();
+
+                    // Show toast with negative score for removal
+                    showToast(functionName, -oldQolScore);
                 })
                 .catch((error) => {
                     console.error("Error removing function:", error);
@@ -289,4 +303,58 @@ const initializeCityGrid = () => {
 document.addEventListener("DOMContentLoaded", () => {
     initializeCityGrid();
     refreshQolScore();
+
+    // Bind the Undo button to a function
+    const undoButton = document.getElementById('undo-button');
+    if (undoButton) {
+        undoButton.addEventListener('click', () => {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+
+            fetch('/grid/undo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            }).then(r => r.json())
+            .then(data => {
+                // we can simply do location.reload();
+                // but we are reloading the page it's not correct that's why we are doing this:
+                
+                // Update the cell based on the response from the server
+                const cellElement = document.querySelector(`[data-cell-id="${data.cell.id}"]`);
+                if (cellElement) {
+                    cellElement.innerHTML = "";
+                    cellElement.dataset.function = "";
+                    cellElement.dataset.functionId = "";
+                    cellElement.classList.remove("is-occupied");
+                    cellElement.classList.add("is-empty");
+
+                    // If the old function was restored, add it back to the cell
+                    if (data.cell.city_function) {
+                        const fn = data.cell.city_function;
+                        if (fn.image_path) {
+                            const img = document.createElement("img");
+                            img.src = fn.image_path;
+                            img.classList.add("mb-1");
+                            img.draggable = false;
+                            cellElement.appendChild(img);
+                        }
+                        const label = document.createElement("span");
+                        label.textContent = fn.name;
+                        label.classList.add("text-xs", "font-semibold", "text-center", "text-black");
+                        cellElement.appendChild(label);
+
+                        cellElement.dataset.function = fn.name;
+                        cellElement.dataset.functionId = data.cell.function_id;
+                        cellElement.classList.remove("is-empty");
+                        cellElement.classList.add("is-occupied");
+                    }
+                }
+
+                refreshQolScore();
+                showToast('Action undone', 0);
+            }).catch(() => alert('Nothing to undo'));
+        });
+    }
 });
