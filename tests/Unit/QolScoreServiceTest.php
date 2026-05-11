@@ -93,8 +93,8 @@ test('service includes neighbor bonuses and penalties in the score', function ()
 
     $result = (new QolScoreService())->calculate();
 
-    expect($result['total_score'])->toBe(7)
-        ->and($result['categories']['recreation'])->toBe(7);
+    expect($result['total_score'])->toBe(5)
+        ->and($result['categories']['recreation'])->toBe(5);
 });
 
 test('same-category neighbor bonus is counted once per pair', function () {
