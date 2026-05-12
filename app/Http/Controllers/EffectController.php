@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CityFunction;
 use Illuminate\Http\Request;
+use App\Services\CityFunctionEffectValueService;
 
 class EffectController extends Controller
 {
@@ -11,16 +12,14 @@ class EffectController extends Controller
      * Display the effects management table
      * Shows all functions (rows) vs all categories (columns)
      */
-    public function index()
+    public function index(CityFunctionEffectValueService $effectValueService)
     {
-        $functions = CityFunction::all();
-        
-        // get all unique categories from the functions
-        $categories = ['Safety', 'Recreation', 'Environment Quality', 'Facilities', 'Mobility'];
+        $functions = CityFunction::withTrashed()->orderBy('name')->get();
 
         return view('effects.index', [
             'functions' => $functions,
-            'categories' => $categories,
+            'categories' => $effectValueService->effectColumns(),
+            'selectedFunctionId' => request()->integer('function') ?: null,
         ]);
     }
 
@@ -36,6 +35,10 @@ class EffectController extends Controller
         ]);
 
         $function = CityFunction::findOrFail($functionId);
+
+        if ($function->trashed()) {
+            abort(403);
+        }
         
         // Update the category column with the new value
         $function->update([

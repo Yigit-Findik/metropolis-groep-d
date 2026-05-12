@@ -6,6 +6,29 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CityGridCellController;
 use App\Http\Controllers\EffectController;
+use App\Http\Controllers\PendingActionController;
+
+/*
+|--------------------------------------------------------------------------
+| Routes — structure and conventions
+|--------------------------------------------------------------------------
+|
+| Keep routes organized by responsibility and access level. Use the
+| following conventions when adding new routes:
+|
+| - Group routes by middleware (e.g. `auth`, `verified`, `role:`) and by
+|   purpose (admin, planner, effects expert, public, etc.).
+| - Add a short comment header for each group describing its intent.
+| - Use named routes when the route is referenced from views/controllers
+|   (->name('...')).
+| - Prefer controller methods for complex behavior. Use RESTful
+|   conventions where appropriate (index, show, store, update, destroy).
+| - Keep one-line comments for specific feature references (e.g. SIM.2,
+|   EFF.1) so feature traceability is easy.
+| - Put public or unauthenticated routes near the top, then role-based
+|   groups, then `require __DIR__.'/auth.php'` at the end for auth helpers.
+|
+*/
 
 // Public landing page
 Route::get('/', function () {
@@ -14,12 +37,12 @@ Route::get('/', function () {
     ]);
 });
 
-// All application routes — restricted to Administrator and City planner
-Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects'])->get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');
 
+// City planner and administrator routes
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->group(function () {
     Route::get('/grid', [CityGridCellController::class, 'index'])->name('grid');
 
     // SIM.2 - Cell selection and function assignment
@@ -39,10 +62,15 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::get('/effects', [EffectController::class, 'index'])->name('effects.index');
     Route::post('/effects/{functionId}', [EffectController::class, 'update'])->name('effects.update');
 });
+// Effects expert and administrator routes
+Route::middleware(['auth', 'verified', 'role:Administrator,Expert in effects'])->group(function () {
+    // EFF.1 - Effect management table
+    Route::get('/effects', [EffectController::class, 'index'])->name('effects.index');
+    Route::post('/effects/{functionId}', [EffectController::class, 'update'])->name('effects.update');
 
-// EFF.1 - Effect management table
-Route::get('/effects', [EffectController::class, 'index'])->name('effects.index');
-Route::post('/effects/{functionId}', [EffectController::class, 'update'])->name('effects.update');
+    // Pending actions dashboard for the effects expert
+    Route::get('/effects/pending-actions', [PendingActionController::class, 'index'])->name('effects.pending-actions');
+});
 
 // BES.2 - City functions management
 Route::middleware(['auth', 'verified', 'role:Administrator'])->group(function () {

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CityFunction extends Model
@@ -20,4 +21,9 @@ class CityFunction extends Model
         'image_path',
         'description',
     ];
+
+    public function pendingActions(): HasMany
+    {
+        return $this->hasMany(PendingAction::class);
+    }
 }
