@@ -42,6 +42,15 @@ class UsersSeeder extends Seeder
                 'created_at'        => now(),
                 'updated_at'        => now(),
             ],
+            [
+                'name'              => 'Yigit',
+                'email'             => 'ny.findik@student.avans.nl',
+                'password'          => Hash::make('ny.findik@student.avans.nl'),
+                'role_id'           => $expertInEffectsId,
+                'email_verified_at' => now(),
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ]
         ]);
     }
 }

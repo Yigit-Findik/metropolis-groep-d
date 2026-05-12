@@ -48,7 +48,7 @@ test('planner cannot open the pending actions dashboard', function () {
         ->assertForbidden();
 });
 
-test('creating updating and soft deleting a city function creates one pending action per trigger', function () {
+test('creating a city function always creates a pending action', function () {
     $admin = createUserWithRole('Administrator', 'admin-trigger@metropolis.test');
 
     $this->actingAs($admin);
@@ -69,17 +69,15 @@ test('creating updating and soft deleting a city function creates one pending ac
 
     $function->update(['name' => 'Test Function Updated']);
 
-    expect(PendingAction::query()->count())->toBe(2);
-    expect(PendingAction::query()->where('trigger_type', PendingAction::TRIGGER_UPDATED)->count())->toBe(1);
+    expect(PendingAction::query()->count())->toBe(1);
 
     $function->update(['name' => 'Test Function Updated Again']);
 
-    expect(PendingAction::query()->count())->toBe(2);
+    expect(PendingAction::query()->count())->toBe(1);
 
     $function->delete();
 
-    expect(PendingAction::query()->count())->toBe(3);
-    expect(PendingAction::query()->where('trigger_type', PendingAction::TRIGGER_SOFT_DELETED)->count())->toBe(1);
+    expect(PendingAction::query()->count())->toBe(1);
 });
 
 test('non administrators do not generate pending actions for city function changes', function () {

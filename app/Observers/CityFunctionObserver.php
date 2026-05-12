@@ -60,27 +60,11 @@ class CityFunctionObserver
             return;
         }
 
-        if (! $this->shouldTrackAdminChange()) {
-            return;
-        }
-
-        $this->pendingActionService()->registerTrigger(
-            $cityFunction,
-            PendingAction::TRIGGER_UPDATED,
-            Auth::user(),
-        );
+        // Non-effect updates (e.g. name/category) no longer create pending actions.
     }
 
     public function deleted(CityFunction $cityFunction): void
     {
-        if (! $this->shouldTrackAdminChange()) {
-            return;
-        }
-
-        $this->pendingActionService()->registerTrigger(
-            $cityFunction,
-            PendingAction::TRIGGER_SOFT_DELETED,
-            Auth::user(),
-        );
+        // Soft deletes no longer create pending actions.
     }
 }
