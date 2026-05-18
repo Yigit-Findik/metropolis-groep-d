@@ -63,13 +63,17 @@ class CityGridCellController extends Controller
             'function_id' => $request->function_id,
         ]);
 
-        // Saving an action in the database
+        // Store the placement so the latest grid action can be undone later.
         ActionHistory::create([
             'user_id' => auth()->id(),
             'action' => 'assign',
             'cell_id' => $id,
             'old_city_function_id' => $oldFunctionId,
             'new_city_function_id' => $request->function_id,
+            'details' => [
+                'old' => $oldFunctionId,
+                'new' => $request->function_id,
+            ],
         ]);
 
         return response()->json([
@@ -127,6 +131,10 @@ class CityGridCellController extends Controller
             'cell_id' => $id,
             'old_city_function_id' => $oldFunctionId,
             'new_city_function_id' => null,
+            'details' => [
+                'old' => $oldFunctionId,
+                'new' => null,
+            ],
         ]);
 
         return response()->json([
@@ -149,8 +157,19 @@ class CityGridCellController extends Controller
         // undo the latest function
         $cell->update(['function_id' => $lastAction->old_city_function_id]);
 
-        // deleting the previous function that was before we updated(undo) it
-        $lastAction->delete();
+        // Record the undo so the action chain remains reversible.
+        ActionHistory::create([
+            'user_id' => auth()->id(),
+            'action' => 'undo',
+            'cell_id' => $lastAction->cell_id,
+            'old_city_function_id' => $lastAction->new_city_function_id,
+            'new_city_function_id' => $lastAction->old_city_function_id,
+            'details' => [
+                'reverted_action_id' => $lastAction->id,
+                'old' => $lastAction->new_city_function_id,
+                'new' => $lastAction->old_city_function_id,
+            ],
+        ]);
 
         // Load the old function so frontend knows what to display
         $cell->load('cityFunction');
