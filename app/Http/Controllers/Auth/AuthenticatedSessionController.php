@@ -28,7 +28,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // return redirect()->intended(route('dashboard', absolute: false));
+        // previous code ^ I changed it to below so it just goes to dashboard no matter what.
+        return redirect()->route('dashboard');
     }
 
     /**

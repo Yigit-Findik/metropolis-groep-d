@@ -1,8 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Grid') }}
-        </h2>
+        <div class="flex justify-between items-center w-full">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                {{ __('Grid') }}
+            </h2>
+        </div>
     </x-slot>
 
     <div class="py-12">
@@ -22,10 +24,10 @@
 
                     {{-- Category scores --}}
                     <div class="flex flex-wrap gap-x-6 gap-y-3">
-                        @foreach(['livability' => '', 'safety' => '', 'economy' => '', 'environment' => '', 'welfare' => ''] as $cat => $icon)
+                        @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
                             <div>
-                                <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{{ $icon }} {{ ucfirst($cat) }}</p>
-                                <p class="text-white text-xl font-semibold mt-0.5" id="qol-{{ $cat }}">—</p>
+                                <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{{ $label }}</p>
+                                <p class="text-white text-xl font-semibold mt-0.5" id="qol-{{ $slug }}">—</p>
                             </div>
                         @endforeach
                     </div>
@@ -53,16 +55,21 @@
                      }">
 
                     {{-- Sticky so the title and zoom slider stay visible when scrolling down --}}
-                    <div class="flex items-center gap-4 mb-4 sticky top-0 z-10 bg-blue-50 dark:bg-gray-700 py-2">
-                        <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">City Grid</h3>
+                    <div class="flex justify-between items-center w-full">
+                        <div class="flex items-center gap-4 mb-4 sticky top-0 z-10 bg-blue-50 dark:bg-gray-700 py-2">
+                            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">City Grid</h3>
 
-                        {{-- Zoom slider only shown on desktop --}}
-                        <div class="hidden lg:flex items-center gap-3">
-                            <label for="grid-size" class="text-sm text-gray-600 dark:text-gray-300">Zoom</label>
-                            <input id="grid-size" type="range" min="64" max="128" step="16"
-                                   x-model="size"
-                                   class="w-28 accent-blue-500"
-                                   aria-label="Adjust grid size">
+                            {{-- Zoom slider only shown on desktop --}}
+                            <div class="hidden lg:flex items-center gap-3">
+                                <label for="grid-size" class="text-sm text-gray-600 dark:text-gray-300">Zoom</label>
+                                <input id="grid-size" type="range" min="64" max="224" step="16"
+                                    x-model="size"
+                                    class="w-28 accent-blue-500"
+                                    aria-label="Adjust grid size">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <button id="undo-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm">Undo Last Action</button>
                         </div>
                     </div>
 
@@ -94,6 +101,12 @@
                                         data-column="{{ $cell->column_index }}"
                                         data-function="{{ $fn?->name ?? '' }}"
                                         data-function-id="{{ $cell->function_id ?? '' }}"
+                                        data-category="{{ $fn?->category ?? '' }}"
+                                        data-safety="{{ $fn?->Safety ?? 0 }}"
+                                        data-recreation="{{ $fn?->Recreation ?? 0 }}"
+                                        data-environment-quality="{{ $fn?->{'Environment Quality'} ?? 0 }}"
+                                        data-facilities="{{ $fn?->Facilities ?? 0 }}"
+                                        data-mobility="{{ $fn?->Mobility ?? 0 }}"
                                         aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_id) ? ', occupied' : ', available' }}"
                                     >
                                         @if($fn?->image_path)
@@ -159,8 +172,14 @@
                                     draggable="true"
                                     data-function="{{ $cityFunction->name }}"
                                     data-function-id="{{ $cityFunction->id }}"
+                                    data-category="{{ $cityFunction->category ?? '' }}"
                                     data-image="{{ $cityFunction->image_path }}"
-                                    data-qol-score="{{ $cityFunction->livability + $cityFunction->safety + $cityFunction->economy + $cityFunction->environment + $cityFunction->welfare }}">
+                                    data-qol-score="{{ ($cityFunction->Safety ?? 0) + ($cityFunction->Recreation ?? 0) + ($cityFunction->{'Environment Quality'} ?? 0) + ($cityFunction->Facilities ?? 0) + ($cityFunction->Mobility ?? 0) }}"
+                                    data-safety="{{ $cityFunction->Safety ?? 0 }}"
+                                    data-recreation="{{ $cityFunction->Recreation ?? 0 }}"
+                                    data-environment-quality="{{ $cityFunction->{'Environment Quality'} ?? 0 }}"
+                                    data-facilities="{{ $cityFunction->Facilities ?? 0 }}"
+                                    data-mobility="{{ $cityFunction->Mobility ?? 0 }}">
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
                                              alt="{{ $cityFunction->name }}"

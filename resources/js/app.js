@@ -15,11 +15,9 @@ const showToast = (functionName, qolScore) => {
     const isPositive = qolScore >= 0;
     const sign = isPositive ? "+" : "";
 
-    // Set the text and styling of the toast based on QoL score
+    // Build the toast classes inline now that component CSS helpers are removed.
     toast.textContent = `${functionName}: ${sign}${qolScore} `;
-    toast.className = `fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold ${
-        isPositive ? "bg-green-500" : "bg-red-500"
-    }`;
+    toast.className = `fixed bottom-6 right-6 z-50 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 ${isPositive ? "bg-green-500" : "bg-red-500"}`;
 
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
@@ -28,6 +26,13 @@ const showToast = (functionName, qolScore) => {
 };
 
 const refreshQolScore = () => {
+
+    //Show loading state
+    const total = document.getElementById("qol-score-value");
+    if (total) {
+        total.textContent = "Calculating...";
+    }
+
     fetch("/grid/qol-score")
         .then((r) => r.json())
         .then((data) => {
@@ -36,10 +41,12 @@ const refreshQolScore = () => {
 
             if (data.categories) {
                 for (const [cat, score] of Object.entries(data.categories)) {
-                    const el = document.getElementById(`qol-${cat}`);
+                    // Convert category names to match HTML IDs (replace spaces with dashes)
+                    const elementId = `qol-${cat.replace(/\s+/g, '-')}`;
+                    const el = document.getElementById(elementId);
                     if (el) {
                         el.textContent = (score >= 0 ? "+" : "") + score;
-                        el.className = `text-xl font-semibold mt-0.5 ${score >= 0 ? "text-green-300" : "text-red-300"}`;
+                        el.className = `mt-0.5 text-xl font-semibold ${score >= 0 ? "text-green-300" : "text-red-300"}`;
                     }
                 }
             }
@@ -50,7 +57,7 @@ const refreshQolScore = () => {
 const initializeCityGrid = () => {
     const grid = document.querySelector("[data-city-grid]");
     const cards = document.querySelectorAll("[data-function]");
-    
+
     // Get the removal zone element (SIM.3 - Subtask 2: Define a Drop Zone Outside the Grid)
     const removalZone = document.querySelector("[data-removal-zone]");
 
@@ -60,14 +67,21 @@ const initializeCityGrid = () => {
         card.addEventListener("dragstart", (e) => {
             e.dataTransfer.setData("function", card.dataset.function);
             e.dataTransfer.setData("function_id", card.dataset.functionId);
+            e.dataTransfer.setData("category", card.dataset.category ?? "");
             e.dataTransfer.setData("image", card.dataset.image);
             e.dataTransfer.setData("qol_score", card.dataset.qolScore);
+            // Also include per-category effect values so the cell can show them after drop
+            e.dataTransfer.setData("safety", card.dataset.safety ?? 0);
+            e.dataTransfer.setData("recreation", card.dataset.recreation ?? 0);
+            e.dataTransfer.setData("environmentQuality", card.dataset.environmentQuality ?? card.dataset['environment-quality'] ?? 0);
+            e.dataTransfer.setData("facilities", card.dataset.facilities ?? 0);
+            e.dataTransfer.setData("mobility", card.dataset.mobility ?? 0);
 
             // Use the card's image as the drag ghost
             const img = card.querySelector("img");
             if (img) {
                 e.dataTransfer.setDragImage(img, 25, 25);
-                img.style.pointerEvents = "none";
+                img.classList.add("grid-drag-image");
             }
         });
     });
@@ -111,8 +125,14 @@ const initializeCityGrid = () => {
             // Read the data that was stored when the drag started
             const functionName = e.dataTransfer.getData("function");
             const functionId = e.dataTransfer.getData("function_id");
+            const category = e.dataTransfer.getData("category");
             const image = e.dataTransfer.getData("image");
             const qolScore = parseInt(e.dataTransfer.getData("qol_score"), 10);
+            const safety = e.dataTransfer.getData("safety") ?? 0;
+            const recreation = e.dataTransfer.getData("recreation") ?? 0;
+            const environmentQuality = e.dataTransfer.getData("environmentQuality") ?? e.dataTransfer.getData("environment-quality") ?? 0;
+            const facilities = e.dataTransfer.getData("facilities") ?? 0;
+            const mobility = e.dataTransfer.getData("mobility") ?? 0;
             const cellId = cell.dataset.cellId;
 
             // Clear whatever was in the cell before and remove the highlight
@@ -144,6 +164,14 @@ const initializeCityGrid = () => {
             cell.classList.add("is-occupied");
             cell.dataset.function = functionName;
             cell.dataset.functionId = functionId;
+            cell.dataset.category = category;
+            // Store individual effect values on the cell so the hover popup can read them
+            cell.dataset.safety = safety;
+            cell.dataset.recreation = recreation;
+            // DOM dataset maps data-environment-quality to environmentQuality
+            cell.dataset.environmentQuality = environmentQuality;
+            cell.dataset.facilities = facilities;
+            cell.dataset.mobility = mobility;
 
             // Send the assignment to the server so it is saved in the database
             const csrfToken = document
@@ -156,12 +184,14 @@ const initializeCityGrid = () => {
                     "X-CSRF-TOKEN": csrfToken,
                 },
                 body: JSON.stringify({ function_id: parseInt(functionId) }),
-            }).then(() => {
-                refreshQolScore();
-                showToast(functionName, qolScore);
-            }).catch(() => {
-                alert("Failed to save — please refresh and try again.");
-            });
+            })
+                .then(() => {
+                    refreshQolScore();
+                    showToast(functionName, qolScore);
+                })
+                .catch(() => {
+                    alert("Failed to save — please refresh and try again.");
+                });
         });
 
         // SIM.3 - Subtask 1: Add Drag-Off Detection to Grid Cells
@@ -194,19 +224,34 @@ const initializeCityGrid = () => {
             e.dataTransfer.dropEffect = "move";
 
             // Visual feedback: highlight the removal zone when dragging over it
-            removalZone.classList.add("ring-2", "ring-red-500", "bg-red-100", "dark:bg-red-800/30");
+            removalZone.classList.add(
+                "ring-2",
+                "ring-red-500",
+                "bg-red-100",
+                "dark:bg-red-800/30",
+            );
         });
 
         // Remove highlight when dragging leaves the removal zone
         removalZone.addEventListener("dragleave", () => {
-            removalZone.classList.remove("ring-2", "ring-red-500", "bg-red-100", "dark:bg-red-800/30");
+            removalZone.classList.remove(
+                "ring-2",
+                "ring-red-500",
+                "bg-red-100",
+                "dark:bg-red-800/30",
+            );
         });
 
         // SIM.3 - Subtask 3: Clear Cell After Successful Removal
         // Handle the drop event on removal zone
         removalZone.addEventListener("drop", (e) => {
             e.preventDefault();
-            removalZone.classList.remove("ring-2", "ring-red-500", "bg-red-100", "dark:bg-red-800/30");
+            removalZone.classList.remove(
+                "ring-2",
+                "ring-red-500",
+                "bg-red-100",
+                "dark:bg-red-800/30",
+            );
 
             // Check if this drag came from a cell (not from the library)
             const fromCell = e.dataTransfer.getData("fromCell");
@@ -217,7 +262,9 @@ const initializeCityGrid = () => {
             const cellId = e.dataTransfer.getData("cellId");
 
             // Find the cell element that we're removing from
-            const cellElement = document.querySelector(`[data-cell-id="${cellId}"]`);
+            const cellElement = document.querySelector(
+                `[data-cell-id="${cellId}"]`,
+            );
             if (!cellElement) {
                 alert("Error: Could not find the cell to remove from.");
                 return;
@@ -238,11 +285,17 @@ const initializeCityGrid = () => {
             })
                 .then((response) => {
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        throw new Error(
+                            `HTTP error! status: ${response.status}`,
+                        );
                     }
                     return response.json();
                 })
                 .then((data) => {
+
+                    const functionName = cellElement.dataset.function ?? "Function";
+                    const oldQolScore = parseInt(cellElement.dataset.qolScore ?? "0", 10);
+
                     // Success! Now clear the cell visually
                     // Clear the cell's inner HTML to remove the image and label
                     cellElement.innerHTML = "";
@@ -254,8 +307,17 @@ const initializeCityGrid = () => {
                     // Clear the data attributes
                     cellElement.dataset.function = "";
                     cellElement.dataset.functionId = "";
+                    cellElement.dataset.category = "";
+                    cellElement.dataset.safety = "";
+                    cellElement.dataset.recreation = "";
+                    cellElement.dataset.environmentQuality = "";
+                    cellElement.dataset.facilities = "";
+                    cellElement.dataset.mobility = "";
 
                     refreshQolScore();
+
+                    // Show toast with negative score for removal
+                    showToast(functionName, -oldQolScore);
                 })
                 .catch((error) => {
                     console.error("Error removing function:", error);
@@ -263,10 +325,390 @@ const initializeCityGrid = () => {
                 });
         });
     }
-
 };
 
 document.addEventListener("DOMContentLoaded", () => {
     initializeCityGrid();
     refreshQolScore();
+
+    // Bind the Undo button to a function
+    const undoButton = document.getElementById('undo-button');
+    if (undoButton) {
+        undoButton.addEventListener('click', () => {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+
+            fetch('/grid/undo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            }).then(r => r.json())
+            .then(data => {
+                // we can simply do location.reload();
+                // but we are reloading the page it's not correct that's why we are doing this:
+                
+                // Update the cell based on the response from the server
+                const cellElement = document.querySelector(`[data-cell-id="${data.cell.id}"]`);
+                if (cellElement) {
+                    cellElement.innerHTML = "";
+                    cellElement.dataset.function = "";
+                    cellElement.dataset.functionId = "";
+                    cellElement.classList.remove("is-occupied");
+                    cellElement.classList.add("is-empty");
+
+                    // If the old function was restored, add it back to the cell
+                    if (data.cell.city_function) {
+                        const fn = data.cell.city_function;
+                        if (fn.image_path) {
+                            const img = document.createElement("img");
+                            img.src = fn.image_path;
+                            img.classList.add("mb-1");
+                            img.draggable = false;
+                            cellElement.appendChild(img);
+                        }
+                        const label = document.createElement("span");
+                        label.textContent = fn.name;
+                        label.classList.add("text-xs", "font-semibold", "text-center", "text-black");
+                        cellElement.appendChild(label);
+
+                        cellElement.dataset.function = fn.name;
+                        cellElement.dataset.functionId = data.cell.function_id;
+                        cellElement.classList.remove("is-empty");
+                        cellElement.classList.add("is-occupied");
+                    }
+                }
+
+                refreshQolScore();
+                showToast('Action undone', 0);
+            }).catch(() => alert('Nothing to undo'));
+        });
+    }
+});
+
+// Hover popup: show small effect badges when hovering any element with `data-function`
+const createHoverPopup = () => {
+    let popup = document.getElementById("function-hover-popup");
+    if (popup) return popup;
+
+    popup = document.createElement("div");
+    popup.id = "function-hover-popup";
+    popup.style.position = "fixed";
+    popup.style.pointerEvents = "none";
+    popup.style.zIndex = "9999";
+    popup.className = "hidden bg-white dark:bg-gray-800 text-xs rounded-md shadow-lg p-2 text-gray-900 dark:text-gray-100";
+    document.body.appendChild(popup);
+    return popup;
+};
+
+const HOVER_HIGHLIGHT_CLASSES = [
+    "ring-4",
+    "ring-amber-400",
+    "bg-amber-50",
+    "dark:bg-amber-400/10",
+];
+
+const NEIGHBOR_HIGHLIGHT_CLASSES = [
+    "ring-2",
+    "ring-amber-300",
+    "bg-amber-50/70",
+    "dark:bg-amber-400/5",
+];
+
+const clearHoverHighlights = (cells) => {
+    cells.forEach((cell) => {
+        cell.classList.remove(...HOVER_HIGHLIGHT_CLASSES, ...NEIGHBOR_HIGHLIGHT_CLASSES);
+    });
+};
+
+const getOrthogonalNeighbors = (cells, sourceCell) => {
+    const row = Number.parseInt(sourceCell.dataset.row || "", 10);
+    const column = Number.parseInt(sourceCell.dataset.column || "", 10);
+    const sourceCategory = sourceCell.dataset.category || "";
+
+    if (Number.isNaN(row) || Number.isNaN(column)) {
+        return [];
+    }
+
+    const neighbors = [];
+
+    cells.forEach((cell) => {
+        if (cell === sourceCell) return false;
+
+        if (!cell.dataset || !cell.dataset.function || cell.dataset.function === '') {
+            return;
+        }
+
+        const cellRow = Number.parseInt(cell.dataset.row || "", 10);
+        const cellColumn = Number.parseInt(cell.dataset.column || "", 10);
+
+        const rowDelta = cellRow - row;
+        const columnDelta = cellColumn - column;
+        const isOrthogonal =
+            (cellRow === row && Math.abs(columnDelta) === 1) ||
+            (cellColumn === column && Math.abs(rowDelta) === 1);
+
+        if (!isOrthogonal) return;
+
+        const sameCategory = sourceCategory !== "" && sourceCategory === (cell.dataset.category || "");
+        const bonus = sameCategory ? 2 : 0;
+        const direction = rowDelta === -1
+            ? "top"
+            : rowDelta === 1
+                ? "bottom"
+                : columnDelta === -1
+                    ? "left"
+                    : "right";
+
+        neighbors.push({
+            cell,
+            direction,
+            bonus,
+            sameCategory,
+        });
+    });
+
+    return neighbors;
+};
+
+const formatBadge = (value) => {
+    const n = parseInt(value || 0, 10);
+    const sign = n > 0 ? `+${n}` : `${n}`;
+    const bg = n > 0 ? 'bg-green-500 text-white' : n < 0 ? 'bg-red-500 text-white' : 'bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-100';
+    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] ${bg}">${sign}</span>`;
+};
+
+const setupHoverPopup = () => {
+    const popup = createHoverPopup();
+    const grid = document.querySelector('[data-city-grid]');
+    let activeCell = null;
+    const isMobileViewport = () => window.matchMedia('(max-width: 1023px)').matches;
+    const BASE_CELL_SIZE = 96;
+
+    const getCells = () => Array.from(document.querySelectorAll('[data-grid-cell]'));
+    // Only these function names receive penalty badges and adjusted popup values.
+    const SENSITIVE_FUNCTIONS = new Set(['park', 'school', 'hospital']);
+
+    // Polluting function names (lowercase) that cause penalties when adjacent
+    const POLLUTERS = ['road', 'store', 'gas station'];
+
+    const setPopupScale = (el) => {
+        const cellSize = el.getBoundingClientRect().width || BASE_CELL_SIZE;
+        const scale = Math.max(0.75, Math.min(2.5, cellSize / BASE_CELL_SIZE));
+
+        popup.style.transformOrigin = 'top left';
+        popup.style.transform = `scale(${scale})`;
+        return scale;
+    };
+
+    const getCategoryKey = (category) => {
+        const normalized = (category || '').trim().toLowerCase();
+        if (normalized === 'environment quality') return 'environmentQuality';
+        return normalized;
+    };
+
+    const createBadgeForCell = ({ cell, amount }) => {
+        const id = cell.dataset.cellId || cell.getAttribute('data-cell-id') || '';
+        const existing = document.querySelector(`.bonus-badge[data-target="${id}"]`);
+        if (existing) existing.remove();
+
+        const badge = document.createElement('div');
+        const isPositive = amount > 0;
+        badge.className = `bonus-badge ${isPositive ? 'bonus-badge--positive' : 'bonus-badge--negative'}`;
+        badge.textContent = isPositive ? `+${amount}` : `${amount}`;
+        badge.setAttribute('data-target', id);
+        badge.style.position = 'fixed';
+        badge.style.zIndex = 60;
+        badge.style.pointerEvents = 'auto'; // allow hover so popup stays visible when moving into badge
+
+        // Position on the sensitive cell itself so the penalty is easy to see.
+        const rect = cell.getBoundingClientRect();
+        const left = rect.left + rect.width * 0.68;
+        const top = rect.top - rect.height * 0.12;
+
+        badge.style.left = `${Math.round(left)}px`;
+        badge.style.top = `${Math.round(top)}px`;
+
+        // Scale badge to match grid scaling based on neighbor cell size
+        const cellSize = rect.width || BASE_CELL_SIZE;
+        const scale = Math.max(0.75, Math.min(2.5, cellSize / BASE_CELL_SIZE));
+        badge.style.transformOrigin = 'top left';
+        badge.style.transform = `scale(${scale})`;
+
+        document.body.appendChild(badge);
+        return badge;
+    };
+
+    const updateBonusBadges = (activeCell) => {
+        // Remove existing badges then recreate
+        document.querySelectorAll('.bonus-badge').forEach((n) => n.remove());
+        if (!activeCell) return;
+
+        const cells = getCells();
+        const activeCategory = getCategoryKey(activeCell.dataset.category);
+
+        const sameCategoryNeighbors = getOrthogonalNeighbors(cells, activeCell)
+            .map((neighbor) => neighbor.cell)
+            .filter((cell) => getCategoryKey(cell.dataset.category) === activeCategory);
+
+        sameCategoryNeighbors.forEach((cell) => {
+            createBadgeForCell({ cell, amount: 2 });
+        });
+
+        const sensitiveNeighbors = getOrthogonalNeighbors(cells, activeCell)
+            .map((neighbor) => neighbor.cell)
+            .filter((cell) => SENSITIVE_FUNCTIONS.has((cell.dataset.function || '').trim().toLowerCase()));
+
+        sensitiveNeighbors.forEach((cell) => {
+            const penalty = getOrthogonalNeighbors(cells, cell).filter((neighbor) => {
+                const fn = (neighbor.cell.dataset.function || '').trim().toLowerCase();
+                return POLLUTERS.some((p) => fn.includes(p));
+            }).length * 2;
+
+            if (penalty > 0) {
+                createBadgeForCell({ cell, amount: -penalty });
+            }
+        });
+    };
+
+    const removeBonusBadges = () => {
+        document.querySelectorAll('.bonus-badge').forEach((n) => n.remove());
+    };
+
+    const buildHtml = (el) => {
+        const ds = el.dataset || {};
+        const name = ds.function || '';
+        const category = ds.category || 'Uncategorized';
+        const parts = [];
+        parts.push(`<div class="font-semibold mb-1 text-xs">${name}</div>`);
+        parts.push(`<div class="mb-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-100">${category}</div>`);
+
+        const mapping = [
+            ['safety', 'Saf'],
+            ['recreation', 'Rec'],
+            ['environmentQuality', 'EnQ'],
+            ['facilities', 'Fac'],
+            ['mobility', 'Mob'],
+        ];
+
+        const badges = mapping.map(([key, label]) => {
+            const b = formatBadge(ds[key] ?? 0);
+            return `<div class="flex items-center gap-2"><div class="w-8 text-[10px] text-gray-500 dark:text-gray-400">${label}</div>${b}</div>`;
+        }).join('');
+
+        parts.push(`<div class="grid gap-1">${badges}</div>`);
+
+        // NOTE: Orthogonal bonuses are shown as badges attached to the neighbor cells
+        // rather than inside this popup. This keeps the popup focused on the hovered
+        // function's own effects. The badge rendering is handled elsewhere in the
+        // hover flow so we don't add bonus rows here.
+        return parts.join('');
+    };
+
+    let visible = false;
+
+    const show = (el, e) => {
+        // Only show for occupied grid cells (cells have a non-empty `data-function`)
+        if (!el.dataset || !el.dataset.function || el.dataset.function === '') return;
+
+        if (activeCell === el && !popup.classList.contains('hidden')) {
+            setPopupScale(el);
+            move(e);
+            return;
+        }
+
+        activeCell = el;
+
+        const cells = getCells();
+        clearHoverHighlights(cells);
+        el.classList.add(...HOVER_HIGHLIGHT_CLASSES);
+        setPopupScale(el);
+
+        const neighbors = getOrthogonalNeighbors(cells, el);
+        neighbors.forEach(({ cell: neighbor }) => {
+            neighbor.classList.add(...NEIGHBOR_HIGHLIGHT_CLASSES);
+        });
+
+        // Render bonus badges on the hovered cell and penalty badges on adjacent sensitive cells.
+        updateBonusBadges(el);
+
+        popup.innerHTML = buildHtml(el);
+        popup.classList.remove('hidden');
+        visible = true;
+        move(e);
+    };
+
+    const hide = () => {
+        clearHoverHighlights(getCells());
+        popup.classList.add('hidden');
+        popup.style.transform = '';
+        removeBonusBadges();
+        activeCell = null;
+        visible = false;
+    };
+
+    const hideOnMobileScroll = () => {
+        if (!visible || !activeCell) return;
+        if (!isMobileViewport()) return;
+
+        hide();
+    };
+
+    const move = (e) => {
+        if (!visible) return;
+        const x = e.clientX + 12;
+        const y = e.clientY + 12;
+        popup.style.left = `${x}px`;
+        popup.style.top = `${y}px`;
+    };
+
+    // Attach listeners through the grid so changes to the cell DOM keep working without re-binding.
+    if (!grid) return;
+
+    window.addEventListener('scroll', hideOnMobileScroll, { passive: true });
+    window.addEventListener('touchmove', hideOnMobileScroll, { passive: true });
+
+    grid.addEventListener('mouseover', (e) => {
+        const el = e.target.closest('[data-grid-cell]');
+        if (!el || !grid.contains(el)) return;
+        show(el, e);
+    });
+
+    grid.addEventListener('click', (e) => {
+        if (!isMobileViewport()) return;
+
+        const el = e.target.closest('[data-grid-cell]');
+        if (!el || !grid.contains(el)) return;
+
+        show(el, e);
+    });
+
+    grid.addEventListener('mousemove', (e) => {
+        if (!visible) return;
+        move(e);
+        // Reposition badges dynamically while moving
+        if (activeCell) {
+            updateBonusBadges(activeCell);
+            // Rebuild popup contents to reflect any dynamic penalties
+            popup.innerHTML = buildHtml(activeCell);
+        }
+    });
+
+    grid.addEventListener('mouseout', (e) => {
+        const relatedTarget = e.relatedTarget;
+        if (relatedTarget && relatedTarget.closest('[data-grid-cell]')?.dataset?.function) {
+            // Moving straight into another occupied cell will trigger mouseover on that cell.
+            return;
+        }
+
+        const el = e.target.closest('[data-grid-cell]');
+        if (!el || !grid.contains(el)) return;
+
+        hide();
+    });
+};
+
+// Initialize hover popup after DOM is ready and grid initialized
+document.addEventListener('DOMContentLoaded', () => {
+    setupHoverPopup();
 });
