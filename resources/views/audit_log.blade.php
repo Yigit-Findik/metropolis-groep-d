@@ -122,6 +122,10 @@
 
                                     $detailsText = [];
                                     foreach ($renderedRows as $row) {
+                                        if (($row['label'] ?? '') === 'name') {
+                                            continue;
+                                        }
+
                                         if (array_key_exists('new', $row)) {
                                             $oldVal = is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty'));
                                             $newVal = is_array($row['new']) ? json_encode($row['new']) : (($row['new'] === null) ? 'empty' : ($row['new'] ?? 'empty'));
@@ -133,9 +137,13 @@
                                     }
 
                                     $fullDetailsLabel = count($detailsText) > 0 ? implode('. ', $detailsText) : 'No additional details recorded';
-                                    $rowLabel = $isSnapshotAction
-                                        ? ($snapshotTitle . ' ' . $functionLabel . '. Timestamp ' . $timestampLabel . '. User ' . $userLabel . '. Details ' . $fullDetailsLabel)
-                                        : ('Timestamp ' . $timestampLabel . '. User ' . $userLabel . '. Action ' . $actionLabel . '. Affected function ' . $functionLabel . '. Details ' . $fullDetailsLabel);
+                                    $actionText = match($actionLabel) {
+                                        'create' => 'Created',
+                                        'delete' => 'Deleted',
+                                        default => ucfirst($actionLabel),
+                                    };
+
+                                    $rowLabel = $actionText . ' function ' . $functionLabel . '. User ' . $userLabel . '. Timestamp ' . $timestampLabel . '. Details ' . $fullDetailsLabel;
                                 @endphp
                                 <tr class="text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset" role="row" tabindex="0" aria-label="{{ $rowLabel }}">
                                     <td class="px-3 py-2" role="gridcell"><time datetime="{{ $entry->created_at->toIso8601String() }}">{{ $timestampLabel }}</time></td>
@@ -144,46 +152,28 @@
                                     <td class="px-3 py-2" role="gridcell">{{ $functionLabel }}</td>
                                     <td class="px-3 py-2 align-top" role="gridcell">
                                         @if(count($renderedRows) > 0)
-                                            @if($isSnapshotAction)
-                                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/30">
-                                                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ $snapshotTitle }}</div>
-                                                    <div class="mt-3 flex flex-wrap gap-2">
-                                                        @foreach($renderedRows as $row)
-                                                            @continue($row['label'] === 'name')
-                                                            <div class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
-                                                                <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $row['label'] }}</span>
-                                                                @if(array_key_exists('new', $row))
-                                                                    <span>{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}</span>
-                                                                    <span class="text-gray-400">→</span>
-                                                                    <span>{{ is_array($row['new']) ? json_encode($row['new']) : (($row['new'] === null) ? 'empty' : ($row['new'] ?? 'empty')) }}</span>
-                                                                @else
-                                                                    <span>{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}</span>
-                                                                @endif
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-                                            @else
-                                                <div class="space-y-2 p-2 rounded">
+                                            <div lang="en" class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/30">
+                                                @if($isSnapshotAction)
+                                                    <div class="sr-only">{{ $snapshotTitle }}</div>
+                                                @endif
+                                                <div class="mt-0 flex flex-wrap gap-2">
                                                     @foreach($renderedRows as $row)
-                                                        <div class="text-xs">
-                                                            <div class="font-bold text-gray-900 dark:text-gray-100">{{ $row['label'] }}</div>
+                                                        @continue($row['label'] === 'name')
+                                                        <div lang="en" class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
+                                                            <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $row['label'] }}</span>
                                                             @if(array_key_exists('new', $row))
-                                                                <div class="text-gray-700 dark:text-gray-300 mt-1">
-                                                                    Old: <span aria-label="old value {{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}">{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}</span>
-                                                                </div>
-                                                                <div class="text-gray-700 dark:text-gray-300">
-                                                                    New: <span aria-label="new value {{ is_array($row['new']) ? json_encode($row['new']) : (($row['new'] === null) ? 'empty' : ($row['new'] ?? 'empty')) }}">{{ is_array($row['new']) ? json_encode($row['new']) : (($row['new'] === null) ? 'empty' : ($row['new'] ?? 'empty')) }}</span>
-                                                                </div>
+                                                                <span class="text-xs text-gray-500 mr-1">Old:</span>
+                                                                <span>{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}</span>
+                                                                <span class="text-xs text-gray-400 mx-2">•</span>
+                                                                <span class="text-xs text-gray-500 mr-1">New:</span>
+                                                                <span>{{ is_array($row['new']) ? json_encode($row['new']) : (($row['new'] === null) ? 'empty' : ($row['new'] ?? 'empty')) }}</span>
                                                             @else
-                                                                <div class="text-gray-700 dark:text-gray-300 mt-1" aria-label="{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}">
-                                                                    {{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}
-                                                                </div>
+                                                                <span>{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}</span>
                                                             @endif
                                                         </div>
                                                     @endforeach
                                                 </div>
-                                            @endif
+                                            </div>
                                         @else
                                             <span class="text-xs text-gray-500 dark:text-gray-400 italic" aria-label="No additional details recorded">No additional details recorded</span>
                                         @endif
