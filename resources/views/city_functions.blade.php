@@ -10,15 +10,7 @@
          - editOpen  : controls the edit modal
          - editing   : holds the data of the function currently being edited
          - openEdit  : populates `editing` with the chosen function and opens the edit modal --}}
-    <div class="py-12" x-data="{
-        open: false,
-        editOpen: false,
-        editing: {},
-        openEdit(fn) {
-            this.editing = fn;
-            this.editOpen = true;
-        }
-    }">
+    <div class="py-12" x-data="cityFunctions">
         <div class="px-4 sm:px-6 lg:px-8 flex flex-col items-center gap-4">
 
             {{-- Button that opens the create modal --}}
@@ -101,7 +93,8 @@
                                             {{-- Delete form: uses method spoofing to send a DELETE request.
                                                  The function is soft-deleted so it can be recovered if needed. --}}
                                             <form action="/city_functions/{{ $fn->id }}" method="POST"
-                                                  onsubmit="return confirm('Delete {{ addslashes($fn->name) }}?')">
+                                                  x-data="deleteForm(@js($fn->name))"
+                                                  @submit="confirmAndSubmit($event)">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
@@ -178,7 +171,7 @@
                     {{-- Optional QoL section: checkbox reveals the five score fields.
                          When unchecked, the inputs are disabled so the browser omits them from the
                          form submission and the controller defaults each value to 0. --}}
-                    <div class="mb-4" x-data="{ qol: false }">
+                    <div class="mb-4" x-data="qolToggle">
                         <div class="flex items-center gap-3 mb-2">
                             <input type="checkbox" id="create-qol-toggle" x-model="qol"
                                    class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 cursor-pointer">
@@ -326,8 +319,7 @@
              Only rendered when a flash message exists (after create, edit or delete).
              Auto-hides after 3 seconds via Alpine's x-init timeout. --}}
         @if(session('success'))
-        <div x-data="{ show: true }"
-             x-init="setTimeout(() => show = false, 3000)"
+        <div x-data="autoHideToast"
              x-show="show"
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-y-2"

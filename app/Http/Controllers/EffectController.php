@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CityFunction;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Services\CityFunctionEffectValueService;
 
 class EffectController extends Controller
@@ -30,8 +31,8 @@ class EffectController extends Controller
     public function update(Request $request, $functionId)
     {
         $validated = $request->validate([
-            'category' => 'required|string',
-            'value' => 'required|integer|min:-10|max:10',
+            'category' => ['required', 'string', Rule::in(CityFunction::EFFECT_COLUMNS)],
+            'value'    => 'required|integer|min:-10|max:10',
         ]);
 
         $function = CityFunction::findOrFail($functionId);
@@ -40,10 +41,7 @@ class EffectController extends Controller
             abort(403);
         }
         
-        // Update the category column with the new value
-        $function->update([
-            $validated['category'] => $validated['value'],
-        ]);
+        $function->update([$validated['category'] => $validated['value']]);
 
         return response()->json([
             'message' => 'Effect updated successfully',

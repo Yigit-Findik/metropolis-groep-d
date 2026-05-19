@@ -45,14 +45,7 @@
                      "size" controls how many pixels wide each cell is on desktop.
                      "isDesktop" checks if the screen is wide enough for the zoom slider. --}}
                 <div class="shrink-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
-                     x-data="{
-                         size: 96,
-                         isDesktop: window.matchMedia('(min-width: 1024px)').matches,
-                         init() {
-                             const mq = window.matchMedia('(min-width: 1024px)');
-                             mq.addEventListener('change', e => this.isDesktop = e.matches);
-                         }
-                     }">
+                     x-data="gridZoom">
 
                     {{-- Sticky so the title and zoom slider stay visible when scrolling down --}}
                     <div class="flex justify-between items-center w-full">
@@ -145,7 +138,7 @@
                      Fills all the space the grid doesn't use.
                      "active" holds the currently selected category filter. --}}
                 <div class="flex-1 min-w-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
-                     x-data="{ active: 'All' }">
+                     x-data="functionLibrary">
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Function Library</h3>
 
                     @if($cityFunctions->isEmpty())

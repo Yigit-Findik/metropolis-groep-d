@@ -65,70 +65,13 @@
                                                 </span>
                                             @else
                                                 {{-- Inline editing keeps the table editable without a page reload. --}}
-                                                <div x-data="{
-                                                    editing: false,
-                                                    originalValue: {{ $function->{$category} }},
-                                                    value: {{ $function->{$category} }},
-                                                    error: '',
-                                                    isValid() {
-                                                        return this.value >= -10 && this.value <= 10;
-                                                    },
-                                                    validateInput() {
-                                                        this.error = '';
-                                                        if (this.value < -10 || this.value > 10) {
-                                                            this.error = 'Value must be between -10 and 10';
-                                                        }
-                                                    },
-                                                    async save() {
-                                                        this.error = '';
-                                                        if (this.value < -10 || this.value > 10) {
-                                                            this.error = 'Value must be between -10 and 10';
-                                                            return;
-                                                        }
-                                                        try {
-                                                            const response = await fetch('{{ route('effects.update', $function->id) }}', {
-                                                                method: 'POST',
-                                                                headers: {
-                                                                    'Content-Type': 'application/json',
-                                                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                                                },
-                                                                body: JSON.stringify({
-                                                                    category: '{{ $category }}',
-                                                                    value: this.value,
-                                                                })
-                                                            });
-                                                            if (!response.ok) {
-                                                                this.error = 'Failed to update effect';
-                                                                this.value = this.originalValue;
-                                                                return;
-                                                            }
-                                                            // Keep the optimistic value and show a brief confirmation toast.
-                                                            this.originalValue = this.value;
-                                                            this.editing = false;
-                                                            const toast = document.getElementById('effect-toast');
-                                                            if (toast) {
-                                                                toast.textContent = '{{ $function->name }} effect updated!';
-                                                                toast.className = 'fixed bottom-6 right-6 z-50 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 bg-green-500';
-                                                                setTimeout(() => {
-                                                                    toast.className = toast.className + ' hidden';
-                                                                }, 3000);
-                                                            }
-                                                        } catch (err) {
-                                                            this.error = 'An error occurred';
-                                                            this.value = this.originalValue;
-                                                        }
-                                                    },
-                                                    cancel() {
-                                                        this.value = this.originalValue;
-                                                        this.error = '';
-                                                        this.editing = false;
-                                                    },
-                                                    getColor() {
-                                                        if (this.value > 0) return 'text-green-600 dark:text-green-400';
-                                                        if (this.value < 0) return 'text-red-600 dark:text-red-400';
-                                                        return 'text-gray-500 dark:text-gray-400';
-                                                    }
-                                                }" class="flex justify-center">
+                                                <div x-data="effectEditor(
+                                                    {{ $function->{$category} }},
+                                                    '{{ route('effects.update', $function->id) }}',
+                                                    '{{ csrf_token() }}',
+                                                    @js($function->name),
+                                                    @js($category)
+                                                )" class="flex justify-center">
                                                     <template x-if="!editing">
                                                         <button
                                                             @click="editing = true"
