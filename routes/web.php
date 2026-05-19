@@ -58,17 +58,16 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     // SIM.5 - Undo a function from a cell
     Route::post('/grid/undo', [CityGridCellController::class, 'undo']);
 
-    // EFF.1 - Effect management table
+});
+
+// EFF.1 - Effect management table — accessible to city planners, effects experts, and administrators
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects'])->group(function () {
     Route::get('/effects', [EffectController::class, 'index'])->name('effects.index');
     Route::post('/effects/{functionId}', [EffectController::class, 'update'])->name('effects.update');
 });
-// Effects expert and administrator routes
-Route::middleware(['auth', 'verified', 'role:Administrator,Expert in effects'])->group(function () {
-    // EFF.1 - Effect management table
-    Route::get('/effects', [EffectController::class, 'index'])->name('effects.index');
-    Route::post('/effects/{functionId}', [EffectController::class, 'update'])->name('effects.update');
 
-    // Pending actions dashboard for the effects expert
+// Pending actions dashboard — effects experts and administrators only
+Route::middleware(['auth', 'verified', 'role:Administrator,Expert in effects'])->group(function () {
     Route::get('/effects/pending-actions', [PendingActionController::class, 'index'])->name('effects.pending-actions');
 });
 
@@ -86,7 +85,5 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-Route::get('/api/qol-score', [CityGridCellController::class, 'getQolScore']);
 
 require __DIR__.'/auth.php';

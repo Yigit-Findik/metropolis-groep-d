@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Models\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -32,9 +33,13 @@ class User extends Authenticatable
         ];
     }
 
-    // Define the relationship to the Role model
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function actionHistory(): HasMany
+    {
+        return $this->hasMany(ActionHistory::class);
     }
 }
