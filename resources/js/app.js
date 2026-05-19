@@ -1,6 +1,7 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
 
+// Alpine component definitions
 import { gridZoom } from './alpine/gridZoom';
 import { functionLibrary } from './alpine/functionLibrary';
 import { navigation } from './alpine/navigation';
@@ -10,11 +11,13 @@ import { autoHideToast } from './alpine/autoHideToast';
 import { deleteForm } from './alpine/deleteForm';
 import { effectEditor } from './alpine/effectEditor';
 
+// Core modules
 import { GridApi } from './api/GridApi';
 import { QolService } from './qol/QolService';
 import { GridController } from './grid/GridController';
 import { HoverPopup } from './hover/HoverPopup';
 
+// Register all Alpine components before Alpine.start()
 Alpine.data('gridZoom', gridZoom);
 Alpine.data('functionLibrary', functionLibrary);
 Alpine.data('navigation', navigation);
@@ -28,6 +31,7 @@ window.Alpine = Alpine;
 Alpine.start();
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Wire up dependencies and initialise the grid
     const api = new GridApi();
     const qolService = new QolService(api);
     const gridController = new GridController(api, qolService);

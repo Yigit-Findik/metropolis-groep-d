@@ -11,18 +11,20 @@ export class GridController {
         this.#qolService = qolService;
     }
 
+    // Entry point — call once after DOMContentLoaded
     init() {
         this.#setupLibraryCards();
 
         const grid = document.querySelector('[data-city-grid]');
-        if (!grid) return;
+        if (!grid) return; // Grid page not loaded, nothing to set up
 
         const cells = Array.from(grid.querySelectorAll('[data-grid-cell]'));
         this.#setupCells(cells);
-        this.#setupRemovalZone(cells);
+        this.#setupRemovalZone();
         this.#setupUndoButton();
     }
 
+    // Makes every library card draggable and stores its data in the drag transfer
     #setupLibraryCards() {
         const cards = document.querySelectorAll('[data-function]');
 
@@ -35,10 +37,12 @@ export class GridController {
                 e.dataTransfer.setData('qol_score', card.dataset.qolScore);
                 e.dataTransfer.setData('safety', card.dataset.safety ?? 0);
                 e.dataTransfer.setData('recreation', card.dataset.recreation ?? 0);
+                // dataset normalises "environment-quality" to "environmentQuality"
                 e.dataTransfer.setData('environmentQuality', card.dataset.environmentQuality ?? card.dataset['environment-quality'] ?? 0);
                 e.dataTransfer.setData('facilities', card.dataset.facilities ?? 0);
                 e.dataTransfer.setData('mobility', card.dataset.mobility ?? 0);
 
+                // Use the card image as the drag ghost
                 const img = card.querySelector('img');
                 if (img) {
                     e.dataTransfer.setDragImage(img, 25, 25);
@@ -48,8 +52,10 @@ export class GridController {
         });
     }
 
+    // Attaches drag/drop listeners to each grid cell
     #setupCells(cells) {
         cells.forEach((cell) => {
+            // Highlight the cell being hovered during a drag
             cell.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 cells.forEach((c) => c.classList.remove('ring-4', 'ring-blue-500'));
@@ -62,16 +68,16 @@ export class GridController {
 
             cell.addEventListener('drop', (e) => this.#handleCellDrop(e, cell, cells));
 
-            // SIM.3 - Subtask 1: Allow dragging occupied cells to the removal zone.
+            // SIM.3 - Subtask 1: Allow dragging an occupied cell to the removal zone
             cell.addEventListener('dragstart', (e) => {
                 if (!cell.dataset.functionId || cell.dataset.functionId === '') {
-                    e.preventDefault();
+                    e.preventDefault(); // Empty cells cannot be dragged
                     return;
                 }
 
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('cellId', cell.dataset.cellId);
-                e.dataTransfer.setData('fromCell', 'true');
+                e.dataTransfer.setData('fromCell', 'true'); // Distinguishes from library drags
 
                 const img = cell.querySelector('img');
                 if (img) e.dataTransfer.setDragImage(img, 25, 25);
@@ -79,9 +85,11 @@ export class GridController {
         });
     }
 
+    // Handles a card or cell being dropped onto a grid cell
     #handleCellDrop(e, cell, cells) {
         e.preventDefault();
 
+        // Ask for confirmation before replacing an existing function
         if (cell.dataset.function && cell.dataset.function !== '') {
             if (!confirm('Are you sure you want to change this function?')) return;
         }
@@ -98,6 +106,7 @@ export class GridController {
         const mobility = e.dataTransfer.getData('mobility') ?? 0;
         const cellId = cell.dataset.cellId;
 
+        // Optimistically update the DOM before the server responds
         this.#renderFunctionInCell(cell, {
             functionName, functionId, category, image,
             safety, recreation, environmentQuality, facilities, mobility,
@@ -111,6 +120,7 @@ export class GridController {
             .catch(() => alert('Failed to save — please refresh and try again.'));
     }
 
+    // SIM.3 - Subtask 2: Sets up the red drop zone for removing functions
     #setupRemovalZone() {
         const removalZone = document.querySelector('[data-removal-zone]');
         if (!removalZone) return;
@@ -127,11 +137,12 @@ export class GridController {
             removalZone.classList.remove(...highlightClasses);
         });
 
-        // SIM.3 - Subtask 3: Clear cell after successful removal.
+        // SIM.3 - Subtask 3: Clear the cell and sync with the backend after a drop
         removalZone.addEventListener('drop', (e) => {
             e.preventDefault();
             removalZone.classList.remove(...highlightClasses);
 
+            // Only accept drags that originated from a grid cell, not the library
             if (e.dataTransfer.getData('fromCell') !== 'true') return;
 
             const cellId = e.dataTransfer.getData('cellId');
@@ -142,7 +153,7 @@ export class GridController {
                 return;
             }
 
-            // SIM.3 - Subtask 5: Send removal request to backend.
+            // SIM.3 - Subtask 5: Send removal request to backend
             this.#api.remove(cellId)
                 .then(() => {
                     const functionName = cellElement.dataset.function ?? 'Function';
@@ -150,6 +161,7 @@ export class GridController {
 
                     this.#clearCell(cellElement);
                     this.#qolService.refresh();
+                    // Show the negative impact of the removal
                     this.#qolService.showToast(functionName, -oldQolScore);
                 })
                 .catch((error) => {
@@ -159,6 +171,7 @@ export class GridController {
         });
     }
 
+    // Wires up the undo button; reverts the last assign/remove action
     #setupUndoButton() {
         const undoButton = document.getElementById('undo-button');
         if (!undoButton) return;
@@ -171,6 +184,7 @@ export class GridController {
 
                     this.#clearCell(cellElement);
 
+                    // If the server restored a previous function, re-render it
                     if (data.cell.city_function) {
                         const fn = data.cell.city_function;
                         this.#renderFunctionInCell(cellElement, {
@@ -190,6 +204,7 @@ export class GridController {
         });
     }
 
+    // Writes a function's image, label, and data attributes into a cell element
     #renderFunctionInCell(cell, { functionName, functionId, category, image, safety, recreation, environmentQuality, facilities, mobility }) {
         cell.innerHTML = '';
         cell.classList.remove('ring-4', 'ring-blue-500');
@@ -207,6 +222,7 @@ export class GridController {
         label.classList.add('text-xs', 'font-semibold', 'text-center', 'text-black');
         cell.appendChild(label);
 
+        // Mark as occupied and store all effect values so the hover popup can read them
         cell.classList.remove('is-empty');
         cell.classList.add('is-occupied');
         cell.dataset.function = functionName;
@@ -219,6 +235,7 @@ export class GridController {
         cell.dataset.mobility = mobility;
     }
 
+    // Resets a cell to its empty state, clearing all content and data attributes
     #clearCell(cell) {
         cell.innerHTML = '';
         cell.classList.remove('is-occupied');

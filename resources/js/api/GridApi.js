@@ -6,9 +6,11 @@ export class GridApi {
     #csrfToken;
 
     constructor() {
+        // Grab the CSRF token Laravel injects into the page <head>
         this.#csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     }
 
+    // Assigns a city function to a grid cell
     async assign(cellId, functionId) {
         const response = await fetch(`/grid/${cellId}/assign`, {
             method: 'POST',
@@ -24,6 +26,7 @@ export class GridApi {
         return response.json();
     }
 
+    // Removes the city function from a grid cell
     async remove(cellId) {
         const response = await fetch(`/grid/${cellId}/remove`, {
             method: 'DELETE',
@@ -38,6 +41,7 @@ export class GridApi {
         return response.json();
     }
 
+    // Reverts the last grid action
     async undo() {
         const response = await fetch('/grid/undo', {
             method: 'POST',
@@ -52,6 +56,7 @@ export class GridApi {
         return response.json();
     }
 
+    // Fetches the current total and per-category QoL scores
     async getQolScore() {
         const response = await fetch('/grid/qol-score');
 

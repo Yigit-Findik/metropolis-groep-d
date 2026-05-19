@@ -3,12 +3,13 @@
  */
 export class QolService {
     #api;
-    #toastTimer = null;
+    #toastTimer = null; // Tracks the auto-hide timeout so it can be reset on rapid updates
 
     constructor(api) {
         this.#api = api;
     }
 
+    // Shows a temporary toast with the function name and its QoL impact
     showToast(functionName, qolScore) {
         const toast = document.getElementById('qol-toast');
         if (!toast) return;
@@ -19,12 +20,14 @@ export class QolService {
         toast.textContent = `${functionName}: ${sign}${qolScore} `;
         toast.className = `fixed bottom-6 right-6 z-50 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 ${isPositive ? 'bg-green-500' : 'bg-red-500'}`;
 
+        // Reset the timer so rapid drops don't dismiss the toast too early
         clearTimeout(this.#toastTimer);
         this.#toastTimer = setTimeout(() => {
             toast.classList.add('hidden');
         }, 3000);
     }
 
+    // Fetches fresh QoL scores from the server and updates all score elements in the DOM
     async refresh() {
         const total = document.getElementById('qol-score-value');
         if (total) total.textContent = 'Calculating...';
@@ -36,6 +39,7 @@ export class QolService {
 
             if (data.categories) {
                 for (const [cat, score] of Object.entries(data.categories)) {
+                    // Element IDs use dashes: "qol-environment-quality", "qol-safety", etc.
                     const elementId = `qol-${cat.replace(/\s+/g, '-')}`;
                     const el = document.getElementById(elementId);
                     if (el) {
