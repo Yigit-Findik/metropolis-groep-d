@@ -32,11 +32,11 @@
                 </form>
 
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" role="grid" aria-label="System audit log showing administrator actions on effects data">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" role="grid" aria-label="System audit log showing user actions on effects data">
                         <thead>
                             <tr class="text-left text-sm text-gray-500">
                                 <th class="px-3 py-2" scope="col">Timestamp</th>
-                                <th class="px-3 py-2" scope="col">Admin</th>
+                                <th class="px-3 py-2" scope="col">User</th>
                                 <th class="px-3 py-2" scope="col">Action</th>
                                 <th class="px-3 py-2" scope="col">Affected Function</th>
                                 <th class="px-3 py-2" scope="col">Details</th>
@@ -109,9 +109,16 @@
                                     }
 
                                     $timestampLabel = $entry->created_at->format('j-n-Y H:i:s');
-                                    $adminLabel = $entry->user?->name ?? 'system';
+                                    $userLabel = $entry->user?->name ?? 'system';
                                     $actionLabel = $entry->action;
                                     $functionLabel = $entry->newCityFunction?->name ?? $entry->oldCityFunction?->name ?? 'Not available';
+                                    $actionBadgeClasses = [
+                                        'create' => 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200',
+                                        'update' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200',
+                                        'delete' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
+                                    ][$actionLabel] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+                                    $isSnapshotAction = in_array($actionLabel, ['create', 'delete'], true);
+                                    $snapshotTitle = $actionLabel === 'create' ? 'Created city function' : 'Deleted city function';
 
                                     $detailsText = [];
                                     foreach ($renderedRows as $row) {
@@ -126,34 +133,57 @@
                                     }
 
                                     $fullDetailsLabel = count($detailsText) > 0 ? implode('. ', $detailsText) : 'No additional details recorded';
-                                    $rowLabel = 'Timestamp ' . $timestampLabel . '. Admin ' . $adminLabel . '. Action ' . $actionLabel . '. Affected function ' . $functionLabel . '. Details ' . $fullDetailsLabel;
+                                    $rowLabel = $isSnapshotAction
+                                        ? ($snapshotTitle . ' ' . $functionLabel . '. Timestamp ' . $timestampLabel . '. User ' . $userLabel . '. Details ' . $fullDetailsLabel)
+                                        : ('Timestamp ' . $timestampLabel . '. User ' . $userLabel . '. Action ' . $actionLabel . '. Affected function ' . $functionLabel . '. Details ' . $fullDetailsLabel);
                                 @endphp
                                 <tr class="text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset" role="row" tabindex="0" aria-label="{{ $rowLabel }}">
                                     <td class="px-3 py-2" role="gridcell"><time datetime="{{ $entry->created_at->toIso8601String() }}">{{ $timestampLabel }}</time></td>
-                                    <td class="px-3 py-2" role="gridcell">{{ $adminLabel }}</td>
-                                    <td class="px-3 py-2" role="gridcell"><span aria-label="Action: {{ $actionLabel }}">{{ $actionLabel }}</span></td>
+                                    <td class="px-3 py-2" role="gridcell">{{ $userLabel }}</td>
+                                    <td class="px-3 py-2" role="gridcell"><span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold capitalize {{ $actionBadgeClasses }}" aria-label="Action: {{ $actionLabel }}">{{ $actionLabel }}</span></td>
                                     <td class="px-3 py-2" role="gridcell">{{ $functionLabel }}</td>
                                     <td class="px-3 py-2 align-top" role="gridcell">
                                         @if(count($renderedRows) > 0)
-                                            <div class="space-y-2 p-2 rounded">
-                                                @foreach($renderedRows as $row)
-                                                    <div class="text-xs">
-                                                        <div class="font-bold text-gray-900 dark:text-gray-100">{{ $row['label'] }}</div>
-                                                        @if(array_key_exists('new', $row))
-                                                            <div class="text-gray-700 dark:text-gray-300 mt-1">
-                                                                Old: <span aria-label="old value {{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}">{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}</span>
+                                            @if($isSnapshotAction)
+                                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/30">
+                                                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ $snapshotTitle }}</div>
+                                                    <div class="mt-3 flex flex-wrap gap-2">
+                                                        @foreach($renderedRows as $row)
+                                                            @continue($row['label'] === 'name')
+                                                            <div class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
+                                                                <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $row['label'] }}</span>
+                                                                @if(array_key_exists('new', $row))
+                                                                    <span>{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}</span>
+                                                                    <span class="text-gray-400">→</span>
+                                                                    <span>{{ is_array($row['new']) ? json_encode($row['new']) : (($row['new'] === null) ? 'empty' : ($row['new'] ?? 'empty')) }}</span>
+                                                                @else
+                                                                    <span>{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}</span>
+                                                                @endif
                                                             </div>
-                                                            <div class="text-gray-700 dark:text-gray-300">
-                                                                New: <span aria-label="new value {{ is_array($row['new']) ? json_encode($row['new']) : (($row['new'] === null) ? 'empty' : ($row['new'] ?? 'empty')) }}">{{ is_array($row['new']) ? json_encode($row['new']) : (($row['new'] === null) ? 'empty' : ($row['new'] ?? 'empty')) }}</span>
-                                                            </div>
-                                                        @else
-                                                            <div class="text-gray-700 dark:text-gray-300 mt-1" aria-label="{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}">
-                                                                {{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}
-                                                            </div>
-                                                        @endif
+                                                        @endforeach
                                                     </div>
-                                                @endforeach
-                                            </div>
+                                                </div>
+                                            @else
+                                                <div class="space-y-2 p-2 rounded">
+                                                    @foreach($renderedRows as $row)
+                                                        <div class="text-xs">
+                                                            <div class="font-bold text-gray-900 dark:text-gray-100">{{ $row['label'] }}</div>
+                                                            @if(array_key_exists('new', $row))
+                                                                <div class="text-gray-700 dark:text-gray-300 mt-1">
+                                                                    Old: <span aria-label="old value {{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}">{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}</span>
+                                                                </div>
+                                                                <div class="text-gray-700 dark:text-gray-300">
+                                                                    New: <span aria-label="new value {{ is_array($row['new']) ? json_encode($row['new']) : (($row['new'] === null) ? 'empty' : ($row['new'] ?? 'empty')) }}">{{ is_array($row['new']) ? json_encode($row['new']) : (($row['new'] === null) ? 'empty' : ($row['new'] ?? 'empty')) }}</span>
+                                                                </div>
+                                                            @else
+                                                                <div class="text-gray-700 dark:text-gray-300 mt-1" aria-label="{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}">
+                                                                    {{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                         @else
                                             <span class="text-xs text-gray-500 dark:text-gray-400 italic" aria-label="No additional details recorded">No additional details recorded</span>
                                         @endif

@@ -24,9 +24,6 @@
                         <x-nav-link :href="route('city_functions')" :active="request()->routeIs('city_functions')">
                             {{ __('City Functions') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('audit_log')" :active="request()->routeIs('audit_log')">
-                            {{ __('Audit Log') }}
-                        </x-nav-link>
                     @endif
                     @if(in_array(Auth::user()->role?->name, ['Administrator', 'Expert in effects'], true))
                         <x-nav-link :href="route('effects.index')" :active="request()->routeIs('effects.index')">
@@ -34,6 +31,11 @@
                         </x-nav-link>
                         <x-nav-link :href="route('effects.pending-actions')" :active="request()->routeIs('effects.pending-actions')">
                             {{ __('Pending actions') }}
+                        </x-nav-link>
+                    @endif
+                    @if(Auth::user()->role?->name === 'Administrator')
+                        <x-nav-link :href="route('audit_log')" :active="request()->routeIs('audit_log')">
+                            {{ __('Audit Log') }}
                         </x-nav-link>
                     @endif
                 </div>
@@ -100,9 +102,6 @@
                 <x-responsive-nav-link :href="route('city_functions')" :active="request()->routeIs('city_functions')">
                     {{ __('City Functions') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('audit_log')" :active="request()->routeIs('audit_log')">
-                    {{ __('Audit Log') }}
-                </x-responsive-nav-link>
             @endif
             @if(in_array(Auth::user()->role?->name, ['Administrator', 'Expert in effects'], true))
                 <x-responsive-nav-link :href="route('effects.index')" :active="request()->routeIs('effects.index')">
@@ -110,6 +109,11 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('effects.pending-actions')" :active="request()->routeIs('effects.pending-actions')">
                     {{ __('Pending actions') }}
+                </x-responsive-nav-link>
+            @endif
+            @if(Auth::user()->role?->name === 'Administrator')
+                <x-responsive-nav-link :href="route('audit_log')" :active="request()->routeIs('audit_log')">
+                    {{ __('Audit Log') }}
                 </x-responsive-nav-link>
             @endif
         </div>

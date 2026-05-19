@@ -29,12 +29,12 @@ class ActionHistory extends Model
 
     public function oldCityFunction()
     {
-        return $this->belongsTo(CityFunction::class, 'old_city_function_id');
+        return $this->belongsTo(CityFunction::class, 'old_city_function_id')->withTrashed();
     }
 
     public function newCityFunction()
     {
-        return $this->belongsTo(CityFunction::class, 'new_city_function_id');
+        return $this->belongsTo(CityFunction::class, 'new_city_function_id')->withTrashed();
     }
 
     protected static function booted(): void

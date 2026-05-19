@@ -11,6 +11,17 @@ use App\Models\ActionHistory;
 
 class CityFunctionObserver
 {
+    private const SUMMARY_FIELDS = [
+        'name',
+        'category',
+        'description',
+        'Safety',
+        'Recreation',
+        'Environment Quality',
+        'Facilities',
+        'Mobility',
+    ];
+
     private function pendingActionService(): PendingActionService
     {
         // Resolve the service lazily so the observer stays constructor-free.
@@ -27,6 +38,20 @@ class CityFunctionObserver
     {
         // Check the authenticated user's role name directly, because the observer runs outside a controller context.
         return in_array(Auth::user()?->role?->name, ['Administrator', 'Expert in effects'], true);
+    }
+
+    private function summaryFor(CityFunction $cityFunction): array
+    {
+        $attributes = $cityFunction->getAttributes();
+        $summary = [];
+
+        foreach (self::SUMMARY_FIELDS as $field) {
+            if (array_key_exists($field, $attributes)) {
+                $summary[$field] = $attributes[$field];
+            }
+        }
+
+        return $summary;
     }
 
     public function created(CityFunction $cityFunction): void
@@ -48,7 +73,7 @@ class CityFunctionObserver
             'old_city_function_id' => null,
             'new_city_function_id' => $cityFunction->id,
             'details' => [
-                'new' => $cityFunction->toArray(),
+                'new' => $this->summaryFor($cityFunction),
             ],
         ]);
     }
@@ -121,7 +146,7 @@ class CityFunctionObserver
                 'old_city_function_id' => null,
                 'new_city_function_id' => $cityFunction->id,
                 'details' => [
-                    'original' => $cityFunction->toArray(),
+                    'original' => $this->summaryFor($cityFunction),
                 ],
             ]);
         }
