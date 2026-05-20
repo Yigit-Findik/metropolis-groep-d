@@ -135,8 +135,8 @@
 
                     {{-- Optional image upload --}}
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Image</label>
-                        <input type="file" name="image" accept="image/*"
+                        <label for="create-image" class="block text-sm font-medium text-gray-300 mb-1">Image</label>
+                        <input type="file" id="create-image" name="image" accept="image/*"
                                class="w-full text-sm text-white bg-gray-700 rounded-lg border border-gray-600 px-3 py-2
                                       file:mr-3 file:py-1 file:px-3 file:rounded file:border-0
                                       file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
@@ -144,15 +144,15 @@
 
                     {{-- Required: function name --}}
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Name <span class="text-red-400">*</span></label>
-                        <input type="text" name="name" required
+                        <label for="create-name" class="block text-sm font-medium text-gray-300 mb-1">Name <span class="text-red-400">*</span></label>
+                        <input type="text" id="create-name" name="name" required
                                class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
 
                     {{-- Required: category dropdown populated from existing categories in the database --}}
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Category <span class="text-red-400">*</span></label>
-                        <select name="category" required
+                        <label for="create-category" class="block text-sm font-medium text-gray-300 mb-1">Category <span class="text-red-400">*</span></label>
+                        <select id="create-category" name="category" required
                                 class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="" disabled selected>Select a category</option>
                             @foreach($categories as $cat)
@@ -163,8 +163,8 @@
 
                     {{-- Required: short description of the function --}}
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Description <span class="text-red-400">*</span></label>
-                        <textarea name="description" required rows="3"
+                        <label for="create-description" class="block text-sm font-medium text-gray-300 mb-1">Description <span class="text-red-400">*</span></label>
+                        <textarea id="create-description" name="description" required rows="3"
                                   class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
                     </div>
 
@@ -182,8 +182,8 @@
                         <div x-show="qol" x-transition class="grid grid-cols-2 gap-4">
                             @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-300 mb-1">{{ $label }}</label>
-                                    <input type="number" name="{{ $slug }}" value="0" min="0"
+                                    <label for="create-{{ $slug }}" class="block text-sm font-medium text-gray-300 mb-1">{{ $label }}</label>
+                                    <input type="number" id="create-{{ $slug }}" name="{{ $slug }}" value="0" min="0"
                                            :disabled="!qol"
                                            class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
@@ -231,11 +231,11 @@
 
                     {{-- Image: shows the current image if one exists; leave the file input empty to keep it --}}
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Image</label>
+                        <label for="edit-image" class="block text-sm font-medium text-gray-300 mb-1">Image</label>
                         <template x-if="editing.image_path">
                             <img :src="'/' + editing.image_path" class="w-12 h-12 object-contain rounded mb-2">
                         </template>
-                        <input type="file" name="image" accept="image/*"
+                        <input type="file" id="edit-image" name="image" accept="image/*"
                                class="w-full text-sm text-white bg-gray-700 rounded-lg border border-gray-600 px-3 py-2
                                       file:mr-3 file:py-1 file:px-3 file:rounded file:border-0
                                       file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
@@ -244,15 +244,15 @@
 
                     {{-- Name pre-filled via x-model --}}
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Name <span class="text-red-400">*</span></label>
-                        <input type="text" name="name" required x-model="editing.name"
+                        <label for="edit-name" class="block text-sm font-medium text-gray-300 mb-1">Name <span class="text-red-400">*</span></label>
+                        <input type="text" id="edit-name" name="name" required x-model="editing.name"
                                class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
 
                     {{-- Category pre-selected via x-model --}}
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Category <span class="text-red-400">*</span></label>
-                        <select name="category" required x-model="editing.category"
+                        <label for="edit-category" class="block text-sm font-medium text-gray-300 mb-1">Category <span class="text-red-400">*</span></label>
+                        <select id="edit-category" name="category" required x-model="editing.category"
                                 class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             @foreach($categories as $cat)
                                 <option value="{{ $cat }}">{{ $cat }}</option>
@@ -262,8 +262,8 @@
 
                     {{-- Description pre-filled via x-model --}}
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Description</label>
-                        <textarea name="description" rows="3" x-model="editing.description"
+                        <label for="edit-description" class="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                        <textarea id="edit-description" name="description" rows="3" x-model="editing.description"
                                   class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
                     </div>
 
@@ -273,28 +273,28 @@
                         <label class="block text-sm font-medium text-gray-300 mb-2">QoL Values</label>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Safety</label>
-                                <input type="number" name="safety" min="0" x-model="editing.safety"
+                                <label for="edit-safety" class="block text-sm font-medium text-gray-300 mb-1">Safety</label>
+                                <input type="number" id="edit-safety" name="safety" min="0" x-model="editing.safety"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Recreation</label>
-                                <input type="number" name="recreation" min="0" x-model="editing.recreation"
+                                <label for="edit-recreation" class="block text-sm font-medium text-gray-300 mb-1">Recreation</label>
+                                <input type="number" id="edit-recreation" name="recreation" min="0" x-model="editing.recreation"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Environment Quality</label>
-                                <input type="number" name="environment_quality" min="0" x-model="editing.environment_quality"
+                                <label for="edit-environment-quality" class="block text-sm font-medium text-gray-300 mb-1">Environment Quality</label>
+                                <input type="number" id="edit-environment-quality" name="environment_quality" min="0" x-model="editing.environment_quality"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Facilities</label>
-                                <input type="number" name="facilities" min="0" x-model="editing.facilities"
+                                <label for="edit-facilities" class="block text-sm font-medium text-gray-300 mb-1">Facilities</label>
+                                <input type="number" id="edit-facilities" name="facilities" min="0" x-model="editing.facilities"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Mobility</label>
-                                <input type="number" name="mobility" min="0" x-model="editing.mobility"
+                                <label for="edit-mobility" class="block text-sm font-medium text-gray-300 mb-1">Mobility</label>
+                                <input type="number" id="edit-mobility" name="mobility" min="0" x-model="editing.mobility"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                         </div>

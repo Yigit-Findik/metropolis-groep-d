@@ -146,7 +146,8 @@
                     @else
                         {{-- Dropdown to filter which category of functions is shown --}}
                         <div class="mb-6">
-                            <select x-model="active"
+                            <label for="category-filter" class="sr-only">Filter by category</label>
+                            <select id="category-filter" x-model="active"
                                     class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="All">All categories</option>
                                 @foreach($categories as $category)
@@ -162,6 +163,9 @@
                                 {{-- Hide cards that don't match the selected category --}}
                                 <div x-show="active === 'All' || active === '{{ $cityFunction->category }}'"
                                     class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition"
+                                    role="button"
+                                    tabindex="0"
+                                    aria-label="Drag {{ $cityFunction->name }} onto the grid"
                                     draggable="true"
                                     data-function="{{ $cityFunction->name }}"
                                     data-function-id="{{ $cityFunction->id }}"
