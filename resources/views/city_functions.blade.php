@@ -91,8 +91,9 @@
                                                         environment_quality: {{ $fn->{'Environment Quality'} ?? 0 }},
                                                         facilities: {{ $fn->Facilities ?? 0 }},
                                                         mobility: {{ $fn->Mobility ?? 0 }},
-                                                        image_path: @js($fn->image_path ?? '')
-                                                    })"
+                                                        image_path: @js($fn->image_path ?? ''),
+                                                        functionConditions: @js($fn->functionConditions)
+                                                    }, @js($cityFunctions->map(fn($f) => ['id' => $f->id, 'name' => $f->name])))"
                                                     class="px-3 py-1 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-semibold rounded-lg transition">
                                                 Edit
                                             </button>
@@ -207,7 +208,7 @@
                             @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
                                 <div>
                                     <label class="block text-sm font-medium text-gray-300 mb-1">{{ $label }}</label>
-                                    <input type="number" name="{{ $slug }}" value="0" min="0"
+                                    <input type="number" name="{{ $slug }}" value="0" min="-10" max="10"
                                            :disabled="!qol"
                                            class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
@@ -250,7 +251,7 @@
                 <h3 class="text-lg font-bold text-white mb-6">Edit City Function</h3>
 
                 {{-- PUT request via method spoofing — HTML forms only support GET/POST --}}
-                <form method="POST" :action="'/city_functions/' + editing.id" enctype="multipart/form-data" class="[color-scheme:dark]">
+                <form method="POST" :action="'/city_functions/' + editing.id" enctype="multipart/form-data" class="[color-scheme:dark]" @submit="submitEdit">
                     @csrf
                     @method('PUT')
 
@@ -313,28 +314,83 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Safety</label>
-                                <input type="number" name="safety" min="0" x-model="editing.safety"
+                                <input type="number" name="safety" min="-10" max="10" x-model="editing.safety"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Recreation</label>
-                                <input type="number" name="recreation" min="0" x-model="editing.recreation"
+                                <input type="number" name="recreation" min="-10" max="10" x-model="editing.recreation"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Environment Quality</label>
-                                <input type="number" name="environment_quality" min="0" x-model="editing.environment_quality"
+                                <input type="number" name="environment_quality" min="-10" max="10" x-model="editing.environment_quality"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Facilities</label>
-                                <input type="number" name="facilities" min="0" x-model="editing.facilities"
+                                <input type="number" name="facilities" min="-10" max="10" x-model="editing.facilities"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Mobility</label>
-                                <input type="number" name="mobility" min="0" x-model="editing.mobility"
+                                <input type="number" name="mobility" min="-10" max="10" x-model="editing.mobility"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Adjacency Rules section --}}
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Adjacency Rules</label>
+                        <p class="text-xs text-gray-400 mb-3">Define which functions must be neighbors or must not be neighbors.</p>
+
+                        {{-- List existing conditions --}}
+                        <div class="space-y-2 mb-4">
+                            <template x-for="(condition, index) in editing.conditions" :key="index">
+                                <div class="flex items-center justify-between bg-gray-700 rounded-lg p-3">
+                                    <div class="flex-1">
+                                        <span x-text="getTargetName(condition.target_function_id)" class="font-medium text-white"></span>
+                                        <span x-text="' (' + condition.type + ')'" :class="condition.type === 'forbidden' ? 'text-red-400' : 'text-green-400'" class="text-sm ml-2"></span>
+                                    </div>
+                                    <button type="button" @click="removeCondition(index)"
+                                            class="px-3 py-1 bg-red-700 hover:bg-red-600 text-white text-xs font-semibold rounded transition">
+                                        Remove
+                                    </button>
+                                </div>
+                            </template>
+                            <template x-if="editing.conditions.length === 0">
+                                <p class="text-sm text-gray-500">No adjacency rules yet.</p>
+                            </template>
+                        </div>
+
+                        {{-- Add new condition --}}
+                        <div class="bg-gray-700 rounded-lg p-3 space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Target Function</label>
+                                <select x-model.number="newConditionTarget"
+                                        class="!bg-gray-800 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select a function</option>
+                                    <template x-for="fn in allFunctions.filter(f => f.id !== editing.id)" :key="fn.id">
+                                        <option :value="fn.id" x-text="fn.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="flex-1">
+                                    <label class="block text-xs font-medium text-gray-300 mb-1">Type</label>
+                                    <select x-model="newConditionType"
+                                            class="!bg-gray-800 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="required">Required</option>
+                                        <option value="forbidden">Forbidden</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" @click="addCondition()"
+                                            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition">
+                                        Add Rule
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

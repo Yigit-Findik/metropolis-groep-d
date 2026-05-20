@@ -180,6 +180,9 @@
                                     data-facilities="{{ $cityFunction->Facilities ?? 0 }}"
                                     data-mobility="{{ $cityFunction->Mobility ?? 0 }}"
                                     aria-label="Function: {{ $cityFunction->name }}">
+                                    data-conditions="{{ json_encode($cityFunction->functionConditions ?? []) }}"
+                                    @mouseenter="highlightCells({{ $cityFunction->id }}, $event.target)"
+                                    @mouseleave="clearHighlights()">
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
                                              alt="{{ $cityFunction->name }}"
