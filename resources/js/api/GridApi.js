@@ -64,4 +64,13 @@ export class GridApi {
 
         return response.json();
     }
+
+    // Fetches valid and invalid cells for placing a function based on adjacency rules
+    async getValidCells(functionId) {
+        const response = await fetch(`/grid/valid-cells?function_id=${functionId}`);
+
+        if (!response.ok) throw new Error(`Valid cells fetch failed: ${response.status}`);
+
+        return response.json();
+    }
 }

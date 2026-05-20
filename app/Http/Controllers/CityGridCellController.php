@@ -56,6 +56,14 @@ class CityGridCellController extends Controller
         ]);
 
         $cell = CityGridCell::findOrFail($id);
+        $function = CityFunction::with('functionConditions')->findOrFail($request->function_id);
+        
+        // Check adjacency conditions
+        $error = $this->checkAdjacencyConditions($function, $cell);
+        if ($error) {
+            return response()->json(['message' => $error], 422);
+        }
+
         $oldFunctionId = $cell->function_id; // Saved so we can record it in ActionHistory before it is replaced
 
         $cell->update([
@@ -81,12 +89,113 @@ class CityGridCellController extends Controller
         ]);
     }
 
+    /**
+     * Check if placing a function violates its adjacency conditions
+     */
+    private function checkAdjacencyConditions(CityFunction $function, CityGridCell $targetCell)
+    {
+        // Get adjacent cells
+        $adjacentCells = $this->getAdjacentCells($targetCell);
+        $neighborFunctionIds = $adjacentCells->pluck('function_id')->filter()->unique()->values()->all();
+
+        // Check each condition
+        foreach ($function->functionConditions as $condition) {
+            if ($condition->type === 'forbidden' && in_array($condition->target_function_id, $neighborFunctionIds)) {
+                $targetFn = CityFunction::find($condition->target_function_id);
+                return "Cannot place {$function->name} next to {$targetFn->name} (forbidden).";
+            }
+            
+            if ($condition->type === 'required' && !in_array($condition->target_function_id, $neighborFunctionIds)) {
+                $targetFn = CityFunction::find($condition->target_function_id);
+                return "{$function->name} requires {$targetFn->name} as a neighbor.";
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get cells adjacent to the target cell (up, down, left, right)
+     */
+    private function getAdjacentCells(CityGridCell $cell)
+    {
+        return CityGridCell::where(function ($query) use ($cell) {
+            // Up
+            $query->where(function ($q) use ($cell) {
+                $q->where('row_index', $cell->row_index - 1)
+                  ->where('column_index', $cell->column_index);
+            })
+            // Down
+            ->orWhere(function ($q) use ($cell) {
+                $q->where('row_index', $cell->row_index + 1)
+                  ->where('column_index', $cell->column_index);
+            })
+            // Left
+            ->orWhere(function ($q) use ($cell) {
+                $q->where('row_index', $cell->row_index)
+                  ->where('column_index', $cell->column_index - 1);
+            })
+            // Right
+            ->orWhere(function ($q) use ($cell) {
+                $q->where('row_index', $cell->row_index)
+                  ->where('column_index', $cell->column_index + 1);
+            });
+        })->get();
+    }
+
     public function getQolScore()
     {
         // Calculate the score on demand and return the aggregated result as JSON for the frontend.
         $result = (new QolScoreService())->calculate();
 
         return response()->json($result);
+    }
+
+    /**
+     * Get valid and invalid cells for placing a function based on adjacency rules.
+     * Returns cell IDs that are valid (green) and invalid (red) for placement.
+     */
+    public function getValidCells(Request $request)
+    {
+        $functionId = $request->input('function_id');
+        
+        if (!$functionId) {
+            return response()->json(['valid' => [], 'invalid' => []]);
+        }
+
+        $function = CityFunction::with('functionConditions')->find($functionId);
+        if (!$function) {
+            return response()->json(['valid' => [], 'invalid' => []]);
+        }
+
+        // If function has no adjacency conditions, all empty cells are valid
+        if ($function->functionConditions->isEmpty()) {
+            $allCells = CityGridCell::whereNull('function_id')->pluck('id');
+            return response()->json(['valid' => $allCells->all(), 'invalid' => []]);
+        }
+
+        $validCells = [];
+        $invalidCells = [];
+        $allCells = CityGridCell::all();
+
+        foreach ($allCells as $cell) {
+            // Skip occupied cells
+            if ($cell->function_id) {
+                continue;
+            }
+
+            $hasError = $this->checkAdjacencyConditions($function, $cell);
+            if ($hasError) {
+                $invalidCells[] = $cell->id;
+            } else {
+                $validCells[] = $cell->id;
+            }
+        }
+
+        return response()->json([
+            'valid' => $validCells,
+            'invalid' => $invalidCells
+        ]);
     }
 
     // SIM.3 - Clears a function from the given cell and records the removal in ActionHistory.

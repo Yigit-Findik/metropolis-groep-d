@@ -53,6 +53,9 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     // SIM.1.4 - QoL score calculation
     Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);
 
+    // Get valid/invalid cells for adjacency rules
+    Route::get('/grid/valid-cells', [CityGridCellController::class, 'getValidCells']);
+
     // SIM.3 - Remove a function from a cell
     Route::delete('/grid/{id}/remove', [CityGridCellController::class, 'removeFunction']);
 

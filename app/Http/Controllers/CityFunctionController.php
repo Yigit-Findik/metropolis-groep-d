@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\NewFunctionAdded;
 use App\Models\CityFunction;
+use App\Models\FunctionCondition;
 use Illuminate\Http\Request;
 
 class CityFunctionController extends Controller
@@ -11,7 +12,7 @@ class CityFunctionController extends Controller
     public function index()
     {
         // Order by category first, then name, so the grid view can render stable grouped sections.
-        $cityFunctions = CityFunction::orderBy('category')->orderBy('name')->get();
+        $cityFunctions = CityFunction::with('functionConditions')->orderBy('category')->orderBy('name')->get();
         $categories = CityFunction::select('category')->distinct()->orderBy('category')->pluck('category');
 
         return view('city_functions', compact('cityFunctions', 'categories'));
@@ -24,11 +25,11 @@ class CityFunctionController extends Controller
             'category'            => 'required|string|max:255',
             'description'         => 'nullable|string',
             'image'               => 'nullable|image|max:4096',
-            'safety'              => 'nullable|integer|min:0',
-            'recreation'          => 'nullable|integer|min:0',
-            'environment_quality' => 'nullable|integer|min:0',
-            'facilities'          => 'nullable|integer|min:0',
-            'mobility'            => 'nullable|integer|min:0',
+            'safety'              => 'nullable|integer|min:-10|max:10',
+            'recreation'          => 'nullable|integer|min:-10|max:10',
+            'environment_quality' => 'nullable|integer|min:-10|max:10',
+            'facilities'          => 'nullable|integer|min:-10|max:10',
+            'mobility'            => 'nullable|integer|min:-10|max:10',
         ]);
 
         $imagePath = '';
@@ -67,11 +68,11 @@ class CityFunctionController extends Controller
             'category'            => 'required|string|max:255',
             'description'         => 'nullable|string',
             'image'               => 'nullable|image|max:4096',
-            'safety'              => 'nullable|integer|min:0',
-            'recreation'          => 'nullable|integer|min:0',
-            'environment_quality' => 'nullable|integer|min:0',
-            'facilities'          => 'nullable|integer|min:0',
-            'mobility'            => 'nullable|integer|min:0',
+            'safety'              => 'nullable|integer|min:-10|max:10',
+            'recreation'          => 'nullable|integer|min:-10|max:10',
+            'environment_quality' => 'nullable|integer|min:-10|max:10',
+            'facilities'          => 'nullable|integer|min:-10|max:10',
+            'mobility'            => 'nullable|integer|min:-10|max:10',
         ]);
 
         $data = [
@@ -93,6 +94,19 @@ class CityFunctionController extends Controller
         }
 
         $fn->update($data);
+
+        // Sync conditions if provided
+        if ($request->has('conditions')) {
+            $fn->functionConditions()->delete();
+            
+            foreach ($request->conditions as $conditionData) {
+                FunctionCondition::create([
+                    'city_function_id' => $fn->id,
+                    'target_function_id' => $conditionData['target_id'],
+                    'type' => $conditionData['type'],
+                ]);
+            }
+        }
 
         return redirect()->route('city_functions')->with('success', 'City function updated.');
     }
