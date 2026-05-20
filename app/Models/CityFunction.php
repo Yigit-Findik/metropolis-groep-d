@@ -35,4 +35,9 @@ class CityFunction extends Model
     {
         return $this->hasMany(PendingAction::class);
     }
+
+    public function functionConditions(): HasMany
+    {
+        return $this->hasMany(FunctionCondition::class, 'city_function_id');
+    }
 }

@@ -172,7 +172,10 @@
                                     data-recreation="{{ $cityFunction->Recreation ?? 0 }}"
                                     data-environment-quality="{{ $cityFunction->{'Environment Quality'} ?? 0 }}"
                                     data-facilities="{{ $cityFunction->Facilities ?? 0 }}"
-                                    data-mobility="{{ $cityFunction->Mobility ?? 0 }}">
+                                    data-mobility="{{ $cityFunction->Mobility ?? 0 }}"
+                                    data-conditions="{{ json_encode($cityFunction->functionConditions ?? []) }}"
+                                    @mouseenter="highlightCells({{ $cityFunction->id }}, $event.target)"
+                                    @mouseleave="clearHighlights()">
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
                                              alt="{{ $cityFunction->name }}"
