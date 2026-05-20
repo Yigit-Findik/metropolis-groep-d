@@ -23,6 +23,7 @@ class CityFunctionController extends Controller
         $request->validate([
             'name'                => 'required|string|max:255',
             'category'            => 'required|string|max:255',
+            'image_alt'           => 'nullable|string|max:255',
             'description'         => 'nullable|string',
             'image'               => 'nullable|image|max:4096',
             'safety'              => 'nullable|integer|min:-10|max:10',
@@ -45,6 +46,7 @@ class CityFunctionController extends Controller
             'category'            => $request->category,
             'description'         => $request->description,
             'image_path'          => $imagePath,
+            'image_alt'           => $request->image_alt ?? '',
             'Safety'              => $request->safety ?? 0,
             'Recreation'          => $request->recreation ?? 0,
             'Environment Quality' => $request->environment_quality ?? 0,
@@ -66,6 +68,7 @@ class CityFunctionController extends Controller
         $request->validate([
             'name'                => 'required|string|max:255',
             'category'            => 'required|string|max:255',
+            'image_alt'           => 'nullable|string|max:255',
             'description'         => 'nullable|string',
             'image'               => 'nullable|image|max:4096',
             'safety'              => 'nullable|integer|min:-10|max:10',
@@ -79,6 +82,7 @@ class CityFunctionController extends Controller
             'name'                => $request->name,
             'category'            => $request->category,
             'description'         => $request->description,
+            'image_alt'           => $request->image_alt ?? '',
             'Safety'              => $request->safety ?? 0,
             'Recreation'          => $request->recreation ?? 0,
             'Environment Quality' => $request->environment_quality ?? 0,

@@ -189,6 +189,8 @@ export class GridController {
                     notify('Failed to remove function — please try again.');
                 });
         });
+
+        
     }
 
     // Wires up the undo button; reverts the last assign/remove action
@@ -232,6 +234,7 @@ export class GridController {
         if (image) {
             const img = document.createElement('img');
             img.src = image;
+            img.alt = functionName;
             img.classList.add('mb-1');
             img.draggable = false;
             cell.appendChild(img);
@@ -241,6 +244,13 @@ export class GridController {
         label.textContent = functionName;
         label.classList.add('text-xs', 'font-semibold', 'text-center', 'text-black');
         cell.appendChild(label);
+
+        // Make occupied cells keyboard-focusable for accessibility
+        cell.setAttribute('tabindex', '0');
+        // Provide a helpful aria-label so screen readers announce the cell location and content
+        const row = cell.dataset.row ? `Row ${cell.dataset.row}` : 'Row unknown';
+        const column = cell.dataset.column ? `column ${cell.dataset.column}` : 'column unknown';
+        cell.setAttribute('aria-label', `${row}, ${column}, occupied by ${functionName}${category ? `, category ${category}` : ''}`);
 
         // Mark as occupied and store all effect values so the hover popup can read them
         cell.classList.remove('is-empty');
@@ -268,5 +278,8 @@ export class GridController {
         cell.dataset.environmentQuality = '';
         cell.dataset.facilities = '';
         cell.dataset.mobility = '';
+        // Remove keyboard focusability and accessibility label when cleared
+        cell.removeAttribute('tabindex');
+        cell.removeAttribute('aria-label');
     }
 }

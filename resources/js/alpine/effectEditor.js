@@ -13,6 +13,8 @@ export const effectEditor = (initialValue, updateUrl, csrfToken, functionName, c
     originalValue: initialValue, // Kept so we can revert on cancel or server error
     value: initialValue,
     error: '',
+    functionNameArg: functionName,
+    categoryArg: category,
 
     isValid() {
         return this.value >= -10 && this.value <= 10;
@@ -23,6 +25,31 @@ export const effectEditor = (initialValue, updateUrl, csrfToken, functionName, c
         this.error = '';
         if (this.value < -10 || this.value > 10) {
             this.error = 'Value must be between -10 and 10';
+        }
+    },
+
+    startEditing(evt) {
+        this.editing = true;
+        // Announce to screen readers which function and category are being edited
+        const live = document.getElementById('effect-live');
+        if (live) {
+            live.textContent = `You are editing ${this.functionNameArg}. Effect: ${this.categoryArg}. Current value ${this.value}.`;
+        }
+
+        // Try to focus the number input inside this component so screen readers will announce its aria-label.
+        try {
+            // evt.currentTarget is the button; find the closest root for this x-data and then the input
+            const root = evt?.currentTarget?.closest('[x-data]') || null;
+            if (root) {
+                // find the first number input in this component
+                const input = root.querySelector('input[type="number"]');
+                if (input) {
+                    // small delay to allow Alpine to render the editing template
+                    setTimeout(() => input.focus(), 20);
+                }
+            }
+        } catch (e) {
+            // ignore focus errors
         }
     },
 
