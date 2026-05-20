@@ -179,7 +179,7 @@
                                     data-environment-quality="{{ $cityFunction->{'Environment Quality'} ?? 0 }}"
                                     data-facilities="{{ $cityFunction->Facilities ?? 0 }}"
                                     data-mobility="{{ $cityFunction->Mobility ?? 0 }}"
-                                    aria-label="Function: {{ $cityFunction->name }}">
+                                    aria-label="Function: {{ $cityFunction->name }}"
                                     data-conditions="{{ json_encode($cityFunction->functionConditions ?? []) }}"
                                     @mouseenter="highlightCells({{ $cityFunction->id }}, $event.target)"
                                     @mouseleave="clearHighlights()">
