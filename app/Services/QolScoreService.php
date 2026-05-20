@@ -34,6 +34,8 @@ class QolScoreService
         $cells = CityGridCell::with('cityFunction')->get();
 
         $totals = array_fill_keys(array_keys(self::CATEGORIES), 0);
+        $bonusTotals = array_fill_keys(array_keys(self::CATEGORIES), 0);
+        $penaltyTotals = array_fill_keys(array_keys(self::CATEGORIES), 0);
         $totalScore = 0;
         $breakdown = [];
 
@@ -43,11 +45,14 @@ class QolScoreService
             }
 
             $fn = $cell->cityFunction;
-            $adjustments = $this->calculateCellAdjustments($cells, $cell);
+            $adjustmentData = $this->calculateCellAdjustmentBreakdown($cells, $cell);
+            $adjustments = $adjustmentData['adjustments'];
 
             foreach (self::CATEGORIES as $slug => $col) {
                 $categoryScore = (int) $fn->{$col} + $adjustments[$slug];
                 $totals[$slug] += $categoryScore;
+                $bonusTotals[$slug] += $adjustmentData['bonus'][$slug];
+                $penaltyTotals[$slug] += $adjustmentData['penalty'][$slug];
                 $totalScore += $categoryScore;
             }
 
@@ -64,20 +69,33 @@ class QolScoreService
             ];
         }
 
+        $totalBonus = array_sum($bonusTotals);
+        $totalPenalty = array_sum($penaltyTotals);
+
         return [
             'total_score' => $totalScore,
             'categories'  => $totals,
+            'bonus_categories' => $bonusTotals,
+            'penalty_categories' => $penaltyTotals,
+            'total_bonus' => $totalBonus,
+            'total_penalty' => $totalPenalty,
             'breakdown'   => $breakdown,
         ];
     }
 
-    private function calculateCellAdjustments(Collection $cells, CityGridCell $cell): array
+    private function calculateCellAdjustmentBreakdown(Collection $cells, CityGridCell $cell): array
     {
         $adjustments = array_fill_keys(array_keys(self::CATEGORIES), 0);
+        $bonus = array_fill_keys(array_keys(self::CATEGORIES), 0);
+        $penalty = array_fill_keys(array_keys(self::CATEGORIES), 0);
         $function = $cell->cityFunction;
 
         if (! $function) {
-            return $adjustments;
+            return [
+                'adjustments' => $adjustments,
+                'bonus' => $bonus,
+                'penalty' => $penalty,
+            ];
         }
 
         $functionCategory = $this->categoryKey($function->category);
@@ -93,11 +111,17 @@ class QolScoreService
             ->count();
 
         if ($sameCategoryNeighbors > 0 && array_key_exists($functionCategory, $adjustments)) {
-            $adjustments[$functionCategory] += $sameCategoryNeighbors * 2;
+            $value = $sameCategoryNeighbors * 2;
+            $adjustments[$functionCategory] += $value;
+            $bonus[$functionCategory] += $value;
         }
 
         if (! $this->isSensitiveFunction($function->name)) {
-            return $adjustments;
+            return [
+                'adjustments' => $adjustments,
+                'bonus' => $bonus,
+                'penalty' => $penalty,
+            ];
         }
 
         $pollutingNeighbors = $this->orthogonalNeighbors($cells, $cell)
@@ -114,10 +138,16 @@ class QolScoreService
             ->count();
 
         if ($pollutingNeighbors > 0 && array_key_exists($functionCategory, $adjustments)) {
-            $adjustments[$functionCategory] -= $pollutingNeighbors * 2;
+            $value = $pollutingNeighbors * 2;
+            $adjustments[$functionCategory] -= $value;
+            $penalty[$functionCategory] -= $value;
         }
 
-        return $adjustments;
+        return [
+            'adjustments' => $adjustments,
+            'bonus' => $bonus,
+            'penalty' => $penalty,
+        ];
     }
 
     private function orthogonalNeighbors(Collection $cells, CityGridCell $cell): Collection
