@@ -1,3 +1,5 @@
+import { notify } from '../utils/notify';
+
 // Manages state for the create and edit modals on the city functions page
 export const cityFunctions = () => ({
     open: false,     // Create modal visibility
@@ -50,13 +52,17 @@ export const cityFunctions = () => ({
         const form = event.target;
         const formData = new FormData(form);
         
+        // Signal to the backend that conditions should always be synced,
+        // even when the resulting array is empty (all rules deleted).
+        formData.append('sync_conditions', '1');
+
         // Clear any existing conditions from the form
         Array.from(formData.keys()).forEach(key => {
             if (key.startsWith('conditions')) {
                 formData.delete(key);
             }
         });
-        
+
         // Add all conditions to the form data with proper structure
         this.editing.conditions.forEach((condition, index) => {
             formData.append(`conditions[${index}][target_id]`, condition.target_function_id);
@@ -75,7 +81,7 @@ export const cityFunctions = () => ({
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('Submit error:', errorText);
-                alert('Error saving function');
+                notify('Error saving function');
                 return;
             }
             
@@ -84,7 +90,7 @@ export const cityFunctions = () => ({
             window.location.reload();
         } catch (error) {
             console.error('Submit error:', error);
-            alert('Error saving function');
+            notify('Error saving function');
         }
     },
 });

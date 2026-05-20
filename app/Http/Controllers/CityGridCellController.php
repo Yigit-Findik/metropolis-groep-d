@@ -94,20 +94,35 @@ class CityGridCellController extends Controller
      */
     private function checkAdjacencyConditions(CityFunction $function, CityGridCell $targetCell)
     {
-        // Get adjacent cells
         $adjacentCells = $this->getAdjacentCells($targetCell);
         $neighborFunctionIds = $adjacentCells->pluck('function_id')->filter()->unique()->values()->all();
 
-        // Check each condition
+        // Check the function's own conditions against its future neighbors
         foreach ($function->functionConditions as $condition) {
             if ($condition->type === 'forbidden' && in_array($condition->target_function_id, $neighborFunctionIds)) {
                 $targetFn = CityFunction::find($condition->target_function_id);
                 return "Cannot place {$function->name} next to {$targetFn->name} (forbidden).";
             }
-            
+
             if ($condition->type === 'required' && !in_array($condition->target_function_id, $neighborFunctionIds)) {
                 $targetFn = CityFunction::find($condition->target_function_id);
                 return "{$function->name} requires {$targetFn->name} as a neighbor.";
+            }
+        }
+
+        // Bidirectional check: if an already-placed neighbor has a forbidden rule pointing at
+        // the function being placed, block the placement from that side too.
+        if (!empty($neighborFunctionIds)) {
+            $neighborFunctions = CityFunction::with('functionConditions')
+                ->whereIn('id', $neighborFunctionIds)
+                ->get();
+
+            foreach ($neighborFunctions as $neighbor) {
+                foreach ($neighbor->functionConditions as $condition) {
+                    if ($condition->type === 'forbidden' && $condition->target_function_id === $function->id) {
+                        return "Cannot place {$function->name} next to {$neighbor->name} (forbidden).";
+                    }
+                }
             }
         }
 

@@ -95,15 +95,17 @@ class CityFunctionController extends Controller
 
         $fn->update($data);
 
-        // Sync conditions if provided
-        if ($request->has('conditions')) {
+        // sync_conditions is always sent by the edit form, even when all rules are deleted.
+        // Using it as a sentinel avoids the case where an empty conditions array causes
+        // $request->has('conditions') to return false and old rules to persist.
+        if ($request->boolean('sync_conditions')) {
             $fn->functionConditions()->delete();
-            
-            foreach ($request->conditions as $conditionData) {
+
+            foreach ($request->input('conditions', []) as $conditionData) {
                 FunctionCondition::create([
-                    'city_function_id' => $fn->id,
+                    'city_function_id'   => $fn->id,
                     'target_function_id' => $conditionData['target_id'],
-                    'type' => $conditionData['type'],
+                    'type'               => $conditionData['type'],
                 ]);
             }
         }

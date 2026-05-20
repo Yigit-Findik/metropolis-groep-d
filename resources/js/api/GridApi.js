@@ -21,7 +21,10 @@ export class GridApi {
             body: JSON.stringify({ function_id: parseInt(functionId) }),
         });
 
-        if (!response.ok) throw new Error(`Assign failed: ${response.status}`);
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.message || `Assign failed: ${response.status}`);
+        }
 
         return response.json();
     }
