@@ -86,6 +86,7 @@
                                                         mobility: {{ $fn->Mobility ?? 0 }},
                                                         image_path: @js($fn->image_path ?? '')
                                                     })"
+                                                    aria-label="Edit {{ $fn->name }}"
                                                     class="px-3 py-1 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-semibold rounded-lg transition">
                                                 Edit
                                             </button>
@@ -98,6 +99,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
+                                                        aria-label="Delete {{ $fn->name }}"
                                                         class="px-3 py-1 bg-red-700 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition">
                                                     Delete
                                                 </button>
