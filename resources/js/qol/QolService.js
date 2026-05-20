@@ -30,12 +30,18 @@ export class QolService {
     // Fetches fresh QoL scores from the server and updates all score elements in the DOM
     async refresh() {
         const total = document.getElementById('qol-score-value');
-        if (total) total.textContent = 'Calculating...';
+        if (total) {
+            total.textContent = 'Calculating...';
+            total.setAttribute('aria-label', 'Calculating quality of life');
+        }
 
         try {
             const data = await this.#api.getQolScore();
 
-            if (total) total.textContent = data.total_score;
+            if (total) {
+                total.textContent = data.total_score;
+                total.setAttribute('aria-label', `Quality of life ${data.total_score}`);
+            }
 
             if (data.categories) {
                 for (const [cat, score] of Object.entries(data.categories)) {
@@ -43,8 +49,11 @@ export class QolService {
                     const elementId = `qol-${cat.replace(/\s+/g, '-')}`;
                     const el = document.getElementById(elementId);
                     if (el) {
-                        el.textContent = (score >= 0 ? '+' : '') + score;
+                        const display = (score >= 0 ? '+' : '') + score;
+                        el.textContent = display;
                         el.className = `mt-0.5 text-xl font-semibold ${score >= 0 ? 'text-green-300' : 'text-red-300'}`;
+                        // Make screen reader announce the category and its value
+                        el.setAttribute('aria-label', `${cat} ${display}`);
                     }
                 }
             }

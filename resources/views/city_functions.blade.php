@@ -26,45 +26,51 @@
                 <p class="text-white">No city functions found.</p>
             @else
                 <div class="bg-gray-800 rounded-2xl shadow-sm overflow-hidden w-fit">
-                    <table class="min-w-full divide-y divide-gray-700">
+                    <table class="min-w-full divide-y divide-gray-700" role="grid" aria-label="City functions list">
                         <thead class="bg-gray-700">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Image</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Category</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Description</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Actions</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Image</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Category</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Description</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider" aria-hidden="true">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-700">
                             @foreach($cityFunctions as $fn)
-                                <tr>
+                                <tr role="row" tabindex="0"
+                                    aria-label="Row {{ $loop->iteration }}. Name: {{ $fn->name }}. Category: {{ $fn->category ?? 'Put in a category here' }}. Description: {{ $fn->description ?? 'Put in a description here' }}">
                                     {{-- Image column: shows the function image or a placeholder dash --}}
                                     <td class="px-6 py-4">
                                         @if($fn->image_path)
                                             <img src="{{ asset($fn->image_path) }}"
-                                                 alt="{{ $fn->name }}"
+                                                 alt="{{ $fn->image_alt ?? $fn->name }}"
                                                  class="w-12 h-12 object-contain rounded">
                                         @else
-                                            <div class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-white text-xs">—</div>
+                                            <div class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-white text-xs" aria-hidden="true">—</div>
                                         @endif
                                     </td>
 
                                     {{-- Name column --}}
-                                    <td class="px-6 py-4 font-semibold text-white whitespace-nowrap">
+                                    <td id="fn-name-{{ $fn->id }}" class="px-6 py-4 font-semibold text-white whitespace-nowrap">
                                         {{ $fn->name }}
                                     </td>
 
                                     {{-- Category column: displayed as a pill badge --}}
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-blue-900/40 text-white">
+                                        <span id="fn-cat-{{ $fn->id }}" class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-blue-900/40 text-white">
                                             {{ $fn->category ?? '—' }}
                                         </span>
                                     </td>
 
                                     {{-- Description column --}}
-                                    <td class="px-6 py-4 text-sm text-white max-w-md">
-                                        {{ $fn->description ?? '—' }}
+                                    <td id="fn-desc-{{ $fn->id }}" class="px-6 py-4 text-sm text-white max-w-md">
+                                        @if($fn->description)
+                                            {{ $fn->description }}
+                                        @else
+                                            <span aria-hidden="true" class="text-white">—</span>
+                                            <span class="sr-only">Put in a description here</span>
+                                        @endif
                                     </td>
 
                                     {{-- Actions column: Edit opens the edit modal pre-filled with this row's data.
@@ -73,7 +79,8 @@
                                         <div class="flex items-center gap-2">
 
                                             {{-- Edit button: passes all current field values to the Alpine openEdit() method --}}
-                                            <button type="button"
+                                                <button type="button"
+                                                    aria-label="Edit {{ $fn->name }}"
                                                     @click="openEdit({
                                                         id: {{ $fn->id }},
                                                         name: @js($fn->name),
@@ -98,6 +105,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
+                                                        aria-label="Delete {{ $fn->name }}"
                                                         class="px-3 py-1 bg-red-700 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition">
                                                     Delete
                                                 </button>
@@ -117,15 +125,16 @@
         {{-- CREATE MODAL -------------------------------------------------------
              Shown when `open` is true. Clicking the dark backdrop closes the modal.
              enctype="multipart/form-data" is required for image file uploads. --}}
-        <div x-show="open"
+           <div x-show="open"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
              x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-             @click.self="open = false">
+               class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+               x-effect="if (open) $nextTick(() => $refs.createName && $refs.createName.focus())"
+               @click.self="open = false">
 
             <div class="bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
                 <h3 class="text-lg font-bold text-white mb-6">Create City Function</h3>
@@ -134,27 +143,41 @@
                     @csrf
 
                     {{-- Optional image upload --}}
-                    <div class="mb-4">
+                    <div class="mb-4" x-data="{ filename: '' }">
                         <label class="block text-sm font-medium text-gray-300 mb-1">Image</label>
-                        <input type="file" name="image" accept="image/*"
-                               class="w-full text-sm text-white bg-gray-700 rounded-lg border border-gray-600 px-3 py-2
-                                      file:mr-3 file:py-1 file:px-3 file:rounded file:border-0
-                                      file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                        <div class="flex items-center gap-3">
+                            <input type="file" name="image" accept="image/*" x-ref="createFile" class="hidden"
+                                   @change="filename = $event.target.files.length ? $event.target.files[0].name : ''">
+                            <button type="button" @click="$refs.createFile.click()"
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition">
+                                Put in an image
+                            </button>
+                            <span class="text-sm text-gray-300" x-text="filename ? filename : 'No image selected'" aria-live="polite"></span>
+                        </div>
+                    </div>
+
+                    {{-- Optional: image alt text for screen readers --}}
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Image alt text (optional)</label>
+                        <input type="text" name="image_alt"
+                               class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="Short description for screen readers">
                     </div>
 
                     {{-- Required: function name --}}
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-300 mb-1">Name <span class="text-red-400">*</span></label>
-                        <input type="text" name="name" required
+                        <p id="createNameHint" class="text-xs text-gray-400 mb-2">Put in a name here</p>
+                        <input type="text" name="name" required x-ref="createName" aria-describedby="createNameHint"
                                class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
 
                     {{-- Required: category dropdown populated from existing categories in the database --}}
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-300 mb-1">Category <span class="text-red-400">*</span></label>
-                        <select name="category" required
+                        <select name="category" required aria-label="Put in a category here"
                                 class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="" disabled selected>Select a category</option>
+                            <option value="" disabled selected>Put in a category here</option>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat }}">{{ $cat }}</option>
                             @endforeach
@@ -164,7 +187,8 @@
                     {{-- Required: short description of the function --}}
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-300 mb-1">Description <span class="text-red-400">*</span></label>
-                        <textarea name="description" required rows="3"
+                        <p id="createDescHint" class="text-xs text-gray-400 mb-2">Put in a description here</p>
+                        <textarea name="description" required rows="3" aria-describedby="createDescHint"
                                   class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
                     </div>
 
@@ -211,15 +235,16 @@
              to the id of the function stored in `editing`.
              x-model binds each input to the matching property in `editing` so the
              fields are pre-filled with the current values when the modal opens. --}}
-        <div x-show="editOpen"
+           <div x-show="editOpen"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
              x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-             @click.self="editOpen = false">
+               class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+               x-effect="if (editOpen) $nextTick(() => $refs.editName && $refs.editName.focus())"
+               @click.self="editOpen = false">
 
             <div class="bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
                 <h3 class="text-lg font-bold text-white mb-6">Edit City Function</h3>
@@ -230,30 +255,43 @@
                     @method('PUT')
 
                     {{-- Image: shows the current image if one exists; leave the file input empty to keep it --}}
-                    <div class="mb-4">
+                        <div class="mb-4" x-data="{ filenameEdit: '' }">
                         <label class="block text-sm font-medium text-gray-300 mb-1">Image</label>
                         <template x-if="editing.image_path">
-                            <img :src="'/' + editing.image_path" class="w-12 h-12 object-contain rounded mb-2">
+                            <img :src="'/' + editing.image_path" :alt="editing.image_alt ?? editing.name" class="w-12 h-12 object-contain rounded mb-2">
                         </template>
-                        <input type="file" name="image" accept="image/*"
-                               class="w-full text-sm text-white bg-gray-700 rounded-lg border border-gray-600 px-3 py-2
-                                      file:mr-3 file:py-1 file:px-3 file:rounded file:border-0
-                                      file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                        <div class="flex items-center gap-3">
+                            <input type="file" name="image" accept="image/*" x-ref="editFile" class="hidden"
+                                   @change="filenameEdit = $event.target.files.length ? $event.target.files[0].name : ''">
+                            <button type="button" @click="$refs.editFile.click()"
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition">
+                                Put in an image
+                            </button>
+                            <span class="text-sm text-gray-300" x-text="filenameEdit ? filenameEdit : 'No image selected'" aria-live="polite"></span>
+                        </div>
                         <p class="text-xs text-gray-400 mt-1">Leave empty to keep the current image.</p>
                     </div>
 
+                    {{-- Optional: image alt text for screen readers (edit form) --}}
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Image alt text (optional)</label>
+                        <input type="text" name="image_alt" x-model="editing.image_alt"
+                               class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="Short description for screen readers">
+                    </div>
                     {{-- Name pre-filled via x-model --}}
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-300 mb-1">Name <span class="text-red-400">*</span></label>
-                        <input type="text" name="name" required x-model="editing.name"
+                        <p id="editNameHint" class="text-xs text-gray-400 mb-2">Put in a name here</p>
+                        <input type="text" name="name" required x-model="editing.name" x-ref="editName" aria-describedby="editNameHint"
                                class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
 
                     {{-- Category pre-selected via x-model --}}
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-300 mb-1">Category <span class="text-red-400">*</span></label>
-                        <select name="category" required x-model="editing.category"
-                                class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select name="category" required x-model="editing.category" aria-label="Put in a category here"
+                            class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             @foreach($categories as $cat)
                                 <option value="{{ $cat }}">{{ $cat }}</option>
                             @endforeach
@@ -263,7 +301,8 @@
                     {{-- Description pre-filled via x-model --}}
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-300 mb-1">Description</label>
-                        <textarea name="description" rows="3" x-model="editing.description"
+                        <p id="editDescHint" class="text-xs text-gray-400 mb-2">Put in a description here</p>
+                        <textarea name="description" rows="3" x-model="editing.description" aria-describedby="editDescHint"
                                   class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
                     </div>
 

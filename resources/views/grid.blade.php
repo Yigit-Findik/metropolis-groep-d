@@ -16,8 +16,8 @@
 
                     {{-- Total score --}}
                     <div class="min-w-[120px]">
-                        <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">Total QoL</p>
-                        <p class="text-white text-4xl font-bold mt-1" id="qol-score-value">—</p>
+                        <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide" aria-hidden="true">Total QoL</p>
+                        <p class="text-white text-4xl font-bold mt-1" id="qol-score-value" tabindex="0" aria-live="polite" aria-atomic="true">—</p>
                     </div>
 
                     <div class="hidden sm:block w-px h-12 bg-blue-400/50"></div>
@@ -27,7 +27,7 @@
                         @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
                             <div>
                                 <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{{ $label }}</p>
-                                <p class="text-white text-xl font-semibold mt-0.5" id="qol-{{ $slug }}">—</p>
+                                <p class="text-white text-xl font-semibold mt-0.5" id="qol-{{ $slug }}" tabindex="0" aria-live="polite" aria-atomic="true">—</p>
                             </div>
                         @endforeach
                     </div>
@@ -100,12 +100,12 @@
                                         data-environment-quality="{{ $fn?->{'Environment Quality'} ?? 0 }}"
                                         data-facilities="{{ $fn?->Facilities ?? 0 }}"
                                         data-mobility="{{ $fn?->Mobility ?? 0 }}"
-                                        aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_id) ? ', occupied' : ', available' }}"
+                                        aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_id) ? ', occupied by ' . ($fn?->name ?? 'a function') . ($fn?->category ? ', category ' . $fn->category : '') : ', available' }}"
                                     >
                                         @if($fn?->image_path)
                                             {{-- Image scales with the zoom slider, fixed size on mobile --}}
                                             <img src="{{ asset($fn->image_path) }}"
-                                                 alt="{{ $fn->name }}"
+                                                 alt="{{ $fn->image_alt ?? $fn->name }}"
                                                  class="mb-1">
                                         @endif
                                         <span class="text-xs font-semibold text-center text-black">
@@ -123,8 +123,11 @@
                      This is the "trash" or "remove" zone where users can drag functions
                      to remove them from the grid. It has a distinctive red/danger color
                      to indicate this is a destructive action. --}}
-                <div class="w-full lg:w-auto bg-red-50 dark:bg-red-900/20 border-2 border-dashed border-red-300 dark:border-red-700 rounded-2xl p-6 shadow-sm"
+                <div class="w-full lg:w-auto bg-red-50 dark:bg-red-900/20 border-2 border-dashed border-red-300 dark:border-red-700 rounded-2xl p-6 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                      id="removal-zone"
+                     role="button"
+                     tabindex="0"
+                     aria-label="Remove function — drop here or press Enter to remove the focused cell"
                      data-removal-zone>
                     <p class="text-sm text-red-700 dark:text-red-300 text-center font-semibold">
                         Drag here to remove
@@ -160,26 +163,30 @@
                             @foreach($cityFunctions as $cityFunction)
 
                                 {{-- Hide cards that don't match the selected category --}}
-                                <div x-show="active === 'All' || active === '{{ $cityFunction->category }}'"
-                                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition"
+                                <button
+                                    type="button"
+                                    x-show="active === 'All' || active === '{{ $cityFunction->category }}'"
+                                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     draggable="true"
                                     data-function="{{ $cityFunction->name }}"
                                     data-function-id="{{ $cityFunction->id }}"
                                     data-category="{{ $cityFunction->category ?? '' }}"
-                                    data-image="{{ $cityFunction->image_path }}"
+                                        data-image="{{ $cityFunction->image_path }}"
+                                        data-image-alt="{{ $cityFunction->image_alt ?? $cityFunction->name }}"
                                     data-qol-score="{{ ($cityFunction->Safety ?? 0) + ($cityFunction->Recreation ?? 0) + ($cityFunction->{'Environment Quality'} ?? 0) + ($cityFunction->Facilities ?? 0) + ($cityFunction->Mobility ?? 0) }}"
                                     data-safety="{{ $cityFunction->Safety ?? 0 }}"
                                     data-recreation="{{ $cityFunction->Recreation ?? 0 }}"
                                     data-environment-quality="{{ $cityFunction->{'Environment Quality'} ?? 0 }}"
                                     data-facilities="{{ $cityFunction->Facilities ?? 0 }}"
-                                    data-mobility="{{ $cityFunction->Mobility ?? 0 }}">
+                                    data-mobility="{{ $cityFunction->Mobility ?? 0 }}"
+                                    aria-label="Function: {{ $cityFunction->name }}">
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
                                              alt="{{ $cityFunction->name }}"
                                              class="w-16 h-16 object-contain mb-2">
                                     @endif
                                     <span class="text-xs font-semibold text-center text-gray-700 dark:text-white">{{ $cityFunction->name }}</span>
-                                </div>
+                                </button>
 
                             @endforeach
                         </div>
