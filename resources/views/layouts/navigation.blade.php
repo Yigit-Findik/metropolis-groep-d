@@ -33,6 +33,11 @@
                             {{ __('Pending actions') }}
                         </x-nav-link>
                     @endif
+                    @if(Auth::user()->role?->name === 'Administrator')
+                        <x-nav-link :href="route('audit_log')" :active="request()->routeIs('audit_log')">
+                            {{ __('Audit Log') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -103,6 +108,11 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('effects.pending-actions')" :active="request()->routeIs('effects.pending-actions')">
                     {{ __('Pending actions') }}
+                </x-responsive-nav-link>
+            @endif
+            @if(Auth::user()->role?->name === 'Administrator')
+                <x-responsive-nav-link :href="route('audit_log')" :active="request()->routeIs('audit_log')">
+                    {{ __('Audit Log') }}
                 </x-responsive-nav-link>
             @endif
         </div>

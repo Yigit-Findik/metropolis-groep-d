@@ -13,7 +13,7 @@ return new class extends Migration
      * 1. id PK
      * 2. user_id FK
      * 3. action string
-     * 4. cell_id FK
+    * 4. cell_id FK NULL
      * 5. old_city_function_id NULL
      * 6. new_city_function_id NULL
      * 7. timestamps DATETIME
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('action');
-            $table->foreignId('cell_id')->constrained('city_grid_cells')->onDelete('cascade');
+            $table->foreignId('cell_id')->nullable()->constrained('city_grid_cells')->nullOnDelete();
             $table->unsignedBigInteger('old_city_function_id')->nullable();
             $table->unsignedBigInteger('new_city_function_id')->nullable();
             $table->timestamps();

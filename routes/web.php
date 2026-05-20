@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CityGridCellController;
 use App\Http\Controllers\EffectController;
 use App\Http\Controllers\PendingActionController;
+use App\Http\Controllers\AuditLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -77,6 +78,7 @@ Route::middleware(['auth', 'verified', 'role:Administrator'])->group(function ()
     Route::post('/city_functions', [CityFunctionController::class, 'store']);
     Route::put('/city_functions/{id}', [CityFunctionController::class, 'update']);
     Route::delete('/city_functions/{id}', [CityFunctionController::class, 'destroy']);
+    Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit_log');
 });
 
 // Profile management — auth only, no role restriction so all users can manage their own account
