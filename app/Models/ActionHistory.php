@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\CityFunction;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ActionHistory extends Model
 {
@@ -22,21 +23,19 @@ class ActionHistory extends Model
         'details' => 'array',
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
+    public function cell(): BelongsTo
+    {
+        return $this->belongsTo(CityGridCell::class, 'cell_id');
+    }
 
-    public function oldCityFunction()
+    public function oldCityFunction(): BelongsTo
     {
         return $this->belongsTo(CityFunction::class, 'old_city_function_id')->withTrashed();
     }
-
-    public function newCityFunction()
-    {
-        return $this->belongsTo(CityFunction::class, 'new_city_function_id')->withTrashed();
-    }
-
     protected static function booted(): void
     {
         // Prevent updates and deletes to keep entries immutable once written.
@@ -47,5 +46,9 @@ class ActionHistory extends Model
         static::deleting(function () {
             return false;
         });
+    }
+    public function newCityFunction(): BelongsTo
+    {
+        return $this->belongsTo(CityFunction::class, 'new_city_function_id')->withTrashed();
     }
 }

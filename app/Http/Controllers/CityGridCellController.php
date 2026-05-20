@@ -15,9 +15,8 @@ class CityGridCellController extends Controller
         // Create missing cells on demand so the view always receives a complete grid structure.
         $cells = CityGridCell::ensureGridExists();
 
-        // return response()->json($cells);
-        $cityFunctions = CityFunction::all();
-        $categories = $cityFunctions->pluck('category')->unique()->filter()->values();
+        $cityFunctions = CityFunction::orderBy('name')->get();
+        $categories = CityFunction::query()->distinct()->orderBy('category')->pluck('category')->filter()->values();
 
         return view('grid', [
             'gridCells' => $cells,
@@ -57,7 +56,7 @@ class CityGridCellController extends Controller
         ]);
 
         $cell = CityGridCell::findOrFail($id);
-        $oldFunctionId = $cell->function_id; // Saving an old city_function_id before it will be replased with a new one
+        $oldFunctionId = $cell->function_id; // Saved so we can record it in ActionHistory before it is replaced
 
         $cell->update([
             'function_id' => $request->function_id,
@@ -82,20 +81,6 @@ class CityGridCellController extends Controller
         ]);
     }
 
-    /**
-     * Remove a city function from a specific grid cell.
-     * 
-     * SIM.3 - Subtask 4 & 6: Build Removal API Endpoint + Ensure Other Cells Are Not Affected
-     * 
-     * This method handles removing a function from a grid cell. It:
-     * 1. Validates that the cell exists
-     * 2. Checks that the cell actually contains a function (safeguard)
-     * 3. Sets the function_id to null (clearing the placement)
-     * 4. Only modifies the specified cell (no side effects on other cells)
-     * 
-     * @param int $id - The ID of the cell to remove the function from
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function getQolScore()
     {
         // Calculate the score on demand and return the aggregated result as JSON for the frontend.
@@ -104,6 +89,7 @@ class CityGridCellController extends Controller
         return response()->json($result);
     }
 
+    // SIM.3 - Clears a function from the given cell and records the removal in ActionHistory.
     public function removeFunction($id)
     {
         // Load the target cell once so we can validate and update the same record.
