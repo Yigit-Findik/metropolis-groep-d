@@ -8,8 +8,8 @@ export const deleteForm = (name) => ({
         
         //find the confirmation modal component on the page
         const confirmModalEl = document.querySelector('[x-data*="confirmModal"]');
-        if (confirmModalEl && confirmModalEl.__x_dataStack) {
-            const confirmModal = confirmModalEl.__x_dataStack[0];
+        if (confirmModalEl) {
+            const confirmModal = Alpine.$data(confirmModalEl);
             confirmModal.open(
                 `Delete "${name}"?`,
                 () => this.form.submit()

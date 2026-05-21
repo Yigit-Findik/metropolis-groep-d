@@ -8,7 +8,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Create admin user for navigation testing
-    $adminRole = Role::factory()->create(['name' => 'Administrator']);
+    $adminRole = Role::create(['name' => 'Administrator']);
     $this->user = User::factory()->create(['role_id' => $adminRole->id]);
 });
 
