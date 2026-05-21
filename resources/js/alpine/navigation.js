@@ -6,4 +6,10 @@ export const navigation = () => ({
         event.preventDefault();
         event.target.closest('form').submit();
     },
+    init() {
+        // Reset mobile menu when navigating to ensure consistent position
+        window.addEventListener('beforeunload', () => {
+            this.open = false;
+        });
+    },
 });

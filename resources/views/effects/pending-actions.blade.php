@@ -81,7 +81,7 @@
                                 @endphp
                                 <tr tabindex="0" role="button" class="transition hover:bg-gray-50 dark:hover:bg-gray-700/40"
                                     aria-label="Function: {{ $pendingAction->resolved_function_name }}. {{ $categoryText }} Trigger: {{ $pendingAction->trigger_label }} ({{ $pendingAction->trigger_type }}). Created: {{ $createdText }}. Status: {{ $statusText }}. Still required: {{ $missing }}. User: {{ $pendingAction->createdBy?->name ?? 'Unknown' }}"
-                                    onclick="(function(el){ const a=el.querySelector('a'); if(a) a.click(); })(this)"
+                                    onclick="(function(el, evt){ const target = evt.target; if(target.closest('a, button, input, select, textarea')) return; const a=el.querySelector('a'); if(a) a.click(); })(this, event)"
                                     onkeydown="(function(evt){ if(evt.key==='Enter' || evt.key===' '){ evt.preventDefault(); const a=this.querySelector('a'); if(a) a.click(); } }).call(this, event)">
                                     <td class="px-6 py-4">
                                         <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Related function</div>

@@ -10,6 +10,7 @@ import { qolToggle } from './alpine/qolToggle';
 import { autoHideToast } from './alpine/autoHideToast';
 import { deleteForm } from './alpine/deleteForm';
 import { effectEditor } from './alpine/effectEditor';
+import { confirmModal } from './alpine/confirmModal';
 
 // Core modules
 import { GridApi } from './api/GridApi';
@@ -26,6 +27,7 @@ Alpine.data('qolToggle', qolToggle);
 Alpine.data('autoHideToast', autoHideToast);
 Alpine.data('deleteForm', deleteForm);
 Alpine.data('effectEditor', effectEditor);
+Alpine.data('confirmModal', confirmModal);
 
 window.Alpine = Alpine;
 Alpine.start();

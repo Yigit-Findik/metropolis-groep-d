@@ -427,5 +427,36 @@
         </div>
         @endif
 
+        {{-- CONFIRMATION MODAL --------------------------------------------------
+             Non-blocking modal for delete confirmations. Doesn't interrupt workflow. --}}
+        <div x-data="confirmModal" @keydown.escape="cancel()"
+             x-show="show"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+             @click.self="cancel()">
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-sm mx-4 p-6"
+                 @click.stop>
+                <p class="text-gray-700 dark:text-gray-300 mb-6" x-text="message"></p>
+                <div class="flex justify-end gap-3">
+                    <button type="button"
+                            @click="cancel()"
+                            class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-semibold rounded-lg transition">
+                        Cancel
+                    </button>
+                    <button type="button"
+                            @click="confirm()"
+                            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 </x-app-layout>
