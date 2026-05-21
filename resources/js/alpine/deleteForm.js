@@ -1,4 +1,4 @@
-// Shows a non-blocking confirmation modal before allowing a delete form to submit
+//shows a non blocking confirmation modal when a delete form is submitted
 export const deleteForm = (name) => ({
     form: null,
     
@@ -6,7 +6,7 @@ export const deleteForm = (name) => ({
         event.preventDefault();
         this.form = event.target;
         
-        // Find the confirmation modal component on the page
+        //find the confirmation modal component on the page
         const confirmModalEl = document.querySelector('[x-data*="confirmModal"]');
         if (confirmModalEl && confirmModalEl.__x_dataStack) {
             const confirmModal = confirmModalEl.__x_dataStack[0];

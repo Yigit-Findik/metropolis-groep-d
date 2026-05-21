@@ -1,4 +1,4 @@
-// Simple non-blocking confirmation modal
+//simple confirm modal
 export const confirmModal = () => ({
     show: false,
     message: '',

@@ -5,15 +5,15 @@
         </h2>
     </x-slot>
 
-    {{-- Alpine.js state for the whole page:
-         - open      : controls the create modal
-         - editOpen  : controls the edit modal
-         - editing   : holds the data of the function currently being edited
-         - openEdit  : populates `editing` with the chosen function and opens the edit modal --}}
+    {{-- Alpine.js for page:
+        open      : controls the create modal
+        editOpen  : controls the edit modal
+        editing   : holds the data of the function currently being edited
+        openEdit  : populates editing with the chosen function and opens the edit modal --}}
     <div class="py-12" x-data="cityFunctions">
         <div class="px-4 sm:px-6 lg:px-8 flex flex-col items-center gap-4">
 
-            {{-- Button that opens the create modal --}}
+            {{-- button that opens the create modal --}}
             <div class="w-fit self-end">
                 <button @click="open = true"
                         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition">
@@ -124,7 +124,7 @@
         </div>
 
         {{-- CREATE MODAL -------------------------------------------------------
-             Shown when `open` is true. Clicking the dark backdrop closes the modal.
+             Shown when "open" is true. Clicking the dark backdrop closes the modal.
              enctype="multipart/form-data" is required for image file uploads. --}}
            <div x-show="open"
              x-transition:enter="transition ease-out duration-200"
@@ -232,9 +232,9 @@
         </div>
 
         {{-- EDIT MODAL ---------------------------------------------------------
-             Shown when `editOpen` is true. The form action is bound dynamically
-             to the id of the function stored in `editing`.
-             x-model binds each input to the matching property in `editing` so the
+             Shown when "editOpen" is true. The form action is bound dynamically
+             to the id of the function stored in "editing".
+             x-model binds each input to the matching property in "editing" so the
              fields are pre-filled with the current values when the modal opens. --}}
            <div x-show="editOpen"
              x-transition:enter="transition ease-out duration-200"

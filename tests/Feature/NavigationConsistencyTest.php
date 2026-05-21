@@ -58,7 +58,7 @@ it('navigation links are in consistent position across pages', function () {
         $response->assertSee('Dashboard');
         $response->assertSee('Grid');
         
-        //checkt that the navigation links are in the same position
+        //checks that the navigation links are in the same position
         $response->assertStatus(200);
     }
 });
