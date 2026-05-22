@@ -9,6 +9,11 @@ export class GridController {
     #qolService;
     // Cell IDs (strings) that are forbidden for the function currently being dragged
     #draggingInvalidCells = new Set();
+    #selectedFunctionCard = null;
+    #selectedFunctionData = null;
+    #lastFocusedCell = null;
+    #announcer = null;
+    #pickedUpCell = null;
 
     constructor(api, qolService) {
         this.#api = api;
@@ -22,29 +27,75 @@ export class GridController {
         const grid = document.querySelector('[data-city-grid]');
         if (!grid) return; // Grid page not loaded, nothing to set up
 
+        // Accessible announcer for screen reader messages
+        this.#announcer = document.getElementById('grid-a11y-announcer');
+
         const cells = Array.from(grid.querySelectorAll('[data-grid-cell]'));
         this.#setupCells(cells);
+        // Make arrow keys move into and around the grid when focus is on the grid container
+        grid.setAttribute('tabindex', grid.getAttribute('tabindex') || '0');
+        grid.addEventListener('keydown', (e) => {
+            if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+
+            const active = document.activeElement;
+            // If focus is already on a grid cell, let the cell handle the arrow navigation
+            if (active && active.matches && active.matches('[data-grid-cell]')) return;
+
+            e.preventDefault();
+
+            // If we have a last focused cell, start navigation from there; otherwise use the first cell
+            const start = this.#lastFocusedCell || cells[0];
+            if (!start) return;
+
+            this.#focusAdjacentCell(start, cells, e.key);
+        });
         this.#setupRemovalZone();
         this.#setupUndoButton();
     }
 
     // Makes every library card draggable and stores its data in the drag transfer
     #setupLibraryCards() {
-        const cards = document.querySelectorAll('[data-function]');
+        const cards = document.querySelectorAll('[data-library-card]');
 
         cards.forEach((card) => {
+            const selectCard = () => {
+                this.#selectedFunctionCard = card;
+                this.#selectedFunctionData = this.#buildFunctionDataFromCard(card);
+
+                cards.forEach((otherCard) => {
+                    otherCard.setAttribute('aria-pressed', otherCard === card ? 'true' : 'false');
+                    otherCard.classList.toggle('ring-2', otherCard === card);
+                    otherCard.classList.toggle('ring-blue-500', otherCard === card);
+                });
+            };
+
+            card.setAttribute('aria-pressed', 'false');
+
+            card.addEventListener('click', () => {
+                selectCard();
+            });
+
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectCard();
+                }
+            });
+
             card.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('function', card.dataset.function);
-                e.dataTransfer.setData('function_id', card.dataset.functionId);
-                e.dataTransfer.setData('category', card.dataset.category ?? '');
-                e.dataTransfer.setData('image', card.dataset.image);
-                e.dataTransfer.setData('qol_score', card.dataset.qolScore);
-                e.dataTransfer.setData('safety', card.dataset.safety ?? 0);
-                e.dataTransfer.setData('recreation', card.dataset.recreation ?? 0);
+                const functionData = this.#buildFunctionDataFromCard(card);
+
+                e.dataTransfer.setData('function', functionData.functionName);
+                e.dataTransfer.setData('function_id', functionData.functionId);
+                e.dataTransfer.setData('category', functionData.category);
+                e.dataTransfer.setData('image', functionData.image);
+                e.dataTransfer.setData('qol_score', functionData.qolScore);
+                e.dataTransfer.setData('safety', functionData.safety);
+                e.dataTransfer.setData('recreation', functionData.recreation);
                 // dataset normalises "environment-quality" to "environmentQuality"
-                e.dataTransfer.setData('environmentQuality', card.dataset.environmentQuality ?? card.dataset['environment-quality'] ?? 0);
-                e.dataTransfer.setData('facilities', card.dataset.facilities ?? 0);
-                e.dataTransfer.setData('mobility', card.dataset.mobility ?? 0);
+                e.dataTransfer.setData('environmentQuality', functionData.environmentQuality);
+                e.dataTransfer.setData('facilities', functionData.facilities);
+                e.dataTransfer.setData('mobility', functionData.mobility);
 
                 // Use the card image as the drag ghost
                 const img = card.querySelector('img');
@@ -55,7 +106,7 @@ export class GridController {
 
                 // Fetch which cells are forbidden so dragover can colour them red
                 this.#draggingInvalidCells = new Set();
-                this.#api.getValidCells(card.dataset.functionId)
+                this.#api.getValidCells(functionData.functionId)
                     .then(data => {
                         this.#draggingInvalidCells = new Set(data.invalid.map(String));
                     })
@@ -71,6 +122,10 @@ export class GridController {
     // Attaches drag/drop listeners to each grid cell
     #setupCells(cells) {
         cells.forEach((cell) => {
+            cell.addEventListener('focus', () => {
+                this.#lastFocusedCell = cell;
+            });
+
             // Highlight the cell being hovered during a drag
             cell.addEventListener('dragover', (e) => {
                 e.preventDefault();
@@ -85,6 +140,52 @@ export class GridController {
             });
 
             cell.addEventListener('drop', (e) => this.#handleCellDrop(e, cell, cells));
+
+            cell.addEventListener('click', () => {
+                // If user has picked up a cell, clicking a target places the picked function there.
+                if (this.#pickedUpCell) {
+                    this.#placePickedIntoCell(cell);
+                    return;
+                }
+
+                // Click places a selected library function on empty cells.
+                this.#placeSelectedFunction(cell);
+            });
+
+            cell.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    // If a cell is currently picked up, place it into the focused cell.
+                    if (this.#pickedUpCell) {
+                        this.#placePickedIntoCell(cell);
+                        return;
+                    }
+
+                    // If the cell is occupied, pick it up for keyboard move/removal.
+                    if (cell.dataset.function && cell.dataset.function !== '') {
+                        this.#pickUpCell(cell);
+                        return;
+                    }
+
+                    this.#placeSelectedFunction(cell);
+                    return;
+                }
+
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    e.preventDefault();
+                    this.#removeCell(cell);
+                    return;
+                }
+
+                if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    this.#focusAdjacentCell(cell, cells, e.key);
+                }
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    this.#cancelPickup();
+                }
+            });
 
             // SIM.3 - Subtask 1: Allow dragging an occupied cell to the removal zone
             cell.addEventListener('dragstart', (e) => {
@@ -112,7 +213,9 @@ export class GridController {
 
         // Occupied cells cannot be replaced — the user must remove the function first
         if (cell.dataset.function && cell.dataset.function !== '') {
-            notify('This grid slot already has a city-function');
+            const msg = 'This grid slot already has a city-function';
+            notify(msg);
+            this.#announce(msg);
             return;
         }
 
@@ -137,7 +240,11 @@ export class GridController {
                 this.#qolService.refresh();
                 this.#qolService.showToast(functionName, qolScore);
             })
-            .catch((error) => notify(error.message || 'Failed to save — please refresh and try again.'));
+            .catch((error) => {
+                const msg = error.message || 'Failed to save — please refresh and try again.';
+                notify(msg);
+                this.#announce(msg);
+            });
     }
 
     // SIM.3 - Subtask 2: Sets up the red drop zone for removing functions
@@ -146,6 +253,10 @@ export class GridController {
         if (!removalZone) return;
 
         const highlightClasses = ['ring-2', 'ring-red-500', 'bg-red-100', 'dark:bg-red-800/30'];
+        const removeFocusedCell = () => {
+            const cellElement = this.#lastFocusedCell?.matches?.('[data-grid-cell]') ? this.#lastFocusedCell : null;
+            this.#removeCell(cellElement);
+        };
 
         removalZone.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -188,6 +299,24 @@ export class GridController {
                     console.error('Error removing function:', error);
                     notify('Failed to remove function — please try again.');
                 });
+        });
+
+        removalZone.addEventListener('click', removeFocusedCell);
+        removalZone.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                // If user picked up a cell, confirm removal of that picked cell.
+                if (this.#pickedUpCell) {
+                    this.#completeRemovalFromPickedCell();
+                    return;
+                }
+                removeFocusedCell();
+            }
+
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                this.#cancelPickup();
+            }
         });
 
         
@@ -278,8 +407,271 @@ export class GridController {
         cell.dataset.environmentQuality = '';
         cell.dataset.facilities = '';
         cell.dataset.mobility = '';
-        // Remove keyboard focusability and accessibility label when cleared
-        cell.removeAttribute('tabindex');
-        cell.removeAttribute('aria-label');
+        // Keep the cell reachable by Tab even when empty.
+        const row = cell.dataset.row ? `Row ${cell.dataset.row}` : 'Row unknown';
+        const column = cell.dataset.column ? `column ${cell.dataset.column}` : 'column unknown';
+        cell.setAttribute('tabindex', '0');
+        cell.setAttribute('aria-label', `${row}, ${column}, available`);
+    }
+
+    #removeCell(cellElement) {
+        if (!cellElement || !cellElement.dataset.functionId) {
+            notify('Focus an occupied grid cell first, then press Delete to remove it.');
+            return;
+        }
+
+        this.#api.remove(cellElement.dataset.cellId)
+            .then(() => {
+                const functionName = cellElement.dataset.function ?? 'Function';
+                const oldQolScore = parseInt(cellElement.dataset.qolScore ?? '0', 10);
+
+                // If we removed the currently picked up cell, clear pickup state
+                if (this.#pickedUpCell === cellElement) this.#pickedUpCell = null;
+
+                this.#clearCell(cellElement);
+                        try { cellElement.focus(); } catch (e) {}
+                this.#qolService.refresh();
+                this.#qolService.showToast(functionName, -oldQolScore);
+            })
+            .catch((error) => {
+                console.error('Error removing function:', error);
+                notify('Failed to remove function — please try again.');
+            });
+    }
+
+    #pickUpCell(cell) {
+        if (!cell || !cell.dataset.functionId) return;
+        // Mark visually as picked
+        this.#pickedUpCell = cell;
+        cell.classList.add('is-picked');
+        const name = cell.dataset.function ?? 'Function';
+        const msg = `Picked up ${name}. Move to a target cell and press Enter to place, or move to the removal area and press Enter to remove. Press Escape to cancel.`;
+        notify(msg);
+        this.#announce(msg);
+    }
+
+    #completeRemovalFromPickedCell() {
+        if (!this.#pickedUpCell) return;
+        const cell = this.#pickedUpCell;
+        this.#pickedUpCell = null;
+        cell.classList.remove('is-picked');
+        this.#removeCell(cell);
+    }
+
+    #cancelPickup() {
+        if (!this.#pickedUpCell) return;
+        const name = this.#pickedUpCell.dataset.function ?? 'Function';
+        this.#pickedUpCell.classList.remove('is-picked');
+        this.#pickedUpCell = null;
+        const msg = `Cancelled pick up of ${name}.`;
+        notify(msg);
+        this.#announce(msg);
+    }
+
+    async #placePickedIntoCell(targetCell) {
+        if (!this.#pickedUpCell) return;
+
+        const source = this.#pickedUpCell;
+        if (source === targetCell) {
+            // placing back on same cell — cancel
+            this.#cancelPickup();
+            return;
+        }
+
+        // cannot place onto an occupied cell
+        if (targetCell.dataset.function && targetCell.dataset.function !== '') {
+            const msg = 'Cannot place here — target cell is occupied.';
+            notify(msg);
+            this.#announce(msg);
+            return;
+        }
+
+        const functionId = source.dataset.functionId;
+        if (!functionId) {
+            const msg = 'Picked function has no id; canceling.';
+            notify(msg);
+            this.#announce(msg);
+            this.#cancelPickup();
+            return;
+        }
+
+        // Use assign on the target then remove the source
+        try {
+            const functionName = source.dataset.function ?? '';
+            const qolScore = parseInt(source.dataset.qolScore ?? '0', 10);
+
+            await this.#api.assign(targetCell.dataset.cellId, functionId);
+
+            // Determine image src: prefer an <img> inside the source cell, fall back to dataset
+            const imgEl = source.querySelector('img');
+            const imageSrc = imgEl ? imgEl.src : (source.dataset.image ?? '');
+
+            // Render into target cell using the source's stored attributes
+            this.#renderFunctionInCell(targetCell, {
+                functionName: source.dataset.function ?? '',
+                functionId: functionId,
+                category: source.dataset.category ?? '',
+                image: imageSrc,
+                safety: source.dataset.safety ?? 0,
+                recreation: source.dataset.recreation ?? 0,
+                environmentQuality: source.dataset.environmentQuality ?? source.dataset['environment-quality'] ?? 0,
+                facilities: source.dataset.facilities ?? 0,
+                mobility: source.dataset.mobility ?? 0,
+            });
+
+            // Now remove the original
+            await this.#api.remove(source.dataset.cellId);
+            this.#clearCell(source);
+
+            // Clean up pickup state
+            source.classList.remove('is-picked');
+            this.#pickedUpCell = null;
+
+            this.#qolService.refresh();
+            this.#qolService.showToast(functionName, qolScore);
+            const msg = `Moved ${functionName} to the selected cell.`;
+            notify(msg);
+            this.#announce(msg);
+        } catch (err) {
+            const msg = (err && err.message) ? err.message : 'Failed to move function.';
+            notify(msg);
+            this.#announce(msg);
+        }
+    }
+
+    #placeSelectedFunction(cell) {
+        const selected = this.#getSelectedFunctionData();
+        if (!selected) {
+            notify('Select a function first, then place it on a grid cell.');
+            return;
+        }
+
+        if (cell.dataset.function && cell.dataset.function !== '') {
+            const msg = 'This grid slot already has a city-function';
+            notify(msg);
+            this.#announce(msg);
+            return;
+        }
+
+        if (!selected.functionId) {
+            notify('The selected function is missing an id. Please reselect it from the library.');
+            return;
+        }
+
+        this.#api.assign(cell.dataset.cellId, selected.functionId)
+            .then(() => {
+                this.#renderFunctionInCell(cell, {
+                    functionName: selected.functionName,
+                    functionId: selected.functionId,
+                    category: selected.category,
+                    image: selected.image,
+                    safety: selected.safety,
+                    recreation: selected.recreation,
+                    environmentQuality: selected.environmentQuality,
+                    facilities: selected.facilities,
+                    mobility: selected.mobility,
+                });
+                this.#qolService.refresh();
+                this.#qolService.showToast(selected.functionName, selected.qolScore);
+            })
+            .catch((error) => {
+                const msg = error.message || 'Failed to save — please refresh and try again.';
+                notify(msg);
+                this.#announce(msg);
+            });
+    }
+
+    #getSelectedFunctionData() {
+        const card = this.#selectedFunctionCard;
+        if (!card) return this.#selectedFunctionData;
+
+        const rebuilt = this.#buildFunctionDataFromCard(card);
+        this.#selectedFunctionData = rebuilt;
+        return rebuilt;
+    }
+
+    #buildFunctionDataFromCard(card) {
+        const functionId = card.getAttribute('data-function-id') || card.dataset.functionId || '';
+
+        return {
+            functionName: card.dataset.function || '',
+            functionId,
+            category: card.dataset.category ?? '',
+            image: card.dataset.image ?? '',
+            qolScore: parseInt(card.dataset.qolScore ?? '0', 10),
+            safety: card.dataset.safety ?? 0,
+            recreation: card.dataset.recreation ?? 0,
+            environmentQuality: card.dataset.environmentQuality ?? card.dataset['environment-quality'] ?? 0,
+            facilities: card.dataset.facilities ?? 0,
+            mobility: card.dataset.mobility ?? 0,
+        };
+    }
+
+    // Announce messages to screen readers via a hidden aria-live region
+    #announce(message) {
+        if (!this.#announcer) return;
+        try {
+            // Clear and re-set to ensure screen readers announce repeated messages
+            this.#announcer.textContent = '';
+            setTimeout(() => { this.#announcer.textContent = message; }, 50);
+        } catch (err) {
+            // Ignore announcer failures
+        }
+    }
+
+    #focusAdjacentCell(cell, cells, key) {
+        const parse = (v) => Number.parseInt(v ?? '', 10);
+
+        // Build a map of rows -> columns -> cell element for deterministic neighbor lookup
+        const rowsMap = new Map();
+        cells.forEach((c) => {
+            const r = parse(c.dataset.row);
+            const col = parse(c.dataset.column);
+            if (!Number.isFinite(r) || !Number.isFinite(col)) return;
+            if (!rowsMap.has(r)) rowsMap.set(r, new Map());
+            rowsMap.get(r).set(col, c);
+        });
+
+        const row = parse(cell.dataset.row);
+        const column = parse(cell.dataset.column);
+        if (!Number.isFinite(row) || !Number.isFinite(column)) return;
+
+        if (key === 'ArrowUp') {
+            const targetRow = row - 1;
+            const rowMap = rowsMap.get(targetRow);
+            const target = rowMap?.get(column);
+            if (target) target.focus();
+            return;
+        }
+
+        if (key === 'ArrowDown') {
+            const targetRow = row + 1;
+            const rowMap = rowsMap.get(targetRow);
+            const target = rowMap?.get(column);
+            if (target) target.focus();
+            return;
+        }
+
+        if (key === 'ArrowLeft' || key === 'ArrowRight') {
+            const rowMap = rowsMap.get(row);
+            if (!rowMap) return;
+
+            // Get sorted columns in this row
+            const cols = Array.from(rowMap.keys()).sort((a, b) => a - b);
+            const idx = cols.indexOf(column);
+            if (idx === -1) return;
+
+            if (key === 'ArrowLeft' && idx > 0) {
+                const targetCol = cols[idx - 1];
+                const target = rowMap.get(targetCol);
+                if (target) target.focus();
+            }
+
+            if (key === 'ArrowRight' && idx < cols.length - 1) {
+                const targetCol = cols[idx + 1];
+                const target = rowMap.get(targetCol);
+                if (target) target.focus();
+            }
+        }
     }
 }

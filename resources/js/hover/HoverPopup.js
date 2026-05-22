@@ -52,6 +52,20 @@ export class HoverPopup {
         window.addEventListener('touchmove', hideOnScroll, { passive: true });
         this.#grid.closest('.lg\\:overflow-auto')?.addEventListener('scroll', hideOnScroll, { passive: true });
 
+        this.#grid.addEventListener('focusin', (e) => {
+            const el = e.target.closest('[data-grid-cell]');
+            if (!el || !this.#grid.contains(el) || !el.dataset.function) return;
+
+            const rect = el.getBoundingClientRect();
+            this.#show(el, { clientX: rect.right, clientY: rect.top });
+        });
+
+        this.#grid.addEventListener('focusout', (e) => {
+            const relatedTarget = e.relatedTarget;
+            if (relatedTarget?.closest('[data-grid-cell]')?.dataset?.function) return;
+            if (this.#visible) this.#hide();
+        });
+
         // Delegate events through the grid so they still work after the DOM is mutated by drops
         this.#grid.addEventListener('mouseover', (e) => {
             const el = e.target.closest('[data-grid-cell]');
