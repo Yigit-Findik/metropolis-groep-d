@@ -40,7 +40,7 @@ it('displays navigation on city functions page', function () {
 });
 
 it('displays navigation on audit log page', function () {
-    $response = $this->actingAs($this->user)->get('/audit_log');
+    $response = $this->actingAs($this->user)->get('/audit-log');
     
     $response->assertStatus(200);
     $response->assertSee('Dashboard');
@@ -49,7 +49,7 @@ it('displays navigation on audit log page', function () {
 });
 
 it('navigation links are in consistent position across pages', function () {
-    $pages = ['/dashboard', '/grid', '/city_functions', '/audit_log'];
+    $pages = ['/dashboard', '/grid', '/city_functions', '/audit-log'];
     
     foreach ($pages as $page) {
         $response = $this->actingAs($this->user)->get($page);
