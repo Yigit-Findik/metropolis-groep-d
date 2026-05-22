@@ -20,15 +20,20 @@ class CityFunctionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'                => 'required|string|max:255',
-            'category'            => 'required|string|max:255',
-            'description'         => 'nullable|string',
-            'image'               => 'nullable|image|max:4096',
-            'safety'              => 'nullable|integer|min:0',
-            'recreation'          => 'nullable|integer|min:0',
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|max:4096',
+            'safety' => 'nullable|integer|min:0',
+            'recreation' => 'nullable|integer|min:0',
             'environment_quality' => 'nullable|integer|min:0',
-            'facilities'          => 'nullable|integer|min:0',
-            'mobility'            => 'nullable|integer|min:0',
+            'facilities' => 'nullable|integer|min:0',
+            'mobility' => 'nullable|integer|min:0',
+        ], [
+            'name.required' => 'Please enter a name for this city function.',
+            'category.required' => 'Please select a category for this city function.',
+            'image.image' => 'The uploaded file must be an image. Accepted formats: jpeg, png, gif, webp.',
+            'image.max' => 'The image is too large. Please upload an image smaller than 4 MB.',
         ]);
 
         $imagePath = '';
@@ -72,6 +77,11 @@ class CityFunctionController extends Controller
             'environment_quality' => 'nullable|integer|min:0',
             'facilities'          => 'nullable|integer|min:0',
             'mobility'            => 'nullable|integer|min:0',
+        ], [
+            'name.required' => 'Please enter a name for this city function.',
+            'category.required' => 'Please select a category for this city function.',
+            'image.image' => 'The uploaded file must be an image. Accepted formats: jpeg, png, gif, webp.',
+            'image.max' => 'The image is too large. Please upload an image smaller than 4 MB.',
         ]);
 
         $data = [
