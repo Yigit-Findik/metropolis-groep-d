@@ -26,16 +26,17 @@
                             <p class="text-white text-xl font-semibold mt-0.5" id="qol-{{ $slug }}" tabindex="0" aria-live="polite" aria-atomic="true">—</p>
                         </div>
                     @endforeach
-
-                    <div class="text-white text-xl font-medium pt-2">bonus:</div>
+                    <div class="col-span-6"></div>
+                        <div class="text-white font-medium">Bonus:</div>
                     @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                        <div class="pt-2 text-green-300 text-xl font-semibold" id="qol-bonus-{{ $slug }}" tabindex="0" aria-live="polite" aria-atomic="true">+0</div>
+                        <div class="text-green-300 font-semibold" id="qol-bonus-{{ $slug }}" tabindex="0" aria-live="polite" aria-atomic="true">+0</div>
                     @endforeach
 
-                    <div class="text-white text-xl font-medium pt-2">penalty:</div>
+                    <div class="text-white font-medium">Penalty:</div>
                     @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                        <div class="pt-2 text-red-300 text-xl font-semibold" id="qol-penalty-{{ $slug }}" tabindex="0" aria-live="polite" aria-atomic="true">-0</div>
+                        <div class="text-red-300 font-semibold" id="qol-penalty-{{ $slug }}" tabindex="0" aria-live="polite" aria-atomic="true">-0</div>
                     @endforeach
+                    </div>
 
                 </div>
             </div>

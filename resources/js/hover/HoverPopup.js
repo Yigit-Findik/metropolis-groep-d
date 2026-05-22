@@ -46,9 +46,11 @@ export class HoverPopup {
 
     // Attaches all mouse and touch event listeners to the grid
     #attachListeners() {
-        // Hide popup on scroll/touch to avoid it floating in a wrong position on mobile
-        window.addEventListener('scroll', () => this.#hideOnMobileScroll(), { passive: true });
-        window.addEventListener('touchmove', () => this.#hideOnMobileScroll(), { passive: true });
+        // Hide popup on scroll/touch to avoid it floating in a wrong position
+        const hideOnScroll = () => { if (this.#visible) this.#hide(); };
+        window.addEventListener('scroll', hideOnScroll, { passive: true });
+        window.addEventListener('touchmove', hideOnScroll, { passive: true });
+        this.#grid.closest('.lg\\:overflow-auto')?.addEventListener('scroll', hideOnScroll, { passive: true });
 
         // Delegate events through the grid so they still work after the DOM is mutated by drops
         this.#grid.addEventListener('mouseover', (e) => {
@@ -129,11 +131,6 @@ export class HoverPopup {
         if (!this.#visible) return;
         this.#popup.style.left = `${e.clientX + 12}px`;
         this.#popup.style.top = `${e.clientY + 12}px`;
-    }
-
-    #hideOnMobileScroll() {
-        if (!this.#visible || !this.#activeCell || !this.#isMobileViewport()) return;
-        this.#hide();
     }
 
     #isMobileViewport() {
@@ -255,7 +252,7 @@ export class HoverPopup {
 
         badge.style.position = 'fixed';
         badge.style.zIndex = '60';
-        badge.style.pointerEvents = 'auto';
+        badge.style.pointerEvents = 'none';
 
         if (isPositive) {
             const shortLabel = this.#getCategoryShortLabel(cell.dataset.category);
@@ -269,19 +266,11 @@ export class HoverPopup {
                     left: Math.round(cellRect.left + cellRect.width * 0.68),
                     top: Math.round(cellRect.top - cellRect.height * 0.12),
                 };
-            const isHorizontal = anchorRect ? Math.abs(anchorRect.left - cellRect.left) > Math.abs(anchorRect.top - cellRect.top) : true;
-            const startArrow = isHorizontal ? this.#getInwardArrow('right') : this.#getInwardArrow('down');
-            const endArrow = isHorizontal ? this.#getInwardArrow('left') : this.#getInwardArrow('up');
-
             badge.innerHTML = `
-                <div class="flex ${isHorizontal ? 'items-center gap-1' : 'flex-col gap-0.5'}">
-                    ${startArrow}
-                    <span class="flex h-11 w-11 flex-col items-center justify-center rounded-full bg-green-500 px-1 text-[10px] font-semibold leading-none text-white shadow-md ring-2 ring-white/80">
-                        <span class="uppercase tracking-[0.18em]">${shortLabel}</span>
-                        <span class="text-[11px] font-bold">+${amount}</span>
-                    </span>
-                    ${endArrow}
-                </div>
+                <span class="flex h-11 w-11 flex-col items-center justify-center rounded-full bg-green-500 px-1 text-[10px] font-semibold leading-none text-white shadow-md ring-2 ring-white/80">
+                    <span class="uppercase tracking-[0.18em]">${shortLabel}</span>
+                    <span class="text-[11px] font-bold">+${amount}</span>
+                </span>
             `;
             badge.style.left = `${Math.round(positionRect.left)}px`;
             badge.style.top = `${Math.round(positionRect.top)}px`;
@@ -299,19 +288,11 @@ export class HoverPopup {
                     left: Math.round(cellRect.left + cellRect.width * 0.68),
                     top: Math.round(cellRect.top - cellRect.height * 0.12),
                 };
-            const isHorizontal = anchorRect ? Math.abs(anchorRect.left - cellRect.left) > Math.abs(anchorRect.top - cellRect.top) : true;
-            const startArrow = anchorRect ? this.#getInwardArrow(isHorizontal ? 'right' : 'down', 'red') : '';
-            const endArrow = anchorRect ? this.#getInwardArrow(isHorizontal ? 'left' : 'up', 'red') : '';
-
             badge.innerHTML = `
-                <div class="flex ${isHorizontal ? 'items-center gap-1' : 'flex-col gap-0.5'}">
-                    ${startArrow}
-                    <span class="flex h-11 w-11 flex-col items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white shadow-md ring-2 ring-white/80">
-                        <span class="uppercase tracking-[0.18em]">${shortLabel}</span>
-                        <span class="text-[11px] font-bold">-${Math.abs(amount)}</span>
-                    </span>
-                    ${endArrow}
-                </div>
+                <span class="flex h-11 w-11 flex-col items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white shadow-md ring-2 ring-white/80">
+                    <span class="uppercase tracking-[0.18em]">${shortLabel}</span>
+                    <span class="text-[11px] font-bold">-${Math.abs(amount)}</span>
+                </span>
             `;
             badge.style.left = `${Math.round(positionRect.left)}px`;
             badge.style.top = `${Math.round(positionRect.top)}px`;
