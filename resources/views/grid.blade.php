@@ -11,8 +11,8 @@
         <div class="px-4 sm:px-6 lg:px-8">
 
             {{-- QoL Score Banner --}}
-            <div class="w-full bg-blue-600 dark:bg-blue-800 rounded-2xl shadow-sm px-8 py-6 mb-6">
-                <div class="flex flex-wrap items-center gap-6">
+            <div class="w-full bg-blue-600 dark:bg-blue-800 rounded-2xl shadow-sm px-8 py-6 mb-6 overflow-x-auto">
+                <div class="grid min-w-[720px] grid-cols-[150px_repeat(5,minmax(120px,1fr))] gap-x-4 gap-y-3 items-start">
 
                     {{-- Total score --}}
                     <div class="min-w-[120px]">
@@ -20,16 +20,22 @@
                         <p class="text-white text-4xl font-bold mt-1" id="qol-score-value" tabindex="0" aria-live="polite" aria-atomic="true">—</p>
                     </div>
 
-                    <div class="hidden sm:block w-px h-12 bg-blue-400/50"></div>
+                    @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
+                        <div>
+                            <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{{ $label }}</p>
+                            <p class="text-white text-xl font-semibold mt-0.5" id="qol-{{ $slug }}" tabindex="0" aria-live="polite" aria-atomic="true">—</p>
+                        </div>
+                    @endforeach
+                    <div class="col-span-6"></div>
+                        <div class="text-white font-medium">Bonus:</div>
+                    @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
+                        <div class="text-green-300 font-semibold" id="qol-bonus-{{ $slug }}" tabindex="0" aria-live="polite" aria-atomic="true">+0</div>
+                    @endforeach
 
-                    {{-- Category scores --}}
-                    <div class="flex flex-wrap gap-x-6 gap-y-3">
-                        @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
-                            <div>
-                                <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{{ $label }}</p>
-                                <p class="text-white text-xl font-semibold mt-0.5" id="qol-{{ $slug }}" tabindex="0" aria-live="polite" aria-atomic="true">—</p>
-                            </div>
-                        @endforeach
+                    <div class="text-white font-medium">Penalty:</div>
+                    @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
+                        <div class="text-red-300 font-semibold" id="qol-penalty-{{ $slug }}" tabindex="0" aria-live="polite" aria-atomic="true">-0</div>
+                    @endforeach
                     </div>
 
                 </div>

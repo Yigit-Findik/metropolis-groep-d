@@ -42,7 +42,6 @@ export class QolService {
                     `Quality of life ${data.total_score}`,
                 );
             }
-
             if (data.categories) {
                 for (const [cat, score] of Object.entries(data.categories)) {
                     // Element IDs use dashes: "qol-environment-quality", "qol-safety", etc.
@@ -50,12 +49,45 @@ export class QolService {
                     const elementId = `qol-${cat.replace(/\s+/g, "-")}`;
                     const el = document.getElementById(elementId);
                     if (el) {
-                        const display = (score >= 0 ? "+" : "") + score;
+                        const penaltyForCat = data.penalty_categories?.[cat] ?? 0;
+                        const gross = score - penaltyForCat; // add back negative penalties so top shows pre-penalty value
+                        const display = (gross >= 0 ? "+" : "") + gross;
                         el.textContent = display;
-                        el.className = `mt-0.5 text-xl font-semibold ${score >= 0 ? "text-green-300" : "text-red-300"}`;
-                        // Make screen reader announce the category and its value
+                        el.className = `mt-0.5 text-xl font-semibold ${gross >= 0 ? "text-green-300" : "text-red-300"}`;
+                        // Make screen reader announce the category and its value (gross)
                         el.setAttribute("aria-label", `${cat} ${display}`);
                     }
+
+                    const bonus = data.bonus_categories?.[cat] ?? 0;
+
+                    const bonusEl = document.getElementById(`qol-bonus-${cat.replace(/\s+/g, "-")}`);
+                    if (bonusEl) {
+                        const bonusDisplay = `+${bonus}`;
+                        bonusEl.textContent = bonusDisplay;
+                        bonusEl.setAttribute("aria-label", `${cat} bonus points ${bonusDisplay}`);
+                    }
+
+                    const penalty = data.penalty_categories?.[cat] ?? 0;
+
+                    const penaltyEl = document.getElementById(`qol-penalty-${cat.replace(/\s+/g, "-")}`);
+                    if (penaltyEl) {
+                        const penaltyDisplay = penalty === 0 ? "-0" : `${penalty}`;
+                        penaltyEl.textContent = penaltyDisplay;
+                        penaltyEl.setAttribute("aria-label", `${cat} penalty points ${penaltyDisplay}`);
+                    }
+
+                }
+            }
+
+            // Also ensure penalty row is updated even if a category key was missing
+            if (data.penalty_categories) {
+                for (const [catKey, penValue] of Object.entries(data.penalty_categories)) {
+                    const id = `qol-penalty-${catKey.replace(/\s+/g, "-")}`;
+                    const el = document.getElementById(id);
+                    if (!el) continue;
+                    const display = penValue === 0 ? "-0" : `${penValue}`;
+                    el.textContent = display;
+                    el.setAttribute("aria-label", `${catKey} penalty points ${display}`);
                 }
             }
         } catch {
