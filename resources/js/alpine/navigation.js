@@ -1,9 +1,15 @@
-// Controls the mobile navigation menu and handles the logout form submission
+//controls the mobile navigation menu and handles the logout form
 export const navigation = () => ({
-    open: false, // Whether the mobile nav menu is visible
+    open: false,
     submitLogout(event) {
-        // The logout link points to a GET route for UX; we intercept and POST instead
+        //logout links points to a form to allow for post requests
         event.preventDefault();
         event.target.closest('form').submit();
+    },
+    init() {
+        //reset mobile menu when navagating away from page
+        window.addEventListener('beforeunload', () => {
+            this.open = false;
+        });
     },
 });

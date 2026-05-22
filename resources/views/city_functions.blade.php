@@ -5,15 +5,15 @@
         </h2>
     </x-slot>
 
-    {{-- Alpine.js state for the whole page:
-         - open      : controls the create modal
-         - editOpen  : controls the edit modal
-         - editing   : holds the data of the function currently being edited
-         - openEdit  : populates `editing` with the chosen function and opens the edit modal --}}
+    {{-- Alpine.js for page:
+        open      : controls the create modal
+        editOpen  : controls the edit modal
+        editing   : holds the data of the function currently being edited
+        openEdit  : populates editing with the chosen function and opens the edit modal --}}
     <div class="py-12" x-data="cityFunctions">
         <div class="px-4 sm:px-6 lg:px-8 flex flex-col items-center gap-4">
 
-            {{-- Button that opens the create modal --}}
+            {{-- button that opens the create modal --}}
             <div class="w-fit self-end">
                 <button @click="open = true"
                         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition">
@@ -124,7 +124,7 @@
         </div>
 
         {{-- CREATE MODAL -------------------------------------------------------
-             Shown when `open` is true. Clicking the dark backdrop closes the modal.
+             Shown when "open" is true. Clicking the dark backdrop closes the modal.
              enctype="multipart/form-data" is required for image file uploads. --}}
            <div x-show="open"
              x-transition:enter="transition ease-out duration-200"
@@ -232,9 +232,9 @@
         </div>
 
         {{-- EDIT MODAL ---------------------------------------------------------
-             Shown when `editOpen` is true. The form action is bound dynamically
-             to the id of the function stored in `editing`.
-             x-model binds each input to the matching property in `editing` so the
+             Shown when "editOpen" is true. The form action is bound dynamically
+             to the id of the function stored in "editing".
+             x-model binds each input to the matching property in "editing" so the
              fields are pre-filled with the current values when the modal opens. --}}
            <div x-show="editOpen"
              x-transition:enter="transition ease-out duration-200"
@@ -426,6 +426,37 @@
             {{ session('success') }}
         </div>
         @endif
+
+        {{-- CONFIRMATION MODAL --------------------------------------------------
+             Non-blocking modal for delete confirmations. Doesn't interrupt workflow. --}}
+        <div x-data="confirmModal" @keydown.escape="cancel()"
+             x-show="show"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+             @click.self="cancel()">
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-sm mx-4 p-6"
+                 @click.stop>
+                <p class="text-gray-700 dark:text-gray-300 mb-6" x-text="message"></p>
+                <div class="flex justify-end gap-3">
+                    <button type="button"
+                            @click="cancel()"
+                            class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-semibold rounded-lg transition">
+                        Cancel
+                    </button>
+                    <button type="button"
+                            @click="confirm()"
+                            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
 
     </div>
 </x-app-layout>
