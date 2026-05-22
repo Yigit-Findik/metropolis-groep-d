@@ -3,29 +3,12 @@
 namespace App\Services;
 
 use App\Models\CityFunction;
-use Illuminate\Support\Facades\Schema;
 
 class CityFunctionEffectValueService
 {
     public function effectColumns(): array
     {
-        // Read the table schema at runtime and filter out known metadata columns so the service tracks only score fields.
-        $excludedColumns = [
-            'id',
-            'name',
-            'category',
-            'qol_score',
-            'image_path',
-            'description',
-            'created_at',
-            'updated_at',
-            'deleted_at',
-        ];
-
-        return array_values(array_filter(
-            Schema::getColumnListing((new CityFunction())->getTable()),
-            fn (string $column) => ! in_array($column, $excludedColumns, true)
-        ));
+        return CityFunction::EFFECT_COLUMNS;
     }
 
     public function missingEffectColumns(CityFunction $function): array

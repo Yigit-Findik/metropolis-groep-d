@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use App\Models\CityFunction;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ActionHistory extends Model
 {
@@ -12,6 +15,40 @@ class ActionHistory extends Model
         'action',
         'cell_id',
         'old_city_function_id',
-        'new_city_function_id'
+        'new_city_function_id',
+        'details',
     ];
+
+    protected $casts = [
+        'details' => 'array',
+    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+    public function cell(): BelongsTo
+    {
+        return $this->belongsTo(CityGridCell::class, 'cell_id');
+    }
+
+    public function oldCityFunction(): BelongsTo
+    {
+        return $this->belongsTo(CityFunction::class, 'old_city_function_id')->withTrashed();
+    }
+    protected static function booted(): void
+    {
+        // Prevent updates and deletes to keep entries immutable once written.
+        static::updating(function () {
+            return false;
+        });
+
+        static::deleting(function () {
+            return false;
+        });
+    }
+    public function newCityFunction(): BelongsTo
+    {
+        return $this->belongsTo(CityFunction::class, 'new_city_function_id')->withTrashed();
+    }
 }

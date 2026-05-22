@@ -10,6 +10,15 @@ class CityFunction extends Model
 {
     use SoftDeletes;
 
+    // Single source of truth for the five QoL effect score columns.
+    public const EFFECT_COLUMNS = [
+        'Safety',
+        'Recreation',
+        'Environment Quality',
+        'Facilities',
+        'Mobility',
+    ];
+
     protected $fillable = [
         'name',
         'category',
@@ -25,5 +34,10 @@ class CityFunction extends Model
     public function pendingActions(): HasMany
     {
         return $this->hasMany(PendingAction::class);
+    }
+
+    public function functionConditions(): HasMany
+    {
+        return $this->hasMany(FunctionCondition::class, 'city_function_id');
     }
 }

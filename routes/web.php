@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CityGridCellController;
 use App\Http\Controllers\EffectController;
 use App\Http\Controllers\PendingActionController;
+use App\Http\Controllers\AuditLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,23 +53,25 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     // SIM.1.4 - QoL score calculation
     Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);
 
+    // Get valid/invalid cells for adjacency rules
+    Route::get('/grid/valid-cells', [CityGridCellController::class, 'getValidCells']);
+
     // SIM.3 - Remove a function from a cell
     Route::delete('/grid/{id}/remove', [CityGridCellController::class, 'removeFunction']);
 
     // SIM.5 - Undo a function from a cell
     Route::post('/grid/undo', [CityGridCellController::class, 'undo']);
 
-    // EFF.1 - Effect management table
+});
+
+// EFF.1 - Effect management table — accessible to city planners, effects experts, and administrators
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects'])->group(function () {
     Route::get('/effects', [EffectController::class, 'index'])->name('effects.index');
     Route::post('/effects/{functionId}', [EffectController::class, 'update'])->name('effects.update');
 });
-// Effects expert and administrator routes
-Route::middleware(['auth', 'verified', 'role:Administrator,Expert in effects'])->group(function () {
-    // EFF.1 - Effect management table
-    Route::get('/effects', [EffectController::class, 'index'])->name('effects.index');
-    Route::post('/effects/{functionId}', [EffectController::class, 'update'])->name('effects.update');
 
-    // Pending actions dashboard for the effects expert
+// Pending actions dashboard — effects experts and administrators only
+Route::middleware(['auth', 'verified', 'role:Administrator,Expert in effects'])->group(function () {
     Route::get('/effects/pending-actions', [PendingActionController::class, 'index'])->name('effects.pending-actions');
 });
 
@@ -78,6 +81,7 @@ Route::middleware(['auth', 'verified', 'role:Administrator'])->group(function ()
     Route::post('/city_functions', [CityFunctionController::class, 'store']);
     Route::put('/city_functions/{id}', [CityFunctionController::class, 'update']);
     Route::delete('/city_functions/{id}', [CityFunctionController::class, 'destroy']);
+    Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit_log');
 });
 
 // Profile management — auth only, no role restriction so all users can manage their own account
@@ -86,7 +90,5 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-Route::get('/api/qol-score', [CityGridCellController::class, 'getQolScore']);
 
 require __DIR__.'/auth.php';

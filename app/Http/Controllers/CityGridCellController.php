@@ -15,9 +15,8 @@ class CityGridCellController extends Controller
         // Create missing cells on demand so the view always receives a complete grid structure.
         $cells = CityGridCell::ensureGridExists();
 
-        // return response()->json($cells);
-        $cityFunctions = CityFunction::all();
-        $categories = $cityFunctions->pluck('category')->unique()->filter()->values();
+        $cityFunctions = CityFunction::orderBy('name')->get();
+        $categories = CityFunction::query()->distinct()->orderBy('category')->pluck('category')->filter()->values();
 
         return view('grid', [
             'gridCells' => $cells,
@@ -57,19 +56,31 @@ class CityGridCellController extends Controller
         ]);
 
         $cell = CityGridCell::findOrFail($id);
-        $oldFunctionId = $cell->function_id; // Saving an old city_function_id before it will be replased with a new one
+        $function = CityFunction::with('functionConditions')->findOrFail($request->function_id);
+        
+        // Check adjacency conditions
+        $error = $this->checkAdjacencyConditions($function, $cell);
+        if ($error) {
+            return response()->json(['message' => $error], 422);
+        }
+
+        $oldFunctionId = $cell->function_id; // Saved so we can record it in ActionHistory before it is replaced
 
         $cell->update([
             'function_id' => $request->function_id,
         ]);
 
-        // Saving an action in the database
+        // Store the placement so the latest grid action can be undone later.
         ActionHistory::create([
             'user_id' => auth()->id(),
             'action' => 'assign',
             'cell_id' => $id,
             'old_city_function_id' => $oldFunctionId,
             'new_city_function_id' => $request->function_id,
+            'details' => [
+                'old' => $oldFunctionId,
+                'new' => $request->function_id,
+            ],
         ]);
 
         return response()->json([
@@ -79,19 +90,74 @@ class CityGridCellController extends Controller
     }
 
     /**
-     * Remove a city function from a specific grid cell.
-     * 
-     * SIM.3 - Subtask 4 & 6: Build Removal API Endpoint + Ensure Other Cells Are Not Affected
-     * 
-     * This method handles removing a function from a grid cell. It:
-     * 1. Validates that the cell exists
-     * 2. Checks that the cell actually contains a function (safeguard)
-     * 3. Sets the function_id to null (clearing the placement)
-     * 4. Only modifies the specified cell (no side effects on other cells)
-     * 
-     * @param int $id - The ID of the cell to remove the function from
-     * @return \Illuminate\Http\JsonResponse
+     * Check if placing a function violates its adjacency conditions
      */
+    private function checkAdjacencyConditions(CityFunction $function, CityGridCell $targetCell)
+    {
+        $adjacentCells = $this->getAdjacentCells($targetCell);
+        $neighborFunctionIds = $adjacentCells->pluck('function_id')->filter()->unique()->values()->all();
+
+        // Check the function's own conditions against its future neighbors
+        foreach ($function->functionConditions as $condition) {
+            if ($condition->type === 'forbidden' && in_array($condition->target_function_id, $neighborFunctionIds)) {
+                $targetFn = CityFunction::find($condition->target_function_id);
+                return "Cannot place {$function->name} next to {$targetFn->name} (forbidden).";
+            }
+
+            if ($condition->type === 'required' && !in_array($condition->target_function_id, $neighborFunctionIds)) {
+                $targetFn = CityFunction::find($condition->target_function_id);
+                return "{$function->name} requires {$targetFn->name} as a neighbor.";
+            }
+        }
+
+        // Bidirectional check: if an already-placed neighbor has a forbidden rule pointing at
+        // the function being placed, block the placement from that side too.
+        if (!empty($neighborFunctionIds)) {
+            $neighborFunctions = CityFunction::with('functionConditions')
+                ->whereIn('id', $neighborFunctionIds)
+                ->get();
+
+            foreach ($neighborFunctions as $neighbor) {
+                foreach ($neighbor->functionConditions as $condition) {
+                    if ($condition->type === 'forbidden' && $condition->target_function_id === $function->id) {
+                        return "Cannot place {$function->name} next to {$neighbor->name} (forbidden).";
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get cells adjacent to the target cell (up, down, left, right)
+     */
+    private function getAdjacentCells(CityGridCell $cell)
+    {
+        return CityGridCell::where(function ($query) use ($cell) {
+            // Up
+            $query->where(function ($q) use ($cell) {
+                $q->where('row_index', $cell->row_index - 1)
+                  ->where('column_index', $cell->column_index);
+            })
+            // Down
+            ->orWhere(function ($q) use ($cell) {
+                $q->where('row_index', $cell->row_index + 1)
+                  ->where('column_index', $cell->column_index);
+            })
+            // Left
+            ->orWhere(function ($q) use ($cell) {
+                $q->where('row_index', $cell->row_index)
+                  ->where('column_index', $cell->column_index - 1);
+            })
+            // Right
+            ->orWhere(function ($q) use ($cell) {
+                $q->where('row_index', $cell->row_index)
+                  ->where('column_index', $cell->column_index + 1);
+            });
+        })->get();
+    }
+
     public function getQolScore()
     {
         // Calculate the score on demand and return the aggregated result as JSON for the frontend.
@@ -100,6 +166,54 @@ class CityGridCellController extends Controller
         return response()->json($result);
     }
 
+    /**
+     * Get valid and invalid cells for placing a function based on adjacency rules.
+     * Returns cell IDs that are valid (green) and invalid (red) for placement.
+     */
+    public function getValidCells(Request $request)
+    {
+        $functionId = $request->input('function_id');
+        
+        if (!$functionId) {
+            return response()->json(['valid' => [], 'invalid' => []]);
+        }
+
+        $function = CityFunction::with('functionConditions')->find($functionId);
+        if (!$function) {
+            return response()->json(['valid' => [], 'invalid' => []]);
+        }
+
+        // If function has no adjacency conditions, all empty cells are valid
+        if ($function->functionConditions->isEmpty()) {
+            $allCells = CityGridCell::whereNull('function_id')->pluck('id');
+            return response()->json(['valid' => $allCells->all(), 'invalid' => []]);
+        }
+
+        $validCells = [];
+        $invalidCells = [];
+        $allCells = CityGridCell::all();
+
+        foreach ($allCells as $cell) {
+            // Skip occupied cells
+            if ($cell->function_id) {
+                continue;
+            }
+
+            $hasError = $this->checkAdjacencyConditions($function, $cell);
+            if ($hasError) {
+                $invalidCells[] = $cell->id;
+            } else {
+                $validCells[] = $cell->id;
+            }
+        }
+
+        return response()->json([
+            'valid' => $validCells,
+            'invalid' => $invalidCells
+        ]);
+    }
+
+    // SIM.3 - Clears a function from the given cell and records the removal in ActionHistory.
     public function removeFunction($id)
     {
         // Load the target cell once so we can validate and update the same record.
@@ -127,6 +241,10 @@ class CityGridCellController extends Controller
             'cell_id' => $id,
             'old_city_function_id' => $oldFunctionId,
             'new_city_function_id' => null,
+            'details' => [
+                'old' => $oldFunctionId,
+                'new' => null,
+            ],
         ]);
 
         return response()->json([
@@ -149,8 +267,19 @@ class CityGridCellController extends Controller
         // undo the latest function
         $cell->update(['function_id' => $lastAction->old_city_function_id]);
 
-        // deleting the previous function that was before we updated(undo) it
-        $lastAction->delete();
+        // Record the undo so the action chain remains reversible.
+        ActionHistory::create([
+            'user_id' => auth()->id(),
+            'action' => 'undo',
+            'cell_id' => $lastAction->cell_id,
+            'old_city_function_id' => $lastAction->new_city_function_id,
+            'new_city_function_id' => $lastAction->old_city_function_id,
+            'details' => [
+                'reverted_action_id' => $lastAction->id,
+                'old' => $lastAction->new_city_function_id,
+                'new' => $lastAction->old_city_function_id,
+            ],
+        ]);
 
         // Load the old function so frontend knows what to display
         $cell->load('cityFunction');

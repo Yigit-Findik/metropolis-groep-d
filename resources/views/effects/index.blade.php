@@ -8,6 +8,9 @@
     <div class="py-12">
         <div class="px-4 sm:px-6 lg:px-8">
 
+            {{-- Live region for announcing which effect is being edited --}}
+            <div id="effect-live" class="sr-only" aria-live="polite"></div>
+
             @if($selectedFunctionId)
                 <div class="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-100">
                     Direct link active for function ID {{ $selectedFunctionId }}.
@@ -21,12 +24,12 @@
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead class="border-b border-gray-200 bg-blue-50 dark:border-gray-600 dark:bg-gray-700">
-                            <tr>
+                                <tr>
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800 dark:text-gray-100">
                                     Function
                                 </th>
-                                @foreach($categories as $category)
-                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800 text-center dark:text-gray-100">
+                                @foreach($categories as $index => $category)
+                                    <th id="category-{{ $index }}" class="px-6 py-3 text-left text-sm font-semibold text-gray-800 text-center dark:text-gray-100">
                                         {{ $category }}
                                     </th>
                                 @endforeach
@@ -38,7 +41,7 @@
                             @forelse($functions as $function)
                                 <tr class="transition hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                     {{-- Function Name Cell --}}
-                                    <td id="function-{{ $function->id }}" class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 @if($selectedFunctionId === $function->id) ring-2 ring-inset ring-blue-400 @endif @if($function->trashed()) opacity-70 @endif">
+                                    <td id="function-{{ $function->id }}" tabindex="0" aria-label="Function {{ $function->name }}" class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 @if($selectedFunctionId === $function->id) ring-2 ring-inset ring-blue-400 @endif @if($function->trashed()) opacity-70 @endif">
                                         <div class="flex items-center gap-3">
                                             @if($function->image_path)
                                                 <img src="{{ asset($function->image_path) }}"
@@ -57,7 +60,7 @@
                                     </td>
 
                                     {{-- Effect Value Cells --}}
-                                    @foreach($categories as $category)
+                                    @foreach($categories as $index => $category)
                                         <td class="px-6 py-4 text-center">
                                             @if($function->trashed())
                                                 <span class="inline-flex min-w-14 justify-center rounded-lg bg-gray-100 px-3 py-1 text-sm font-semibold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
@@ -65,77 +68,20 @@
                                                 </span>
                                             @else
                                                 {{-- Inline editing keeps the table editable without a page reload. --}}
-                                                <div x-data="{
-                                                    editing: false,
-                                                    originalValue: {{ $function->{$category} }},
-                                                    value: {{ $function->{$category} }},
-                                                    error: '',
-                                                    isValid() {
-                                                        return this.value >= -10 && this.value <= 10;
-                                                    },
-                                                    validateInput() {
-                                                        this.error = '';
-                                                        if (this.value < -10 || this.value > 10) {
-                                                            this.error = 'Value must be between -10 and 10';
-                                                        }
-                                                    },
-                                                    async save() {
-                                                        this.error = '';
-                                                        if (this.value < -10 || this.value > 10) {
-                                                            this.error = 'Value must be between -10 and 10';
-                                                            return;
-                                                        }
-                                                        try {
-                                                            const response = await fetch('{{ route('effects.update', $function->id) }}', {
-                                                                method: 'POST',
-                                                                headers: {
-                                                                    'Content-Type': 'application/json',
-                                                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                                                },
-                                                                body: JSON.stringify({
-                                                                    category: '{{ $category }}',
-                                                                    value: this.value,
-                                                                })
-                                                            });
-                                                            if (!response.ok) {
-                                                                this.error = 'Failed to update effect';
-                                                                this.value = this.originalValue;
-                                                                return;
-                                                            }
-                                                            // Keep the optimistic value and show a brief confirmation toast.
-                                                            this.originalValue = this.value;
-                                                            this.editing = false;
-                                                            const toast = document.getElementById('effect-toast');
-                                                            if (toast) {
-                                                                toast.textContent = '{{ $function->name }} effect updated!';
-                                                                toast.className = 'fixed bottom-6 right-6 z-50 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 bg-green-500';
-                                                                setTimeout(() => {
-                                                                    toast.className = toast.className + ' hidden';
-                                                                }, 3000);
-                                                            }
-                                                        } catch (err) {
-                                                            this.error = 'An error occurred';
-                                                            this.value = this.originalValue;
-                                                        }
-                                                    },
-                                                    cancel() {
-                                                        this.value = this.originalValue;
-                                                        this.error = '';
-                                                        this.editing = false;
-                                                    },
-                                                    getColor() {
-                                                        if (this.value > 0) return 'text-green-600 dark:text-green-400';
-                                                        if (this.value < 0) return 'text-red-600 dark:text-red-400';
-                                                        return 'text-gray-500 dark:text-gray-400';
-                                                    }
-                                                }" class="flex justify-center">
-                                                    <template x-if="!editing">
+                                                <div x-data="effectEditor(
+                                                    {{ $function->{$category} }},
+                                                    '{{ route('effects.update', $function->id) }}',
+                                                    '{{ csrf_token() }}',
+                                                    @js($function->name),
+                                                    @js($category)
+                                                )" class="flex justify-center">
+                                                        <template x-if="!editing">
                                                         <button
-                                                            @click="editing = true"
+                                                            @click="startEditing($event)"
                                                             :class="'cursor-pointer rounded px-3 py-1 text-sm font-semibold transition hover:bg-gray-100 dark:hover:bg-gray-700 ' + getColor()"
                                                             title="Click to edit">
                                                             <span x-text="(value > 0 ? '+' : '') + value"></span>
-                                                            <svg class="inline ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <svg aria-hidden="true" class="inline ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                             </svg>
                                                         </button>
@@ -153,6 +99,8 @@
                                                                     min="-10"
                                                                     max="10"
                                                                     autofocus
+                                                                    aria-label="Edit {{ $function->name }} {{ $category }} value"
+                                                                    aria-labelledby="function-{{ $function->id }} category-{{ $index }}"
                                                                     :class="'w-16 rounded border px-2 py-1 text-sm focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white ' + (error ? 'border-red-500 focus:ring-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500')">
                                                                 <button
                                                                     @click="save()"
