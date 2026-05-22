@@ -8,15 +8,15 @@
     <div class="py-12">
         <div class="px-4 sm:px-6 lg:px-8" x-data="{ loading: false }">
             <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700">
+                <div tabindex="0" role="group" aria-label="Pending: {{ $pendingCount }}" class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700">
                     <div class="text-sm text-gray-500 dark:text-gray-400">Pending</div>
                     <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $pendingCount }}</div>
                 </div>
-                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700">
+                <div tabindex="0" role="group" aria-label="Completed: {{ $completedCount }}" class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700">
                     <div class="text-sm text-gray-500 dark:text-gray-400">Completed</div>
                     <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $completedCount }}</div>
                 </div>
-                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 sm:col-span-2 dark:bg-gray-800 dark:ring-gray-700 xl:col-span-1">
+                <div tabindex="0" role="group" aria-label="Total visible: {{ $pendingActions->count() }}" class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 sm:col-span-2 dark:bg-gray-800 dark:ring-gray-700 xl:col-span-1">
                     <div class="text-sm text-gray-500 dark:text-gray-400">Total visible</div>
                     <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $pendingActions->count() }}</div>
                 </div>
@@ -73,7 +73,16 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse($pendingActions as $pendingAction)
-                                <tr class="transition hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                                @php
+                                    $categoryText = $pendingAction->cityFunction?->category ? 'Category: ' . $pendingAction->cityFunction?->category . '. ' : '';
+                                    $missing = count($pendingAction->missing_effect_columns ?? []) > 0 ? implode(', ', $pendingAction->missing_effect_columns) : 'All values filled';
+                                    $createdText = $pendingAction->created_at?->format('d-m-Y H:i') ?: '';
+                                    $statusText = $pendingAction->status_label;
+                                @endphp
+                                <tr tabindex="0" role="button" class="transition hover:bg-gray-50 dark:hover:bg-gray-700/40"
+                                    aria-label="Function: {{ $pendingAction->resolved_function_name }}. {{ $categoryText }} Trigger: {{ $pendingAction->trigger_label }} ({{ $pendingAction->trigger_type }}). Created: {{ $createdText }}. Status: {{ $statusText }}. Still required: {{ $missing }}. User: {{ $pendingAction->createdBy?->name ?? 'Unknown' }}"
+                                    onclick="(function(el, evt){ const target = evt.target; if(target.closest('a, button, input, select, textarea')) return; const a=el.querySelector('a'); if(a) a.click(); })(this, event)"
+                                    onkeydown="(function(evt){ if(evt.key==='Enter' || evt.key===' '){ evt.preventDefault(); const a=this.querySelector('a'); if(a) a.click(); } }).call(this, event)">
                                     <td class="px-6 py-4">
                                         <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Related function</div>
                                         <div class="mt-1 font-medium text-gray-900 dark:text-gray-100">{{ $pendingAction->resolved_function_name }}</div>
@@ -86,8 +95,9 @@
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
                                         <div class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Trigger</div>
-                                        <div class="flex items-center gap-3">
+                                            <div class="flex items-center gap-3">
                                             <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200">{{ $pendingAction->trigger_label }}</span>
+                                            <span class="sr-only">{{ $pendingAction->trigger_type }}</span>
                                             <span class="text-xs text-gray-500 dark:text-gray-400">({{ $pendingAction->trigger_type }})</span>
                                         </div>
                                     </td>

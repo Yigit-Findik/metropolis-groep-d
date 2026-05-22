@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\NewFunctionAdded;
 use App\Models\CityFunction;
+use App\Models\FunctionCondition;
 use Illuminate\Http\Request;
 
 class CityFunctionController extends Controller
@@ -11,7 +12,7 @@ class CityFunctionController extends Controller
     public function index()
     {
         // Order by category first, then name, so the grid view can render stable grouped sections.
-        $cityFunctions = CityFunction::orderBy('category')->orderBy('name')->get();
+        $cityFunctions = CityFunction::with('functionConditions')->orderBy('category')->orderBy('name')->get();
         $categories = CityFunction::select('category')->distinct()->orderBy('category')->pluck('category');
 
         return view('city_functions', compact('cityFunctions', 'categories'));
@@ -49,6 +50,7 @@ class CityFunctionController extends Controller
             'category'            => $request->category,
             'description'         => $request->description,
             'image_path'          => $imagePath,
+            'image_alt'           => $request->image_alt ?? '',
             'Safety'              => $request->safety ?? 0,
             'Recreation'          => $request->recreation ?? 0,
             'Environment Quality' => $request->environment_quality ?? 0,
@@ -70,6 +72,7 @@ class CityFunctionController extends Controller
         $request->validate([
             'name'                => 'required|string|max:255',
             'category'            => 'required|string|max:255',
+            'image_alt'           => 'nullable|string|max:255',
             'description'         => 'nullable|string',
             'image'               => 'nullable|image|max:4096',
             'safety'              => 'nullable|integer|min:0',
@@ -82,12 +85,14 @@ class CityFunctionController extends Controller
             'category.required' => 'Please select a category for this city function.',
             'image.image' => 'The uploaded file must be an image. Accepted formats: jpeg, png, gif, webp.',
             'image.max' => 'The image is too large. Please upload an image smaller than 4 MB.',
+
         ]);
 
         $data = [
             'name'                => $request->name,
             'category'            => $request->category,
             'description'         => $request->description,
+            'image_alt'           => $request->image_alt ?? '',
             'Safety'              => $request->safety ?? 0,
             'Recreation'          => $request->recreation ?? 0,
             'Environment Quality' => $request->environment_quality ?? 0,
@@ -103,6 +108,21 @@ class CityFunctionController extends Controller
         }
 
         $fn->update($data);
+
+        // sync_conditions is always sent by the edit form, even when all rules are deleted.
+        // Using it as a sentinel avoids the case where an empty conditions array causes
+        // $request->has('conditions') to return false and old rules to persist.
+        if ($request->boolean('sync_conditions')) {
+            $fn->functionConditions()->delete();
+
+            foreach ($request->input('conditions', []) as $conditionData) {
+                FunctionCondition::create([
+                    'city_function_id'   => $fn->id,
+                    'target_function_id' => $conditionData['target_id'],
+                    'type'               => $conditionData['type'],
+                ]);
+            }
+        }
 
         return redirect()->route('city_functions')->with('success', 'City function updated.');
     }

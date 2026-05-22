@@ -46,9 +46,11 @@ export class HoverPopup {
 
     // Attaches all mouse and touch event listeners to the grid
     #attachListeners() {
-        // Hide popup on scroll/touch to avoid it floating in a wrong position on mobile
-        window.addEventListener('scroll', () => this.#hideOnMobileScroll(), { passive: true });
-        window.addEventListener('touchmove', () => this.#hideOnMobileScroll(), { passive: true });
+        // Hide popup on scroll/touch to avoid it floating in a wrong position
+        const hideOnScroll = () => { if (this.#visible) this.#hide(); };
+        window.addEventListener('scroll', hideOnScroll, { passive: true });
+        window.addEventListener('touchmove', hideOnScroll, { passive: true });
+        this.#grid.closest('.lg\\:overflow-auto')?.addEventListener('scroll', hideOnScroll, { passive: true });
 
         // Delegate events through the grid so they still work after the DOM is mutated by drops
         this.#grid.addEventListener('mouseover', (e) => {
@@ -131,11 +133,6 @@ export class HoverPopup {
         this.#popup.style.top = `${e.clientY + 12}px`;
     }
 
-    #hideOnMobileScroll() {
-        if (!this.#visible || !this.#activeCell || !this.#isMobileViewport()) return;
-        this.#hide();
-    }
-
     #isMobileViewport() {
         return window.matchMedia('(max-width: 1023px)').matches;
     }
@@ -215,55 +212,149 @@ export class HoverPopup {
 
         const cells = this.#getCells();
         const activeCategory = this.#getCategoryKey(activeCell.dataset.category);
+        const activeFunction = (activeCell.dataset.function || '').trim().toLowerCase();
+        const activeIsSensitive = HoverPopup.#SENSITIVE_FUNCTIONS.has(activeFunction);
+        const activeIsPolluter = HoverPopup.#POLLUTERS.some((p) => activeFunction.includes(p));
 
         // +2 bonus for each same-category orthogonal neighbor
         this.#getOrthogonalNeighbors(cells, activeCell)
             .map((n) => n.cell)
             .filter((cell) => this.#getCategoryKey(cell.dataset.category) === activeCategory)
-            .forEach((cell) => this.#createBadge(cell, 2));
+            .forEach((cell) => this.#createBadge(cell, 2, activeCell));
 
         // Penalty for sensitive functions next to polluters
-        this.#getOrthogonalNeighbors(cells, activeCell)
-            .map((n) => n.cell)
-            .filter((cell) => HoverPopup.#SENSITIVE_FUNCTIONS.has((cell.dataset.function || '').trim().toLowerCase()))
-            .forEach((cell) => {
-                // Count how many polluters are directly adjacent to this sensitive cell
-                const penalty = this.#getOrthogonalNeighbors(cells, cell)
-                    .filter(({ cell: neighbor }) =>
-                        HoverPopup.#POLLUTERS.some((p) =>
-                            (neighbor.dataset.function || '').trim().toLowerCase().includes(p)
-                        )
-                    )
-                    .length * 2;
-
-                if (penalty > 0) this.#createBadge(cell, -penalty);
-            });
+        if (activeIsSensitive || activeIsPolluter) {
+            this.#getOrthogonalNeighbors(cells, activeCell)
+                .map((n) => n.cell)
+                .filter((cell) => {
+                    const neighborFunction = (cell.dataset.function || '').trim().toLowerCase();
+                    return activeIsSensitive
+                        ? HoverPopup.#POLLUTERS.some((p) => neighborFunction.includes(p))
+                        : HoverPopup.#SENSITIVE_FUNCTIONS.has(neighborFunction);
+                })
+                .forEach((cell) => this.#createBadge(cell, -2, activeCell));
+        }
     }
 
     // Creates and positions a floating +/- badge over the given cell
-    #createBadge(cell, amount) {
-        const id = cell.dataset.cellId || cell.getAttribute('data-cell-id') || '';
-        // Remove any existing badge for this cell before adding a new one
+    #createBadge(cell, amount, anchorCell = null) {
+        const cellId = cell.dataset.cellId || cell.getAttribute('data-cell-id') || '';
+        const anchorId = anchorCell?.dataset.cellId || anchorCell?.getAttribute('data-cell-id') || '';
+        const id = anchorId ? `${cellId}-${anchorId}-${amount}` : `${cellId}-${amount}`;
+        // Remove any existing badge for this same badge position before adding a new one
         document.querySelector(`.bonus-badge[data-target="${id}"]`)?.remove();
 
         const badge = document.createElement('div');
         const isPositive = amount > 0;
         badge.className = `bonus-badge ${isPositive ? 'bonus-badge--positive' : 'bonus-badge--negative'}`;
-        badge.textContent = isPositive ? `+${amount}` : `${amount}`;
+        const cellRect = cell.getBoundingClientRect();
+        let scale = Math.max(0.75, Math.min(2.5, (cellRect.width || HoverPopup.#BASE_CELL_SIZE) / HoverPopup.#BASE_CELL_SIZE));
+
+        badge.style.position = 'fixed';
+        badge.style.zIndex = '60';
+        badge.style.pointerEvents = 'none';
+
+        if (isPositive) {
+            const shortLabel = this.#getCategoryShortLabel(cell.dataset.category);
+            const anchorRect = anchorCell?.getBoundingClientRect() ?? null;
+            const positionRect = anchorRect
+                ? {
+                    left: (anchorRect.left + cellRect.left + anchorRect.width / 2 + cellRect.width / 2) / 2,
+                    top: (anchorRect.top + cellRect.top + anchorRect.height / 2 + cellRect.height / 2) / 2,
+                }
+                : {
+                    left: Math.round(cellRect.left + cellRect.width * 0.68),
+                    top: Math.round(cellRect.top - cellRect.height * 0.12),
+                };
+            badge.innerHTML = `
+                <span class="flex h-11 w-11 flex-col items-center justify-center rounded-full bg-green-500 px-1 text-[10px] font-semibold leading-none text-white shadow-md ring-2 ring-white/80">
+                    <span class="uppercase tracking-[0.18em]">${shortLabel}</span>
+                    <span class="text-[11px] font-bold">+${amount}</span>
+                </span>
+            `;
+            badge.style.left = `${Math.round(positionRect.left)}px`;
+            badge.style.top = `${Math.round(positionRect.top)}px`;
+            badge.style.transformOrigin = 'center';
+            badge.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        } else {
+            const shortLabel = this.#getCategoryShortLabel(cell.dataset.category);
+            const anchorRect = anchorCell?.getBoundingClientRect() ?? null;
+            const positionRect = anchorRect
+                ? {
+                    left: (anchorRect.left + cellRect.left + anchorRect.width / 2 + cellRect.width / 2) / 2,
+                    top: (anchorRect.top + cellRect.top + anchorRect.height / 2 + cellRect.height / 2) / 2,
+                }
+                : {
+                    left: Math.round(cellRect.left + cellRect.width * 0.68),
+                    top: Math.round(cellRect.top - cellRect.height * 0.12),
+                };
+            badge.innerHTML = `
+                <span class="flex h-11 w-11 flex-col items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white shadow-md ring-2 ring-white/80">
+                    <span class="uppercase tracking-[0.18em]">${shortLabel}</span>
+                    <span class="text-[11px] font-bold">-${Math.abs(amount)}</span>
+                </span>
+            `;
+            badge.style.left = `${Math.round(positionRect.left)}px`;
+            badge.style.top = `${Math.round(positionRect.top)}px`;
+            badge.style.transformOrigin = 'center';
+            badge.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        }
         badge.setAttribute('data-target', id);
-        badge.style.cssText = 'position:fixed;z-index:60;pointer-events:auto;';
-
-        // Anchor the badge to the top-right corner of the cell
-        const rect = cell.getBoundingClientRect();
-        badge.style.left = `${Math.round(rect.left + rect.width * 0.68)}px`;
-        badge.style.top = `${Math.round(rect.top - rect.height * 0.12)}px`;
-
-        // Scale badge to match the grid zoom level
-        const scale = Math.max(0.75, Math.min(2.5, (rect.width || HoverPopup.#BASE_CELL_SIZE) / HoverPopup.#BASE_CELL_SIZE));
-        badge.style.transformOrigin = 'top left';
-        badge.style.transform = `scale(${scale})`;
 
         document.body.appendChild(badge);
+    }
+
+    #getCategoryShortLabel(category) {
+        const normalized = (category || '').trim().toLowerCase();
+        const labels = {
+            safety: 'saf',
+            recreation: 'rec',
+            'environment quality': 'enq',
+            environmentQuality: 'enq',
+            facilities: 'fac',
+            mobility: 'mob',
+        };
+
+        return labels[normalized] || normalized.slice(0, 3) || 'cat';
+    }
+
+    #getInwardArrow(direction, tone = 'green') {
+        const color = tone === 'red' ? 'text-red-700' : 'text-green-700';
+        const common = `h-4 w-4 ${color} drop-shadow-sm`;
+
+        if (direction === 'right') {
+            return `
+                <svg viewBox="0 0 16 16" fill="none" class="${common}" aria-hidden="true">
+                    <path d="M2 8h9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                    <path d="M8 4l4 4-4 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            `;
+        }
+
+        if (direction === 'left') {
+            return `
+                <svg viewBox="0 0 16 16" fill="none" class="${common}" aria-hidden="true">
+                    <path d="M14 8H5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                    <path d="M8 4 4 8l4 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            `;
+        }
+
+        if (direction === 'down') {
+            return `
+                <svg viewBox="0 0 16 16" fill="none" class="${common}" aria-hidden="true">
+                    <path d="M8 2v9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                    <path d="M4 8l4 4 4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            `;
+        }
+
+        return `
+            <svg viewBox="0 0 16 16" fill="none" class="${common}" aria-hidden="true">
+                <path d="M8 14V5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                <path d="M4 8l4-4 4 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        `;
     }
 
     #removeBonusBadges() {

@@ -1,3 +1,5 @@
+import { notify } from '../utils/notify';
+
 /**
  * Orchestrates the city grid: drag-and-drop from library to cells,
  * removal via the drop zone, and the undo button.
@@ -5,6 +7,8 @@
 export class GridController {
     #api;
     #qolService;
+    // Cell IDs (strings) that are forbidden for the function currently being dragged
+    #draggingInvalidCells = new Set();
 
     constructor(api, qolService) {
         this.#api = api;
@@ -48,6 +52,18 @@ export class GridController {
                     e.dataTransfer.setDragImage(img, 25, 25);
                     img.classList.add('grid-drag-image');
                 }
+
+                // Fetch which cells are forbidden so dragover can colour them red
+                this.#draggingInvalidCells = new Set();
+                this.#api.getValidCells(card.dataset.functionId)
+                    .then(data => {
+                        this.#draggingInvalidCells = new Set(data.invalid.map(String));
+                    })
+                    .catch(() => {});
+            });
+
+            card.addEventListener('dragend', () => {
+                this.#draggingInvalidCells = new Set();
             });
         });
     }
@@ -58,12 +74,14 @@ export class GridController {
             // Highlight the cell being hovered during a drag
             cell.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                cells.forEach((c) => c.classList.remove('ring-4', 'ring-blue-500'));
-                cell.classList.add('ring-4', 'ring-blue-500');
+                cells.forEach((c) => c.classList.remove('ring-4', 'ring-blue-500', 'ring-red-500'));
+                const isOccupied = cell.classList.contains('is-occupied');
+                const isForbidden = isOccupied || this.#draggingInvalidCells.has(String(cell.dataset.cellId));
+                cell.classList.add('ring-4', isForbidden ? 'ring-red-500' : 'ring-blue-500');
             });
 
             cell.addEventListener('dragleave', () => {
-                cell.classList.remove('ring-4', 'ring-blue-500');
+                cell.classList.remove('ring-4', 'ring-blue-500', 'ring-red-500');
             });
 
             cell.addEventListener('drop', (e) => this.#handleCellDrop(e, cell, cells));
@@ -89,9 +107,13 @@ export class GridController {
     #handleCellDrop(e, cell, cells) {
         e.preventDefault();
 
-        // Ask for confirmation before replacing an existing function
+        // Drags that started from an occupied cell are only allowed in the removal zone, not on other cells
+        if (e.dataTransfer.getData('fromCell') === 'true') return;
+
+        // Occupied cells cannot be replaced — the user must remove the function first
         if (cell.dataset.function && cell.dataset.function !== '') {
-            if (!confirm('Are you sure you want to change this function?')) return;
+            notify('This grid slot already has a city-function');
+            return;
         }
 
         const functionName = e.dataTransfer.getData('function');
@@ -106,18 +128,16 @@ export class GridController {
         const mobility = e.dataTransfer.getData('mobility') ?? 0;
         const cellId = cell.dataset.cellId;
 
-        // Optimistically update the DOM before the server responds
-        this.#renderFunctionInCell(cell, {
-            functionName, functionId, category, image,
-            safety, recreation, environmentQuality, facilities, mobility,
-        });
-
         this.#api.assign(cellId, functionId)
             .then(() => {
+                this.#renderFunctionInCell(cell, {
+                    functionName, functionId, category, image,
+                    safety, recreation, environmentQuality, facilities, mobility,
+                });
                 this.#qolService.refresh();
                 this.#qolService.showToast(functionName, qolScore);
             })
-            .catch(() => alert('Failed to save — please refresh and try again.'));
+            .catch((error) => notify(error.message || 'Failed to save — please refresh and try again.'));
     }
 
     // SIM.3 - Subtask 2: Sets up the red drop zone for removing functions
@@ -149,7 +169,7 @@ export class GridController {
             const cellElement = document.querySelector(`[data-cell-id="${cellId}"]`);
 
             if (!cellElement) {
-                alert('Error: Could not find the cell to remove from.');
+                notify('Error: Could not find the cell to remove from.');
                 return;
             }
 
@@ -166,9 +186,11 @@ export class GridController {
                 })
                 .catch((error) => {
                     console.error('Error removing function:', error);
-                    alert('Failed to remove function — please try again.');
+                    notify('Failed to remove function — please try again.');
                 });
         });
+
+        
     }
 
     // Wires up the undo button; reverts the last assign/remove action
@@ -200,18 +222,19 @@ export class GridController {
                     this.#qolService.refresh();
                     this.#qolService.showToast('Action undone', 0);
                 })
-                .catch(() => alert('Nothing to undo'));
+                .catch(() => notify('Nothing to undo'));
         });
     }
 
     // Writes a function's image, label, and data attributes into a cell element
     #renderFunctionInCell(cell, { functionName, functionId, category, image, safety, recreation, environmentQuality, facilities, mobility }) {
         cell.innerHTML = '';
-        cell.classList.remove('ring-4', 'ring-blue-500');
+        cell.classList.remove('ring-4', 'ring-blue-500', 'ring-red-500');
 
         if (image) {
             const img = document.createElement('img');
             img.src = image;
+            img.alt = functionName;
             img.classList.add('mb-1');
             img.draggable = false;
             cell.appendChild(img);
@@ -221,6 +244,13 @@ export class GridController {
         label.textContent = functionName;
         label.classList.add('text-xs', 'font-semibold', 'text-center', 'text-black');
         cell.appendChild(label);
+
+        // Make occupied cells keyboard-focusable for accessibility
+        cell.setAttribute('tabindex', '0');
+        // Provide a helpful aria-label so screen readers announce the cell location and content
+        const row = cell.dataset.row ? `Row ${cell.dataset.row}` : 'Row unknown';
+        const column = cell.dataset.column ? `column ${cell.dataset.column}` : 'column unknown';
+        cell.setAttribute('aria-label', `${row}, ${column}, occupied by ${functionName}${category ? `, category ${category}` : ''}`);
 
         // Mark as occupied and store all effect values so the hover popup can read them
         cell.classList.remove('is-empty');
@@ -248,5 +278,8 @@ export class GridController {
         cell.dataset.environmentQuality = '';
         cell.dataset.facilities = '';
         cell.dataset.mobility = '';
+        // Remove keyboard focusability and accessibility label when cleared
+        cell.removeAttribute('tabindex');
+        cell.removeAttribute('aria-label');
     }
 }
