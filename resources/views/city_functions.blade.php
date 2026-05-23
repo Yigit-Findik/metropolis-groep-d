@@ -91,9 +91,9 @@
                                                         environment_quality: {{ $fn->{'Environment Quality'} ?? 0 }},
                                                         facilities: {{ $fn->Facilities ?? 0 }},
                                                         mobility: {{ $fn->Mobility ?? 0 }},
-                                                        image_path: @js($fn->image_path ?? '')
+                                                        image_path: @js($fn->image_path ?? ''),
+                                                        image_alt: @js($fn->image_alt ?? '')
                                                     })"
-                                                    aria-label="Edit {{ $fn->name }}"
                                                     class="px-3 py-1 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-semibold rounded-lg transition">
                                                 Edit
                                             </button>
