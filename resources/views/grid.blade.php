@@ -18,6 +18,7 @@
                     <div class="min-w-[120px]">
                         <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide" aria-hidden="true">Total QoL</p>
                         <p class="text-white text-4xl font-bold mt-1" id="qol-score-value" tabindex="0" aria-live="polite" aria-atomic="true">—</p>
+                        <p class="text-blue-100 dark:text-blue-200 text-sm font-semibold mt-1" id="qol-score-label" tabindex="0" aria-live="polite" aria-atomic="true">—</p>
                     </div>
 
                     @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
@@ -87,7 +88,8 @@
                                     @php $fn = $cityFunctions->firstWhere('id', $cell->function_id); @endphp
 
                                     {{-- "is-occupied" or "is-empty" is read by app.js to update the preview panel
-                                         draggable="true" allows occupied cells to be dragged off the grid (SIM.3 - Subtask 1) --}}
+                                         draggable="true" allows occupied cells to be dragged off the grid (SIM.3 - Subtask 1) 
+                                         Empty cells have a dashed border for accessibility (visual distinction without color alone) --}}
                                     <button
                                         type="button"
                                         tabindex="0"
@@ -117,6 +119,10 @@
                                         <span class="text-xs font-semibold text-center text-black">
                                             {{ $fn?->name ?? '' }}
                                         </span>
+                                        {{-- Show "+" indicator for empty cells (accessibility: visual marker that doesn't rely on color) --}}
+                                        @if(!filled($cell->function_id))
+                                            <span class="text-gray-400 dark:text-gray-600 text-2xl font-light" aria-hidden="true">+</span>
+                                        @endif
                                     </button>
 
                                 @endforeach

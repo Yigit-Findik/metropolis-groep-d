@@ -358,7 +358,7 @@ export class GridController {
     // Writes a function's image, label, and data attributes into a cell element
     #renderFunctionInCell(cell, { functionName, functionId, category, image, safety, recreation, environmentQuality, facilities, mobility }) {
         cell.innerHTML = '';
-        cell.classList.remove('ring-4', 'ring-blue-500', 'ring-red-500');
+        cell.classList.remove('ring-4', 'ring-blue-500', 'ring-red-500', 'border-2', 'border-dashed', 'border-gray-300', 'dark:border-gray-600');
 
         if (image) {
             const img = document.createElement('img');
@@ -394,11 +394,19 @@ export class GridController {
         cell.dataset.mobility = mobility;
     }
 
-    // Resets a cell to its empty state, clearing all content and data attributes
+    // Resets a cell to its empty state, clearing all content and attributes
     #clearCell(cell) {
         cell.innerHTML = '';
         cell.classList.remove('is-occupied');
-        cell.classList.add('is-empty');
+        cell.classList.add('is-empty', 'border-2', 'border-dashed', 'border-gray-300', 'dark:border-gray-600');
+        
+        // Add visual indicator for empty cell
+        const indicator = document.createElement('span');
+        indicator.textContent = '+';
+        indicator.setAttribute('aria-hidden', 'true');
+        indicator.className = 'text-gray-400 dark:text-gray-600 text-2xl font-light';
+        cell.appendChild(indicator);
+        
         cell.dataset.function = '';
         cell.dataset.functionId = '';
         cell.dataset.category = '';
