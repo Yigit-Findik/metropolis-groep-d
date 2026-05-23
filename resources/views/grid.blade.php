@@ -172,9 +172,6 @@
                                 {{-- Hide cards that don't match the selected category --}}
                                 <div x-show="active === 'All' || active === '{{ $cityFunction->category }}'"
                                     class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition"
-                                    role="button"
-                                    tabindex="0"
-                                    aria-label="Drag {{ $cityFunction->name }} onto the grid"
                                     draggable="true"
                                     data-function="{{ $cityFunction->name }}"
                                     data-function-id="{{ $cityFunction->id }}"
@@ -190,14 +187,14 @@
                                     aria-label="Function: {{ $cityFunction->name }}"
                                     data-conditions="{{ json_encode($cityFunction->functionConditions ?? []) }}"
                                     @mouseenter="highlightCells({{ $cityFunction->id }}, $event.target)"
-                                    @mouseleave="clearHighlights()">
+                                    @mouseleave="clearHighlights()"> <!-- role="button" tabindex="0" aria-label="Drag {{ $cityFunction->name }} onto the grid" -->
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
                                              alt="{{ $cityFunction->name }}"
                                              class="w-16 h-16 object-contain mb-2">
                                     @endif
                                     <span class="text-xs font-semibold text-center text-gray-700 dark:text-white">{{ $cityFunction->name }}</span>
-                                </button>
+                                </div>
 
                             @endforeach
                         </div>
