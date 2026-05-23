@@ -15,7 +15,7 @@
 
             {{-- button that opens the create modal --}}
             <div class="w-fit self-end">
-                <button @click="open = true"
+                <button @click="openCreate()"
                         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition">
                     + Create Function
                 </button>
@@ -135,12 +135,12 @@
              x-transition:leave-end="opacity-0"
                class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
                x-effect="if (open) $nextTick(() => $refs.createName && $refs.createName.focus())"
-               @click.self="open = false">
+                             @click.self="closeCreate()">
 
             <div class="bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
                 <h3 class="text-lg font-bold text-white mb-6">Create City Function</h3>
 
-                <form method="POST" action="/city_functions" enctype="multipart/form-data" class="[color-scheme:dark]">
+                <form method="POST" action="/city_functions" enctype="multipart/form-data" class="[color-scheme:dark]" @keydown.tab.prevent="trapCreateFocus($event)">
                     @csrf
 
                     {{-- Optional image upload --}}
@@ -218,7 +218,7 @@
 
                     {{-- Form actions: Cancel closes the modal without saving; Create submits the form --}}
                     <div class="flex justify-between mt-6">
-                        <button type="button" @click="open = false"
+                        <button type="button" @click="closeCreate()"
                                 class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-semibold rounded-lg transition">
                             Cancel
                         </button>
@@ -245,13 +245,13 @@
              x-transition:leave-end="opacity-0"
                class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
                x-effect="if (editOpen) $nextTick(() => $refs.editName && $refs.editName.focus())"
-               @click.self="editOpen = false">
+               @click.self="closeEdit()">
 
             <div class="bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
                 <h3 class="text-lg font-bold text-white mb-6">Edit City Function</h3>
 
                 {{-- PUT request via method spoofing — HTML forms only support GET/POST --}}
-                <form method="POST" :action="'/city_functions/' + editing.id" enctype="multipart/form-data" class="[color-scheme:dark]" @submit="submitEdit">
+                 <form method="POST" :action="'/city_functions/' + editing.id" enctype="multipart/form-data" class="[color-scheme:dark]" @submit="submitEdit" @keydown.tab.prevent="trapEditFocus($event)">
                     @csrf
                     @method('PUT')
 
@@ -397,7 +397,7 @@
 
                     {{-- Form actions: Cancel closes the modal without saving; Save Changes submits the PUT request --}}
                     <div class="flex justify-between mt-6">
-                        <button type="button" @click="editOpen = false"
+                        <button type="button" @click="closeEdit()"
                                 class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-semibold rounded-lg transition">
                             Cancel
                         </button>

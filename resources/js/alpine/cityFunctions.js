@@ -8,15 +8,110 @@ export const cityFunctions = () => ({
     allFunctions: [], // All available functions for dropdown
     newConditionTarget: null, // Target for new condition
     newConditionType: 'required', // Type for new condition
+    lastFocusedElement: null,
 
     // Populates the editing object with the chosen function's data and opens the edit modal
     openEdit(fn, allFunctions) {
+        this.lastFocusedElement = document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null;
         this.editing = JSON.parse(JSON.stringify(fn));
         this.editing.conditions = fn.functionConditions || [];
         this.allFunctions = allFunctions;
         this.newConditionTarget = null;
         this.newConditionType = 'required';
         this.editOpen = true;
+    },
+
+    openCreate() {
+        this.lastFocusedElement = document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null;
+        this.open = true;
+    },
+
+    closeCreate() {
+        this.open = false;
+
+        setTimeout(() => {
+            if (this.lastFocusedElement instanceof HTMLElement && document.contains(this.lastFocusedElement)) {
+                this.lastFocusedElement.focus();
+            }
+        }, 0);
+    },
+
+    closeEdit() {
+        this.editOpen = false;
+
+        setTimeout(() => {
+            if (this.lastFocusedElement instanceof HTMLElement && document.contains(this.lastFocusedElement)) {
+                this.lastFocusedElement.focus();
+            }
+        }, 0);
+    },
+
+    trapCreateFocus(event) {
+        if (!this.open) return;
+
+        const focusableSelector = [
+            'button:not([disabled])',
+            'input:not([disabled])',
+            'select:not([disabled])',
+            'textarea:not([disabled])',
+            'a[href]',
+            '[tabindex]:not([tabindex="-1"])',
+        ].join(', ');
+
+        const focusables = Array.from(event.currentTarget.querySelectorAll(focusableSelector))
+            .filter((element) => element instanceof HTMLElement && element.offsetParent !== null);
+
+        if (focusables.length === 0) return;
+
+        const activeElement = document.activeElement;
+        const currentIndex = focusables.indexOf(activeElement);
+
+        event.preventDefault();
+
+        if (event.shiftKey) {
+            const previousIndex = currentIndex <= 0 ? focusables.length - 1 : currentIndex - 1;
+            focusables[previousIndex].focus();
+            return;
+        }
+
+        const nextIndex = currentIndex === -1 || currentIndex >= focusables.length - 1 ? 0 : currentIndex + 1;
+        focusables[nextIndex].focus();
+    },
+
+    trapEditFocus(event) {
+        if (!this.editOpen) return;
+
+        const focusableSelector = [
+            'button:not([disabled])',
+            'input:not([disabled])',
+            'select:not([disabled])',
+            'textarea:not([disabled])',
+            'a[href]',
+            '[tabindex]:not([tabindex="-1"])',
+        ].join(', ');
+
+        const focusables = Array.from(event.currentTarget.querySelectorAll(focusableSelector))
+            .filter((element) => element instanceof HTMLElement && element.offsetParent !== null);
+
+        if (focusables.length === 0) return;
+
+        const activeElement = document.activeElement;
+        const currentIndex = focusables.indexOf(activeElement);
+
+        event.preventDefault();
+
+        if (event.shiftKey) {
+            const previousIndex = currentIndex <= 0 ? focusables.length - 1 : currentIndex - 1;
+            focusables[previousIndex].focus();
+            return;
+        }
+
+        const nextIndex = currentIndex === -1 || currentIndex >= focusables.length - 1 ? 0 : currentIndex + 1;
+        focusables[nextIndex].focus();
     },
 
     // Add a new condition to the editing function
