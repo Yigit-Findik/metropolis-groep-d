@@ -92,8 +92,9 @@
                                                         facilities: {{ $fn->Facilities ?? 0 }},
                                                         mobility: {{ $fn->Mobility ?? 0 }},
                                                         image_path: @js($fn->image_path ?? ''),
-                                                        image_alt: @js($fn->image_alt ?? '')
-                                                    })"
+                                                        image_alt: @js($fn->image_alt ?? ''),
+                                                        functionConditions: @js($fn->functionConditions)
+                                                    }, @js($cityFunctions->map(fn($f) => ['id' => $f->id, 'name' => $f->name])))"
                                                     class="px-3 py-1 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-semibold rounded-lg transition">
                                                 Edit
                                             </button>
@@ -193,7 +194,7 @@
                             @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
                                 <div>
                                     <label for="create-{{ $slug }}" class="block text-sm font-medium text-gray-300 mb-1">{{ $label }}</label>
-                                    <input type="number" id="create-{{ $slug }}" name="{{ $slug }}" value="0" min="0"
+                                    <input type="number" id="create-{{ $slug }}" name="{{ $slug }}" value="0" min="-10" max="10"
                                            :disabled="!qol"
                                            class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
@@ -292,27 +293,27 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="edit-safety" class="block text-sm font-medium text-gray-300 mb-1">Safety</label>
-                                <input type="number" id="edit-safety" name="safety" min="0" x-model="editing.safety"
+                                <input type="number" id="edit-safety" name="safety" min="-10" max="10" x-model="editing.safety"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label for="edit-recreation" class="block text-sm font-medium text-gray-300 mb-1">Recreation</label>
-                                <input type="number" id="edit-recreation" name="recreation" min="0" x-model="editing.recreation"
+                                <input type="number" id="edit-recreation" name="recreation" min="-10" max="10" x-model="editing.recreation"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label for="edit-environment-quality" class="block text-sm font-medium text-gray-300 mb-1">Environment Quality</label>
-                                <input type="number" id="edit-environment-quality" name="environment_quality" min="0" x-model="editing.environment_quality"
+                                <input type="number" id="edit-environment-quality" name="environment_quality" min="-10" max="10" x-model="editing.environment_quality"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label for="edit-facilities" class="block text-sm font-medium text-gray-300 mb-1">Facilities</label>
-                                <input type="number" id="edit-facilities" name="facilities" min="0" x-model="editing.facilities"
+                                <input type="number" id="edit-facilities" name="facilities" min="-10" max="10" x-model="editing.facilities"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label for="edit-mobility" class="block text-sm font-medium text-gray-300 mb-1">Mobility</label>
-                                <input type="number" id="edit-mobility" name="mobility" min="0" x-model="editing.mobility"
+                                <input type="number" id="edit-mobility" name="mobility" min="-10" max="10" x-model="editing.mobility"
                                        class="!bg-gray-700 !text-white w-full rounded-lg border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                         </div>
