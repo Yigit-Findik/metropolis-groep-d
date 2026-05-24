@@ -1,8 +1,8 @@
-<x-app-layout>
+﻿<x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl leading-tight text-gray-800 dark:text-gray-200">
+        <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-gray-200">
             {{ __('Pending Actions') }}
-        </h2>
+        </h1>
     </x-slot>
 
     <div class="py-12">

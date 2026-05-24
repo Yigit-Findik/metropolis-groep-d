@@ -1,8 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h1 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('City Functions') }}
-        </h2>
+        </h1>
     </x-slot>
 
     {{-- Alpine.js for page:
@@ -139,7 +139,7 @@
                              @focusin.window="enforceCreateFocus($event, $refs.createDialog)">
 
                         <div x-ref="createDialog" class="bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
-                <h3 class="text-lg font-bold text-white mb-6">Create City Function</h3>
+                <h2 class="text-lg font-bold text-white mb-6">Create City Function</h2>
 
                 <form method="POST" action="/city_functions" enctype="multipart/form-data" class="[color-scheme:dark]" @keydown.tab.prevent="trapCreateFocus($event)">
                     @csrf
@@ -250,7 +250,7 @@
                              @focusin.window="enforceEditFocus($event, $refs.editDialog)">
 
                         <div x-ref="editDialog" class="bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
-                <h3 class="text-lg font-bold text-white mb-6">Edit City Function</h3>
+                <h2 class="text-lg font-bold text-white mb-6">Edit City Function</h2>
 
                 {{-- PUT request via method spoofing — HTML forms only support GET/POST --}}
                 <form method="POST" :action="'/city_functions/' + editing.id" enctype="multipart/form-data" class="[color-scheme:dark]" @submit="submitEdit" @keydown.tab.prevent="trapEditFocus($event)">
