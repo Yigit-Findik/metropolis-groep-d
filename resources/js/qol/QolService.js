@@ -9,16 +9,30 @@ export class QolService {
         this.#api = api;
     }
 
-    // Shows a temporary toast with the function name and its QoL impact
+    // Determines the quality of life label based on score
+    // Good = 50+, moderate = 0-49, bad = < 0
+    #getScoreLabel(score) {
+        if (score >= 50) return 'Good';
+        if (score >= 0) return 'Moderate';
+        return 'Bad';
+    }
+
+    // shows a temporary toast with the function name and its QoL impact
     showToast(functionName, qolScore) {
         const toast = document.getElementById("qol-toast");
         if (!toast) return;
 
         const isPositive = qolScore >= 0;
         const sign = isPositive ? "+" : "";
+        // add visual symbol for positive (good), for negative (bad)
+        const symbol = isPositive ? "▲" : "▼";
 
-        toast.textContent = `${functionName}: ${sign}${qolScore} `;
+        // Build the toast message with symbol and score
+        const message = `${symbol} ${functionName}: ${sign}${qolScore}`;
+        toast.textContent = message;
         toast.className = `fixed bottom-6 right-6 z-50 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 ${isPositive ? "bg-green-500" : "bg-red-500"}`;
+        toast.setAttribute("aria-live", "assertive");
+        toast.setAttribute("role", "status");
 
         // Reset the timer so rapid drops don't dismiss the toast too early
         clearTimeout(this.#toastTimer);
@@ -41,6 +55,14 @@ export class QolService {
                     "aria-label",
                     `Quality of life ${data.total_score}`,
                 );
+            }
+            
+            // Update the QoL label element with status (good, moderate, bad)
+            const labelEl = document.getElementById("qol-score-label");
+            if (labelEl) {
+                const label = this.#getScoreLabel(data.total_score);
+                labelEl.textContent = label;
+                labelEl.setAttribute("aria-label", `Quality of life status: ${label}`);
             }
             if (data.categories) {
                 for (const [cat, score] of Object.entries(data.categories)) {
