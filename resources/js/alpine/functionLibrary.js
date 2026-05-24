@@ -16,7 +16,12 @@ export const functionLibrary = () => ({
     highlightCells(functionId, cardElement) {
         this.clearHighlights();
         
-        const conditions = JSON.parse(cardElement.dataset.conditions || '[]');
+        let conditions = [];
+        try {
+            conditions = JSON.parse(cardElement.dataset.conditions || '[]');
+        } catch {
+            conditions = [];
+        }
         const gridCells = document.querySelectorAll('[data-grid-cell]');
 
         gridCells.forEach(cell => {

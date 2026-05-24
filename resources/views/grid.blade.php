@@ -43,16 +43,15 @@
             </div>
 
             {{-- Grid and library sit next to each other on desktop, above each other on mobile --}}
-            <div class="flex flex-col lg:flex-row gap-6 lg:items-start">
+            <div class="flex flex-col lg:flex-row gap-6 lg:items-start" x-data="gridZoom" :style="`--grid-size: ${size}px`">
 
                 {{-- MAIN GRID SECTION: Contains the city grid and the removal zone below it --}}
-                <div class="flex flex-col gap-4">
+                 <div class="flex flex-col gap-4">
 
-                {{-- CITY GRID --------------------------------------------------------------
+                 {{-- CITY GRID --------------------------------------------------------------
                      "size" controls how many pixels wide each cell is on desktop.
                      "isDesktop" checks if the screen is wide enough for the zoom slider. --}}
-                <div class="shrink-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
-                     x-data="gridZoom">
+                 <div class="shrink-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm">
 
                     {{-- Sticky so the title and zoom slider stay visible when scrolling down --}}
                     <div class="flex justify-between items-center w-full">
@@ -78,9 +77,9 @@
 
                         {{-- Always 4 columns. On mobile the columns shrink to fit the screen.
                              On desktop each column is a fixed number of pixels set by the zoom slider. --}}
-                        <div class="grid grid-cols-4 gap-4 w-full"
-                             :style="isDesktop ? `grid-template-columns: repeat(4, ${size}px)` : null"
-                             data-city-grid>
+                                <div class="grid grid-cols-4 gap-4 w-full"
+                                    :style="isDesktop ? `grid-template-columns: repeat(4, ${size}px)` : null"
+                                    data-city-grid tabindex="0">
 
                             @foreach ($gridCells->groupBy('row_index') as $rowNumber => $rowCells)
                                 @foreach ($rowCells as $cell)
@@ -93,8 +92,9 @@
                                          Empty cells have a dashed border for accessibility (visual distinction without color alone) --}}
                                     <button
                                         type="button"
-                                        class="grid-cell aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty border-2 border-dashed border-gray-300 dark:border-gray-600' }}"
-                                        :style="isDesktop ? `width: ${size}px; height: ${size}px` : null"
+                                        tabindex="0"
+                                        class="grid-cell border border-gray-200 dark:border-gray-700 aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }}"
+                                        :style="isDesktop ? `width: ${size}px; height: ${size}px; border-width: calc(var(--grid-size) / 48);` : 'border-width: calc(var(--grid-size) / 48);'"
                                         draggable="true"
                                         data-grid-cell
                                         data-cell-id="{{ $cell->id ?? '' }}"
@@ -177,8 +177,11 @@
                                 {{-- Hide cards that don't match the selected category --}}
                                 <button
                                     type="button"
+                                    data-library-card
                                     x-show="active === 'All' || active === '{{ $cityFunction->category }}'"
-                                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200 dark:border-gray-700"
+                                    :style="`border-width: calc(var(--grid-size) / 48);`
+                                    "
                                     draggable="true"
                                     data-function="{{ $cityFunction->name }}"
                                     data-function-id="{{ $cityFunction->id }}"
@@ -192,7 +195,7 @@
                                     data-facilities="{{ $cityFunction->Facilities ?? 0 }}"
                                     data-mobility="{{ $cityFunction->Mobility ?? 0 }}"
                                     aria-label="Function: {{ $cityFunction->name }}"
-                                    data-conditions="{{ json_encode($cityFunction->functionConditions ?? []) }}"
+                                    data-conditions='@json($cityFunction->functionConditions ?? [])'
                                     @mouseenter="highlightCells({{ $cityFunction->id }}, $event.target)"
                                     @mouseleave="clearHighlights()">
                                     @if($cityFunction->image_path)
@@ -213,7 +216,9 @@
     </div>
 
     {{-- QoL Toast Notification --}}
-    <div id="qol-toast"
+        <div id="grid-a11y-announcer" aria-live="polite" aria-atomic="true" role="status" class="sr-only"></div>
+
+        <div id="qol-toast"
          class="fixed bottom-6 right-6 z-50 hidden px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all duration-300">
     </div>
 
