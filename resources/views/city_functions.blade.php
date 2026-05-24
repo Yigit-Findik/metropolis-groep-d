@@ -127,7 +127,7 @@
         {{-- CREATE MODAL -------------------------------------------------------
              Shown when "open" is true. Clicking the dark backdrop closes the modal.
              enctype="multipart/form-data" is required for image file uploads. --}}
-           <div x-show="open"
+           <div x-cloak x-show="open"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
@@ -135,6 +135,7 @@
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
                class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+                             @keydown.escape.window="closeCreate()"
                x-effect="if (open) $nextTick(() => $refs.createName && $refs.createName.focus())"
                              @click.self="closeCreate()"
                              @focusin.window="enforceCreateFocus($event, $refs.createDialog)">
@@ -223,7 +224,7 @@
              to the id of the function stored in "editing".
              x-model binds each input to the matching property in "editing" so the
              fields are pre-filled with the current values when the modal opens. --}}
-           <div x-show="editOpen"
+           <div x-cloak x-show="editOpen"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
@@ -231,6 +232,7 @@
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
                class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+                             @keydown.escape.window="closeEdit()"
                x-effect="if (editOpen) $nextTick(() => $refs.editName && $refs.editName.focus())"
                              @click.self="closeEdit()"
                              @focusin.window="enforceEditFocus($event, $refs.editDialog)">
@@ -410,7 +412,7 @@
 
         {{-- CONFIRMATION MODAL --------------------------------------------------
              Non-blocking modal for delete confirmations. Doesn't interrupt workflow. --}}
-        <div x-data="confirmModal" @keydown.escape="cancel()"
+        <div x-cloak x-data="confirmModal" @keydown.escape="cancel()"
              x-show="show"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"

@@ -130,6 +130,8 @@ test('city functions page create modal has labels associated with all fields', f
 
     $response->assertSee('for="create-description"', false);
     $response->assertSee('id="create-description"', false);
+
+    $response->assertSee('@keydown.escape.window="closeCreate()"', false);
 });
 
 test('city functions page edit modal has labels associated with all fields', function () {
@@ -165,4 +167,6 @@ test('city functions page edit modal has labels associated with all fields', fun
 
     $response->assertSee('for="edit-mobility"', false);
     $response->assertSee('id="edit-mobility"', false);
+
+    $response->assertSee('@keydown.escape.window="closeEdit()"', false);
 });
