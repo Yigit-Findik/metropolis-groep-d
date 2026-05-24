@@ -1,9 +1,9 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center w-full">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h1 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Grid') }}
-            </h2>
+            </h1>
         </div>
     </x-slot>
 
@@ -46,7 +46,7 @@
             <div class="flex flex-col lg:flex-row gap-6 lg:items-start" x-data="gridZoom" :style="`--grid-size: ${size}px`">
 
                 {{-- MAIN GRID SECTION: Contains the city grid and the removal zone below it --}}
-                 <div class="flex flex-col gap-4">
+                 <section class="flex flex-col gap-4" aria-labelledby="city-grid-heading">
 
                  {{-- CITY GRID --------------------------------------------------------------
                      "size" controls how many pixels wide each cell is on desktop.
@@ -56,7 +56,7 @@
                     {{-- Sticky so the title and zoom slider stay visible when scrolling down --}}
                     <div class="flex justify-between items-center w-full">
                         <div class="flex items-center gap-4 mb-4 sticky top-0 z-10 bg-blue-50 dark:bg-gray-700 py-2">
-                            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">City Grid</h3>
+                            <h2 id="city-grid-heading" class="text-lg font-bold text-gray-800 dark:text-gray-100">City Grid</h2>
 
                             {{-- Zoom slider only shown on desktop --}}
                             <div class="hidden lg:flex items-center gap-3">
@@ -146,15 +146,16 @@
                     </p>
                 </div>
 
-                {{-- Close the main grid section div --}}
-                </div>
+                {{-- Close the main grid section --}}
+                </section>
 
                 {{-- FUNCTION LIBRARY ------------------------------------------------
                      Fills all the space the grid doesn't use.
                      "active" holds the currently selected category filter. --}}
-                <div class="flex-1 min-w-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
-                     x-data="functionLibrary">
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Function Library</h3>
+                <section class="flex-1 min-w-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
+                         x-data="functionLibrary"
+                         aria-labelledby="function-library-heading">
+                    <h2 id="function-library-heading" class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Function Library</h2>
 
                     @if($cityFunctions->isEmpty())
                         <p class="text-gray-500 dark:text-gray-400">{{ __('No city functions found.') }}</p>
@@ -209,7 +210,7 @@
                             @endforeach
                         </div>
                     @endif
-                </div>
+                </section>
 
             </div>
         </div>
