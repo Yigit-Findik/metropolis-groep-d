@@ -161,7 +161,8 @@
                     @else
                         {{-- Dropdown to filter which category of functions is shown --}}
                         <div class="mb-6">
-                            <select x-model="active"
+                            <label for="category-filter" class="sr-only">Filter by category</label>
+                            <select id="category-filter" x-model="active"
                                     class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="All">All categories</option>
                                 @foreach($categories as $category)
@@ -180,21 +181,20 @@
                                     data-library-card
                                     x-show="active === 'All' || active === '{{ $cityFunction->category }}'"
                                     class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200 dark:border-gray-700"
-                                    :style="`border-width: calc(var(--grid-size) / 48);`
-                                    "
+                                    :style="`border-width: calc(var(--grid-size) / 48);`"
                                     draggable="true"
                                     data-function="{{ $cityFunction->name }}"
                                     data-function-id="{{ $cityFunction->id }}"
                                     data-category="{{ $cityFunction->category ?? '' }}"
-                                        data-image="{{ $cityFunction->image_path }}"
-                                        data-image-alt="{{ $cityFunction->image_alt ?? $cityFunction->name }}"
+                                    data-image="{{ $cityFunction->image_path }}"
+                                    data-image-alt="{{ $cityFunction->image_alt ?? $cityFunction->name }}"
                                     data-qol-score="{{ ($cityFunction->Safety ?? 0) + ($cityFunction->Recreation ?? 0) + ($cityFunction->{'Environment Quality'} ?? 0) + ($cityFunction->Facilities ?? 0) + ($cityFunction->Mobility ?? 0) }}"
                                     data-safety="{{ $cityFunction->Safety ?? 0 }}"
                                     data-recreation="{{ $cityFunction->Recreation ?? 0 }}"
                                     data-environment-quality="{{ $cityFunction->{'Environment Quality'} ?? 0 }}"
                                     data-facilities="{{ $cityFunction->Facilities ?? 0 }}"
                                     data-mobility="{{ $cityFunction->Mobility ?? 0 }}"
-                                    aria-label="Function: {{ $cityFunction->name }}"
+                                    aria-label="Drag {{ $cityFunction->name }} onto the grid"
                                     data-conditions='@json($cityFunction->functionConditions ?? [])'
                                     @mouseenter="highlightCells({{ $cityFunction->id }}, $event.target)"
                                     @mouseleave="clearHighlights()">
