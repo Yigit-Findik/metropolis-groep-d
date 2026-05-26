@@ -25,11 +25,21 @@ class SendNewFunctionNotification implements ShouldQueue
         $experts = User::whereHas('role', fn ($q) => $q->where('name', 'Expert in effects'))->get();
 
         foreach ($experts as $index => $expert) {
-            // ->later() schedules each email as its own queued job, staggered
-            // 1 second apart per recipient. This prevents hitting Mailtrap's
-            // (and most SMTP providers') rate limit when there are multiple experts.
-            Mail::to($expert->email)
-                ->later(now()->addSeconds($index), new NewFunctionAddedMail($event->cityFunction));
+            // Wrapped in try-catch because the production server uses QUEUE_CONNECTION=sync,
+            // which runs this listener synchronously during the HTTP request instead of in a
+            // background worker. Shared hosting also commonly blocks outbound SMTP on port 2525
+            // (Mailtrap's port), so the connection throws. Without this catch, that exception
+            // would propagate back to the controller and return a 500 to the user even though
+            // the city function was already saved successfully.
+            try {
+                Mail::to($expert->email)
+                    ->later(now()->addSeconds($index), new NewFunctionAddedMail($event->cityFunction));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to queue new function notification email', [
+                    'recipient' => $expert->email,
+                    'error'     => $e->getMessage(),
+                ]);
+            }
         }
     }
 }

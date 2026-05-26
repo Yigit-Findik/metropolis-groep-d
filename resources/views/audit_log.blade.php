@@ -192,7 +192,7 @@
     </div>
 
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-        @vite('resources/js/audit_log.js')
+        @vite('resources/js/audit_log/audit_log.js')
     @endif
 </x-app-layout>
 
