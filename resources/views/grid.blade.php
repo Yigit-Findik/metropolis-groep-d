@@ -1,9 +1,9 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center w-full">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h1 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Grid') }}
-            </h2>
+            </h1>
         </div>
     </x-slot>
 
@@ -11,30 +11,31 @@
         <div class="px-4 sm:px-6 lg:px-8">
 
             {{-- QoL Score Banner --}}
-            <div class="w-full bg-blue-600 dark:bg-blue-800 rounded-2xl shadow-sm px-8 py-6 mb-6 overflow-x-auto">
+              <div class="w-full bg-blue-600 dark:bg-blue-800 rounded-2xl shadow-sm px-8 py-6 mb-6 overflow-x-auto" role="group" aria-label="Quality of life summary">
                 <div class="grid min-w-[720px] grid-cols-[150px_repeat(5,minmax(120px,1fr))] gap-x-4 gap-y-3 items-start">
 
                     {{-- Total score --}}
                     <div class="min-w-[120px]">
                         <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide" aria-hidden="true">Total QoL</p>
-                        <p class="text-white text-4xl font-bold mt-1" id="qol-score-value" tabindex="0" aria-live="polite" aria-atomic="true">—</p>
+                        <p tabindex="0" class="text-white text-4xl font-bold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded" id="qol-score-value" aria-live="polite" aria-atomic="true">—</p>
+                        <p tabindex="0" class="text-blue-100 dark:text-blue-200 text-sm font-semibold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded" id="qol-score-label" aria-live="polite" aria-atomic="true">—</p>
                     </div>
 
                     @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
                         <div>
                             <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{{ $label }}</p>
-                            <p class="text-white text-xl font-semibold mt-0.5" id="qol-{{ $slug }}" tabindex="0" aria-live="polite" aria-atomic="true">—</p>
+                            <p tabindex="0" class="text-white text-xl font-semibold mt-0.5 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded" id="qol-{{ $slug }}" aria-live="polite" aria-atomic="true">—</p>
                         </div>
                     @endforeach
                     <div class="col-span-6"></div>
                         <div class="text-white font-medium">Bonus:</div>
                     @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                        <div class="text-green-300 font-semibold" id="qol-bonus-{{ $slug }}" tabindex="0" aria-live="polite" aria-atomic="true">+0</div>
+                        <div tabindex="0" class="text-green-300 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-300 rounded" id="qol-bonus-{{ $slug }}" aria-live="polite" aria-atomic="true">+0</div>
                     @endforeach
 
                     <div class="text-white font-medium">Penalty:</div>
                     @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                        <div class="text-red-300 font-semibold" id="qol-penalty-{{ $slug }}" tabindex="0" aria-live="polite" aria-atomic="true">-0</div>
+                        <div tabindex="0" class="text-red-300 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-300 rounded" id="qol-penalty-{{ $slug }}" aria-live="polite" aria-atomic="true">-0</div>
                     @endforeach
                     </div>
 
@@ -42,21 +43,20 @@
             </div>
 
             {{-- Grid and library sit next to each other on desktop, above each other on mobile --}}
-            <div class="flex flex-col lg:flex-row gap-6 lg:items-start">
+            <div class="flex flex-col lg:flex-row gap-6 lg:items-start" x-data="gridZoom" :style="`--grid-size: ${size}px`">
 
                 {{-- MAIN GRID SECTION: Contains the city grid and the removal zone below it --}}
-                <div class="flex flex-col gap-4">
+                 <section class="flex flex-col gap-4" aria-labelledby="city-grid-heading">
 
-                {{-- CITY GRID --------------------------------------------------------------
+                 {{-- CITY GRID --------------------------------------------------------------
                      "size" controls how many pixels wide each cell is on desktop.
                      "isDesktop" checks if the screen is wide enough for the zoom slider. --}}
-                <div class="shrink-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
-                     x-data="gridZoom">
+                 <div class="shrink-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm">
 
                     {{-- Sticky so the title and zoom slider stay visible when scrolling down --}}
                     <div class="flex justify-between items-center w-full">
                         <div class="flex items-center gap-4 mb-4 sticky top-0 z-10 bg-blue-50 dark:bg-gray-700 py-2">
-                            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">City Grid</h3>
+                            <h2 id="city-grid-heading" class="text-lg font-bold text-gray-800 dark:text-gray-100">City Grid</h2>
 
                             {{-- Zoom slider only shown on desktop --}}
                             <div class="hidden lg:flex items-center gap-3">
@@ -77,9 +77,9 @@
 
                         {{-- Always 4 columns. On mobile the columns shrink to fit the screen.
                              On desktop each column is a fixed number of pixels set by the zoom slider. --}}
-                        <div class="grid grid-cols-4 gap-4 w-full"
-                             :style="isDesktop ? `grid-template-columns: repeat(4, ${size}px)` : null"
-                             data-city-grid>
+                                <div class="grid grid-cols-4 gap-4 w-full"
+                                    :style="isDesktop ? `grid-template-columns: repeat(4, ${size}px)` : null"
+                                    data-city-grid tabindex="0">
 
                             @foreach ($gridCells->groupBy('row_index') as $rowNumber => $rowCells)
                                 @foreach ($rowCells as $cell)
@@ -88,11 +88,13 @@
                                     @php $fn = $cityFunctions->firstWhere('id', $cell->function_id); @endphp
 
                                     {{-- "is-occupied" or "is-empty" is read by app.js to update the preview panel
-                                         draggable="true" allows occupied cells to be dragged off the grid (SIM.3 - Subtask 1) --}}
+                                         draggable="true" allows occupied cells to be dragged off the grid (SIM.3 - Subtask 1) 
+                                         Empty cells have a dashed border for accessibility (visual distinction without color alone) --}}
                                     <button
                                         type="button"
-                                        class="grid-cell aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }}"
-                                        :style="isDesktop ? `width: ${size}px; height: ${size}px` : null"
+                                        tabindex="0"
+                                        class="grid-cell border border-gray-200 dark:border-gray-700 aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }}"
+                                        :style="isDesktop ? `width: ${size}px; height: ${size}px; border-width: calc(var(--grid-size) / 48);` : 'border-width: calc(var(--grid-size) / 48);'"
                                         draggable="true"
                                         data-grid-cell
                                         data-cell-id="{{ $cell->id ?? '' }}"
@@ -117,6 +119,10 @@
                                         <span class="text-xs font-semibold text-center text-black">
                                             {{ $fn?->name ?? '' }}
                                         </span>
+                                        {{-- Show "+" indicator for empty cells (accessibility: visual marker that doesn't rely on color) --}}
+                                        @if(!filled($cell->function_id))
+                                            <span class="text-gray-400 dark:text-gray-600 text-2xl font-light" aria-hidden="true">+</span>
+                                        @endif
                                     </button>
 
                                 @endforeach
@@ -140,22 +146,24 @@
                     </p>
                 </div>
 
-                {{-- Close the main grid section div --}}
-                </div>
+                {{-- Close the main grid section --}}
+                </section>
 
                 {{-- FUNCTION LIBRARY ------------------------------------------------
                      Fills all the space the grid doesn't use.
                      "active" holds the currently selected category filter. --}}
-                <div class="flex-1 min-w-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
-                     x-data="functionLibrary">
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Function Library</h3>
+                <section class="flex-1 min-w-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
+                         x-data="functionLibrary"
+                         aria-labelledby="function-library-heading">
+                    <h2 id="function-library-heading" class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Function Library</h2>
 
                     @if($cityFunctions->isEmpty())
                         <p class="text-gray-500 dark:text-gray-400">{{ __('No city functions found.') }}</p>
                     @else
                         {{-- Dropdown to filter which category of functions is shown --}}
                         <div class="mb-6">
-                            <select x-model="active"
+                            <label for="category-filter" class="sr-only">Filter by category</label>
+                            <select id="category-filter" x-model="active"
                                     class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="All">All categories</option>
                                 @foreach($categories as $category)
@@ -171,22 +179,24 @@
                                 {{-- Hide cards that don't match the selected category --}}
                                 <button
                                     type="button"
+                                    data-library-card
                                     x-show="active === 'All' || active === '{{ $cityFunction->category }}'"
-                                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200 dark:border-gray-700"
+                                    :style="`border-width: calc(var(--grid-size) / 48);`"
                                     draggable="true"
                                     data-function="{{ $cityFunction->name }}"
                                     data-function-id="{{ $cityFunction->id }}"
                                     data-category="{{ $cityFunction->category ?? '' }}"
-                                        data-image="{{ $cityFunction->image_path }}"
-                                        data-image-alt="{{ $cityFunction->image_alt ?? $cityFunction->name }}"
+                                    data-image="{{ $cityFunction->image_path }}"
+                                    data-image-alt="{{ $cityFunction->image_alt ?? $cityFunction->name }}"
                                     data-qol-score="{{ ($cityFunction->Safety ?? 0) + ($cityFunction->Recreation ?? 0) + ($cityFunction->{'Environment Quality'} ?? 0) + ($cityFunction->Facilities ?? 0) + ($cityFunction->Mobility ?? 0) }}"
                                     data-safety="{{ $cityFunction->Safety ?? 0 }}"
                                     data-recreation="{{ $cityFunction->Recreation ?? 0 }}"
                                     data-environment-quality="{{ $cityFunction->{'Environment Quality'} ?? 0 }}"
                                     data-facilities="{{ $cityFunction->Facilities ?? 0 }}"
                                     data-mobility="{{ $cityFunction->Mobility ?? 0 }}"
-                                    aria-label="Function: {{ $cityFunction->name }}"
-                                    data-conditions="{{ json_encode($cityFunction->functionConditions ?? []) }}"
+                                    aria-label="Drag {{ $cityFunction->name }} onto the grid"
+                                    data-conditions='@json($cityFunction->functionConditions ?? [])'
                                     @mouseenter="highlightCells({{ $cityFunction->id }}, $event.target)"
                                     @mouseleave="clearHighlights()">
                                     @if($cityFunction->image_path)
@@ -200,14 +210,16 @@
                             @endforeach
                         </div>
                     @endif
-                </div>
+                </section>
 
             </div>
         </div>
     </div>
 
     {{-- QoL Toast Notification --}}
-    <div id="qol-toast"
+        <div id="grid-a11y-announcer" aria-live="polite" aria-atomic="true" role="status" class="sr-only"></div>
+
+        <div id="qol-toast"
          class="fixed bottom-6 right-6 z-50 hidden px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all duration-300">
     </div>
 
