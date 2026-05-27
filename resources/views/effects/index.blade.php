@@ -105,11 +105,13 @@
                                                                 <button
                                                                     @click="save()"
                                                                     :disabled="!isValid()"
+                                                                    aria-label="Save {{ $function->name }} {{ $category }} value"
                                                                     :class="'rounded px-2 py-1 text-xs transition ' + (isValid() ? 'bg-green-600 text-white hover:bg-green-700' : 'cursor-not-allowed bg-gray-300 text-gray-500')">
                                                                     Save
                                                                 </button>
                                                                 <button
                                                                     @click="cancel()"
+                                                                    aria-label="Cancel editing {{ $function->name }} {{ $category }} value"
                                                                     class="rounded bg-gray-400 px-2 py-1 text-xs text-white transition hover:bg-gray-500">
                                                                     Cancel
                                                                 </button>
