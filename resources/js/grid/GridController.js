@@ -61,15 +61,13 @@ export class GridController {
             const selectCard = () => {
                 this.#selectedFunctionCard = card;
                 this.#selectedFunctionData = this.#buildFunctionDataFromCard(card);
+                this.#announce(`${this.#selectedFunctionData.functionName} selected`);
 
                 cards.forEach((otherCard) => {
-                    otherCard.setAttribute('aria-pressed', otherCard === card ? 'true' : 'false');
                     otherCard.classList.toggle('ring-2', otherCard === card);
                     otherCard.classList.toggle('ring-blue-500', otherCard === card);
                 });
             };
-
-            card.setAttribute('aria-pressed', 'false');
 
             card.addEventListener('click', () => {
                 selectCard();
