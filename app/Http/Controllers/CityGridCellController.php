@@ -96,17 +96,18 @@ class CityGridCellController extends Controller
     {
         $adjacentCells = $this->getAdjacentCells($targetCell);
         $neighborFunctionIds = $adjacentCells->pluck('function_id')->filter()->unique()->values()->all();
+        $errors = [];
 
         // Check the function's own conditions against its future neighbors
         foreach ($function->functionConditions as $condition) {
             if ($condition->type === 'forbidden' && in_array($condition->target_function_id, $neighborFunctionIds)) {
                 $targetFn = CityFunction::find($condition->target_function_id);
-                return "Cannot place {$function->name} next to {$targetFn->name} (forbidden).";
+                $errors[] = "'{$function->name}' cannot be placed next to '{$targetFn->name}' — choose a cell that does not touch '{$targetFn->name}'.";
             }
 
             if ($condition->type === 'required' && !in_array($condition->target_function_id, $neighborFunctionIds)) {
                 $targetFn = CityFunction::find($condition->target_function_id);
-                return "{$function->name} requires {$targetFn->name} as a neighbor.";
+                $errors[] = "'{$function->name}' must be placed adjacent to '{$targetFn->name}', but no '{$targetFn->name}' is next to this cell — pick a cell that borders '{$targetFn->name}'.";
             }
         }
 
@@ -120,13 +121,13 @@ class CityGridCellController extends Controller
             foreach ($neighborFunctions as $neighbor) {
                 foreach ($neighbor->functionConditions as $condition) {
                     if ($condition->type === 'forbidden' && $condition->target_function_id === $function->id) {
-                        return "Cannot place {$function->name} next to {$neighbor->name} (forbidden).";
+                        $errors[] = "'{$neighbor->name}' (already on the grid) forbids being placed next to '{$function->name}' — choose a cell that does not touch '{$neighbor->name}'.";
                     }
                 }
             }
         }
 
-        return null;
+        return empty($errors) ? null : implode("\n", $errors);
     }
 
     /**

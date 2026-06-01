@@ -114,9 +114,11 @@
                                             {{-- Image scales with the zoom slider, fixed size on mobile --}}
                                             <img src="{{ asset($fn->image_path) }}"
                                                  alt="{{ $fn->image_alt ?? $fn->name }}"
-                                                 class="mb-1">
+                                                 class="object-contain mb-1 flex-shrink-0"
+                                                 style="width: calc(var(--grid-size) * 0.42); height: calc(var(--grid-size) * 0.42);">
                                         @endif
-                                        <span class="text-xs font-semibold text-center text-black">
+                                        <span class="font-semibold text-center text-black w-full leading-tight"
+                                              style="font-size: max(7px, calc(var(--grid-size) * 0.08))">
                                             {{ $fn?->name ?? '' }}
                                         </span>
                                         {{-- Show "+" indicator for empty cells (accessibility: visual marker that doesn't rely on color) --}}
@@ -204,7 +206,7 @@
                                              alt="{{ $cityFunction->name }}"
                                              class="w-16 h-16 object-contain mb-2">
                                     @endif
-                                    <span class="text-xs font-semibold text-center text-gray-700 dark:text-white">{{ $cityFunction->name }}</span>
+                                    <span class="text-xs font-semibold text-center text-gray-700 dark:text-white break-words w-full leading-tight line-clamp-2">{{ $cityFunction->name }}</span>
                                 </button>
 
                             @endforeach
