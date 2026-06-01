@@ -27,7 +27,7 @@
                         one_off_duration_value: @js($event->one_off_duration_value),
                         one_off_duration_unit: @js($event->one_off_duration_unit),
                     })"
-                    class="rounded-xl bg-cyan-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-cyan-500">
+                    class="rounded-xl bg-yellow-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-yellow-500">
                 Edit
             </button>
 
