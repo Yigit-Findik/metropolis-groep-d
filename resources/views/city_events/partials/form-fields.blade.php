@@ -36,7 +36,7 @@
         <x-input-error :messages="$errors->get('event_type')" class="mt-2" />
     </div>
 
-    <div @if($model === 'creating') x-show="creating.event_type === 'recurring'" @else x-show="editing.event_type === 'recurring'" @endif x-transition class="rounded-2xl border border-cyan-200 bg-cyan-50/70 p-4 dark:border-cyan-500/20 dark:bg-cyan-500/10">
+    <div @if($model === 'creating') x-show="creating.event_type === 'recurring'" @else x-show="editing.event_type === 'recurring'" @endif class="rounded-2xl border border-cyan-200 bg-cyan-50/70 p-4 dark:border-cyan-500/20 dark:bg-cyan-500/10">
         <p class="mb-3 text-sm font-semibold text-cyan-900 dark:text-cyan-100">Recurring schedule</p>
         <div class="grid gap-4 sm:grid-cols-2">
             <div>
@@ -68,7 +68,7 @@
         </div>
     </div>
 
-    <div @if($model === 'creating') x-show="creating.event_type === 'one-off'" @else x-show="editing.event_type === 'one-off'" @endif x-transition class="rounded-2xl border border-amber-200 bg-amber-50/80 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
+    <div @if($model === 'creating') x-show="creating.event_type === 'one-off'" @else x-show="editing.event_type === 'one-off'" @endif class="rounded-2xl border border-amber-200 bg-amber-50/80 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
         <p class="mb-3 text-sm font-semibold text-amber-900 dark:text-amber-100">One-off duration</p>
         <div class="grid gap-4 sm:grid-cols-2">
             <div>

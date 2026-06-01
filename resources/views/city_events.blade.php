@@ -31,13 +31,13 @@
             @endif
 
             <div class="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-                <section class="overflow-hidden rounded-3xl bg-slate-950 text-white shadow-2xl ring-1 ring-white/10">
-                    <div class="border-b border-white/10 bg-gradient-to-br from-cyan-500/25 via-slate-950 to-slate-900 px-6 py-8">
-                        <span class="inline-flex rounded-full bg-cyan-400/15 px-3 py-1 text-xs font-semibold tracking-wide text-cyan-200 uppercase">
+                <section tabindex="0" role="region" aria-labelledby="create-event-heading" class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
+                    <div class="border-b border-gray-200 px-6 py-8 dark:border-gray-700">
+                        <span class="inline-flex rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold tracking-wide text-cyan-800 uppercase dark:bg-cyan-500/10 dark:text-cyan-200">
                             New Event
                         </span>
-                        <h2 class="mt-4 text-2xl font-bold">Create an event</h2>
-                        <p class="mt-2 max-w-xl text-sm text-slate-300">
+                        <h2 id="create-event-heading" class="mt-4 text-2xl font-bold text-slate-900 dark:text-gray-100">Create an event</h2>
+                        <p class="mt-2 max-w-xl text-sm text-slate-500 dark:text-gray-400">
                             Choose a one-off event for temporary disruption or a recurring event for repeating city conditions.
                         </p>
                     </div>
@@ -56,11 +56,11 @@
                     </div>
                 </section>
 
-                <section class="rounded-3xl bg-white/95 shadow-xl ring-1 ring-slate-200/80 dark:bg-gray-800 dark:ring-gray-700">
-                    <div class="border-b border-slate-200 px-6 py-6 dark:border-gray-700">
+                <section tabindex="0" role="region" aria-labelledby="event-overview-heading" class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
+                    <div class="border-b border-gray-200 px-6 py-6 dark:border-gray-700">
                         <div class="flex flex-wrap items-center justify-between gap-4">
                             <div>
-                                <h2 class="text-xl font-bold text-slate-900 dark:text-gray-100">Event overview</h2>
+                                <h2 id="event-overview-heading" class="text-xl font-bold text-slate-900 dark:text-gray-100">Event overview</h2>
                                 <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">
                                     {{ $events->count() }} {{ \Illuminate\Support\Str::plural('event', $events->count()) }} configured.
                                 </p>
