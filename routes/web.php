@@ -8,6 +8,7 @@ use App\Http\Controllers\CityGridCellController;
 use App\Http\Controllers\EffectController;
 use App\Http\Controllers\PendingActionController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\CityEventController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +46,10 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert i
 // City planner and administrator routes
 Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->group(function () {
     Route::get('/grid', [CityGridCellController::class, 'index'])->name('grid');
+    Route::get('/events', [CityEventController::class, 'index'])->name('city_events.index');
+    Route::post('/events', [CityEventController::class, 'store'])->name('city_events.store');
+    Route::put('/events/{id}', [CityEventController::class, 'update'])->name('city_events.update');
+    Route::delete('/events/{id}', [CityEventController::class, 'destroy'])->name('city_events.destroy');
 
     // SIM.2 - Cell selection and function assignment
     Route::post('/grid/select/{id}', [CityGridCellController::class, 'select']);
