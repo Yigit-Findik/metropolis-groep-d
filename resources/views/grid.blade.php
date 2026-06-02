@@ -162,16 +162,24 @@
                     @if($cityFunctions->isEmpty())
                         <p class="text-gray-500 dark:text-gray-400">{{ __('No city functions found.') }}</p>
                     @else
-                        {{-- Dropdown to filter which category of functions is shown --}}
-                        <div class="mb-6">
-                            <label for="category-filter" class="sr-only">Filter by category</label>
-                            <select id="category-filter" x-model="active"
-                                    class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="All">All categories</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category }}">{{ $category }}</option>
-                                @endforeach
-                            </select>
+                        <div class="mb-6 space-y-3">
+                            <div>
+                                <label for="function-search" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Search by name</label>
+                                <input id="function-search" type="text" x-model.debounce.150ms="searchTerm" placeholder="Type a function name"
+                                       class="w-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+
+                            {{-- Dropdown to filter which category of functions is shown --}}
+                            <div>
+                                <label for="category-filter" class="sr-only">Filter by category</label>
+                                <select id="category-filter" x-model="active"
+                                        class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="All">All categories</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category }}">{{ $category }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
 
                         {{-- Cards fill the available width automatically, fitting as many columns as possible --}}
@@ -182,7 +190,7 @@
                                 <button
                                     type="button"
                                     data-library-card
-                                    x-show="active === 'All' || active === '{{ $cityFunction->category }}'"
+                                    x-show="isVisible(@js($cityFunction->name), @js($cityFunction->category ?? ''))"
                                     class="bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200 dark:border-gray-700"
                                     :style="`border-width: calc(var(--grid-size) / 48);`"
                                     draggable="true"
