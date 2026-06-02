@@ -59,6 +59,15 @@ export class GridController {
 
         cards.forEach((card) => {
             const selectCard = () => {
+                if (this.#selectedFunctionCard === card) {
+                    this.#selectedFunctionCard = null;
+                    this.#selectedFunctionData = null;
+                    card.classList.remove('ring-2', 'ring-blue-500');
+                    card.blur();
+                    this.#announce(`${card.dataset.function || 'Function'} deselected`);
+                    return;
+                }
+
                 this.#selectedFunctionCard = card;
                 this.#selectedFunctionData = this.#buildFunctionDataFromCard(card);
                 this.#announce(`${this.#selectedFunctionData.functionName} selected`);
@@ -362,14 +371,17 @@ export class GridController {
             const img = document.createElement('img');
             img.src = image;
             img.alt = functionName;
-            img.classList.add('mb-1');
+            img.classList.add('object-contain', 'mb-1', 'flex-shrink-0');
+            img.style.width = 'calc(var(--grid-size) * 0.42)';
+            img.style.height = 'calc(var(--grid-size) * 0.42)';
             img.draggable = false;
             cell.appendChild(img);
         }
 
         const label = document.createElement('span');
         label.textContent = functionName;
-        label.classList.add('text-xs', 'font-semibold', 'text-center', 'text-black');
+        label.classList.add('font-semibold', 'text-center', 'text-black', 'w-full', 'leading-tight');
+        label.style.fontSize = 'max(6px, calc(var(--grid-size) * 0.07))';
         cell.appendChild(label);
 
         // Make occupied cells keyboard-focusable for accessibility
