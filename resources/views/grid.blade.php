@@ -11,19 +11,19 @@
         <div class="px-4 sm:px-6 lg:px-8">
 
             {{-- QoL Score Banner --}}
-              <div class="w-full bg-blue-600 dark:bg-blue-800 rounded-2xl shadow-sm px-8 py-6 mb-6 overflow-x-auto" role="group" aria-label="Quality of life summary">
+              <div class="w-full bg-gray-600 dark:bg-gray-800 rounded-2xl shadow-sm px-8 py-6 mb-6 overflow-x-auto" role="group" aria-label="Quality of life summary">
                 <div class="grid min-w-[720px] grid-cols-[150px_repeat(5,minmax(120px,1fr))] gap-x-4 gap-y-3 items-start">
 
                     {{-- Total score --}}
                     <div class="min-w-[120px]">
-                        <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide" aria-hidden="true">Total QoL</p>
+                        <p class="text-blue-200 dark:text-gray-300 text-xs font-medium uppercase tracking-wide" aria-hidden="true">Total QoL</p>
                         <p tabindex="0" class="text-white text-4xl font-bold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded" id="qol-score-value" aria-live="polite" aria-atomic="true">—</p>
                         <p tabindex="0" class="text-blue-100 dark:text-blue-200 text-sm font-semibold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded" id="qol-score-label" aria-live="polite" aria-atomic="true">—</p>
                     </div>
 
                     @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
                         <div>
-                            <p class="text-blue-200 dark:text-blue-300 text-xs font-medium uppercase tracking-wide">{{ $label }}</p>
+                            <p class="text-blue-200 dark:text-gray-300 text-xs font-medium uppercase tracking-wide">{{ $label }}</p>
                             <p tabindex="0" class="text-white text-xl font-semibold mt-0.5 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded" id="qol-{{ $slug }}" aria-live="polite" aria-atomic="true">—</p>
                         </div>
                     @endforeach
