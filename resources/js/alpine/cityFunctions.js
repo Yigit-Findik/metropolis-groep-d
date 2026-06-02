@@ -134,10 +134,27 @@ export const cityFunctions = () => ({
     // Add a new condition to the editing function
     addCondition() {
         if (!this.newConditionTarget) return;
-        
-        const duplicate = this.editing.conditions.some(c => c.target_function_id == this.newConditionTarget);
-        if (duplicate) return;
-        
+
+        const targetName = this.getTargetName(this.newConditionTarget);
+
+        // Block duplicate: same target already has any rule on this function
+        const existing = this.editing.conditions.find(c => c.target_function_id == this.newConditionTarget);
+        if (existing) {
+            notify(`A '${existing.type}' rule for '${targetName}' already exists. Remove it first before adding a different rule for the same function.`);
+            return;
+        }
+
+        // Block cross-function conflict: the target function already has the opposing rule pointing back
+        const oppositeType = this.newConditionType === 'forbidden' ? 'required' : 'forbidden';
+        const targetFn = this.allFunctions.find(f => f.id == this.newConditionTarget);
+        const conflict = targetFn?.functionConditions?.find(
+            c => c.target_function_id == this.editing.id && c.type === oppositeType
+        );
+        if (conflict) {
+            notify(`Cannot add this rule: '${targetName}' already has a '${oppositeType}' rule targeting '${this.editing.name}'. This conflict makes valid placement on the grid impossible — remove the opposing rule from '${targetName}' first.`);
+            return;
+        }
+
         this.editing.conditions.push({
             target_function_id: this.newConditionTarget,
             type: this.newConditionType,

@@ -206,7 +206,7 @@
                                              alt="{{ $cityFunction->name }}"
                                              class="w-16 h-16 object-contain mb-2">
                                     @endif
-                                    <span class="text-xs font-semibold text-center text-gray-700 dark:text-white">{{ $cityFunction->name }}</span>
+                                    <span class="text-xs font-semibold text-center text-gray-700 dark:text-white break-words w-full leading-tight line-clamp-2">{{ $cityFunction->name }}</span>
                                 </button>
 
                             @endforeach

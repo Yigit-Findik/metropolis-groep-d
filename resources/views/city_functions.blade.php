@@ -94,7 +94,7 @@
                                                         image_path: @js($fn->image_path ?? ''),
                                                         image_alt: @js($fn->image_alt ?? ''),
                                                         functionConditions: @js($fn->functionConditions)
-                                                    }, @js($cityFunctions->map(fn($f) => ['id' => $f->id, 'name' => $f->name])))"
+                                                    }, @js($cityFunctions->map(fn($f) => ['id' => $f->id, 'name' => $f->name, 'functionConditions' => $f->functionConditions])))"
                                                     class="px-3 py-1 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-semibold rounded-lg transition">
                                                 Edit
                                             </button>
