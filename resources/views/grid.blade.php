@@ -159,6 +159,7 @@
                             'name' => $cityFunction->name,
                             'category' => $cityFunction->category ?? '',
                         ])->values()))"
+                         x-init="syncNoResultsAnnouncement(); $watch('searchTerm', () => syncNoResultsAnnouncement()); $watch('active', () => syncNoResultsAnnouncement())"
                          aria-labelledby="function-library-heading">
                     <h2 id="function-library-heading" class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Function Library</h2>
 
@@ -185,9 +186,11 @@
                             </div>
                         </div>
 
-                        <p x-cloak x-show="!hasVisibleFunctions()" class="text-gray-500 dark:text-gray-400 mb-4">
+                        <p x-cloak x-show="!hasVisibleFunctions()" class="text-gray-500 dark:text-gray-400 mb-4" aria-hidden="true">
                             No results found.
                         </p>
+
+                        <div class="sr-only" role="alert" aria-live="assertive" aria-atomic="true" x-text="noResultsAnnouncement"></div>
 
                         {{-- Cards fill the available width automatically, fitting as many columns as possible --}}
                         <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(96px, 1fr))">

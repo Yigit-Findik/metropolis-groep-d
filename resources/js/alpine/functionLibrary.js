@@ -3,6 +3,8 @@ export const functionLibrary = (functions = []) => ({
     active: 'All', // 'All' shows every function; any other value filters by category name
     searchTerm: '',
     highlightedCells: [],
+    noResultsAnnouncement: '',
+    noResultsAnnouncementTimeout: null,
     functions,
 
     normalizeSearch(value) {
@@ -30,6 +32,30 @@ export const functionLibrary = (functions = []) => ({
         return this.functions.some((functionItem) =>
             this.isVisible(functionItem.name, functionItem.category),
         );
+    },
+
+    syncNoResultsAnnouncement() {
+        const message = this.hasVisibleFunctions() ? '' : 'No results found.';
+
+        if (!message) {
+            if (this.noResultsAnnouncementTimeout) {
+                clearTimeout(this.noResultsAnnouncementTimeout);
+                this.noResultsAnnouncementTimeout = null;
+            }
+
+            this.noResultsAnnouncement = '';
+            return;
+        }
+
+        if (this.noResultsAnnouncementTimeout) {
+            clearTimeout(this.noResultsAnnouncementTimeout);
+        }
+
+        this.noResultsAnnouncement = '';
+        this.noResultsAnnouncementTimeout = setTimeout(() => {
+            this.noResultsAnnouncement = message;
+            this.noResultsAnnouncementTimeout = null;
+        }, 125);
     },
 
     getAdjacentCells(row, col) {
