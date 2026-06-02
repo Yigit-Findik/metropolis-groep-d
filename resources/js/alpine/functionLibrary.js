@@ -1,8 +1,9 @@
 // Tracks the active category filter and text search in the function library
-export const functionLibrary = () => ({
+export const functionLibrary = (functions = []) => ({
     active: 'All', // 'All' shows every function; any other value filters by category name
     searchTerm: '',
     highlightedCells: [],
+    functions,
 
     normalizeSearch(value) {
         return String(value ?? '').trim().toLowerCase();
@@ -23,6 +24,12 @@ export const functionLibrary = () => ({
         const categoryMatches = this.active === 'All' || this.active === functionCategory;
 
         return categoryMatches && this.matchesSearch(functionName, functionCategory);
+    },
+
+    hasVisibleFunctions() {
+        return this.functions.some((functionItem) =>
+            this.isVisible(functionItem.name, functionItem.category),
+        );
     },
 
     getAdjacentCells(row, col) {

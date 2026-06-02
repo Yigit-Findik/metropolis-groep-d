@@ -155,7 +155,10 @@
                      Fills all the space the grid doesn't use.
                      "active" holds the currently selected category filter. --}}
                 <section class="flex-1 min-w-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
-                         x-data="functionLibrary"
+                        x-data="functionLibrary(@js($cityFunctions->map(fn ($cityFunction) => [
+                            'name' => $cityFunction->name,
+                            'category' => $cityFunction->category ?? '',
+                        ])->values()))"
                          aria-labelledby="function-library-heading">
                     <h2 id="function-library-heading" class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Function Library</h2>
 
@@ -181,6 +184,10 @@
                                 </select>
                             </div>
                         </div>
+
+                        <p x-cloak x-show="!hasVisibleFunctions()" class="text-gray-500 dark:text-gray-400 mb-4">
+                            No results found.
+                        </p>
 
                         {{-- Cards fill the available width automatically, fitting as many columns as possible --}}
                         <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(96px, 1fr))">
