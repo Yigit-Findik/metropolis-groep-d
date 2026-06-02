@@ -396,7 +396,7 @@ export class GridController {
     #clearCell(cell) {
         cell.innerHTML = '';
         cell.classList.remove('is-occupied');
-        cell.classList.add('is-empty', 'border-2', 'border-dashed', 'border-gray-300', 'dark:border-gray-600');
+        cell.classList.add('is-empty');
         
         // Add visual indicator for empty cell
         const indicator = document.createElement('span');
@@ -435,7 +435,7 @@ export class GridController {
                 if (this.#pickedUpCell === cellElement) this.#pickedUpCell = null;
 
                 this.#clearCell(cellElement);
-                        try { cellElement.focus(); } catch (e) {}
+                cellElement.blur();
                 this.#qolService.refresh();
                 this.#qolService.showToast(functionName, -oldQolScore);
             })
