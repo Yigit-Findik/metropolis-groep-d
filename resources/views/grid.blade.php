@@ -164,8 +164,8 @@
                     @else
                         <div class="mb-6 space-y-3">
                             <div>
-                                <label for="function-search" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Search by name</label>
-                                <input id="function-search" type="text" x-model.debounce.150ms="searchTerm" placeholder="Type a function name"
+                                <label for="function-search" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Search by name or category</label>
+                                <input id="function-search" type="text" x-model.debounce.150ms="searchTerm" placeholder="Type a function name or category"
                                        class="w-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
 
