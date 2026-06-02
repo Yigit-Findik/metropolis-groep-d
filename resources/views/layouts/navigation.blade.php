@@ -15,10 +15,12 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    @if(in_array(Auth::user()->role?->name, ['Administrator', 'City planner'], true))
+                    @if(in_array(Auth::user()->role?->name, ['Administrator', 'City planner', 'Policy maker'], true))
                         <x-nav-link :href="route('grid')" :active="request()->routeIs('grid')">
                             {{ __('Grid') }}
                         </x-nav-link>
+                    @endif
+                    @if(in_array(Auth::user()->role?->name, ['Administrator', 'City planner'], true))
                         <x-nav-link :href="route('city_events.index')" :active="request()->routeIs('city_events.*')">
                             {{ __('Events') }}
                         </x-nav-link>
@@ -101,10 +103,12 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            @if(in_array(Auth::user()->role?->name, ['Administrator', 'City planner'], true))
+            @if(in_array(Auth::user()->role?->name, ['Administrator', 'City planner', 'Policy maker'], true))
                 <x-responsive-nav-link :href="route('grid')" :active="request()->routeIs('grid')">
                     {{ __('Grid') }}
                 </x-responsive-nav-link>
+            @endif
+            @if(in_array(Auth::user()->role?->name, ['Administrator', 'City planner'], true))
                 <x-responsive-nav-link :href="route('city_events.index')" :active="request()->routeIs('city_events.*')">
                     {{ __('Events') }}
                 </x-responsive-nav-link>

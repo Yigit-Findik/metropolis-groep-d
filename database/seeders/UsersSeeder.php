@@ -13,6 +13,7 @@ class UsersSeeder extends Seeder
         $administratorId    = DB::table('roles')->where('name', 'Administrator')->value('id');
         $cityPlannerId      = DB::table('roles')->where('name', 'City planner')->value('id');
         $expertInEffectsId  = DB::table('roles')->where('name', 'Expert in effects')->value('id');
+        $policyMakerId       = DB::table('roles')->where('name', 'Policy maker')->value('id');
 
         DB::table('users')->insert([
             [
@@ -47,6 +48,15 @@ class UsersSeeder extends Seeder
                 'email'             => 'ny.findik@student.avans.nl',
                 'password'          => Hash::make('ny.findik@student.avans.nl'),
                 'role_id'           => $expertInEffectsId,
+                'email_verified_at' => now(),
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ],
+            [
+                'name'              => 'Policy Maker',
+                'email'             => 'policymaker@metropolis.test',
+                'password'          => Hash::make('policymaker@metropolis.test'),
+                'role_id'           => $policyMakerId,
                 'email_verified_at' => now(),
                 'created_at'        => now(),
                 'updated_at'        => now(),

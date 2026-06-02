@@ -67,8 +67,18 @@
                                     aria-label="Adjust grid size">
                             </div>
                         </div>
-                        <div class="mb-4">
-                            <button id="undo-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm">Undo Last Action</button>
+                        <div class="mb-4 flex items-center gap-2">
+                            @if($userRole === 'Policy maker' || $userRole === 'Administrator')
+                                <button id="approve-all-button"
+                                        class="flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm"
+                                        title="Approve the entire grid">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem">lock</span>
+                                    Approve All
+                                </button>
+                            @endif
+                            @if($userRole !== 'Policy maker')
+                                <button id="undo-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm">Undo Last Action</button>
+                            @endif
                         </div>
                     </div>
 
@@ -87,13 +97,12 @@
                                     {{-- Look up the matching city function by id so we can show its name and image --}}
                                     @php $fn = $cityFunctions->firstWhere('id', $cell->function_id); @endphp
 
-                                    {{-- "is-occupied" or "is-empty" is read by app.js to update the preview panel
-                                         draggable="true" allows occupied cells to be dragged off the grid (SIM.3 - Subtask 1) 
-                                         Empty cells have a dashed border for accessibility (visual distinction without color alone) --}}
+                                    {{-- Wrapper gives the approve toggle a positioning context outside the button --}}
+                                    <div class="relative">
                                     <button
                                         type="button"
                                         tabindex="0"
-                                        class="grid-cell border border-gray-200 dark:border-gray-700 aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }}"
+                                        class="grid-cell w-full relative border aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }} {{ ($cell->is_approved ?? false) ? 'is-approved border-purple-600 dark:border-purple-500' : 'border-gray-200 dark:border-gray-700' }}"
                                         :style="isDesktop ? `width: ${size}px; height: ${size}px; border-width: calc(var(--grid-size) / 48);` : 'border-width: calc(var(--grid-size) / 48);'"
                                         draggable="true"
                                         data-grid-cell
@@ -108,7 +117,8 @@
                                         data-environment-quality="{{ $fn?->{'Environment Quality'} ?? 0 }}"
                                         data-facilities="{{ $fn?->Facilities ?? 0 }}"
                                         data-mobility="{{ $fn?->Mobility ?? 0 }}"
-                                        aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_id) ? ', occupied by ' . ($fn?->name ?? 'a function') . ($fn?->category ? ', category ' . $fn->category : '') : ', available' }}"
+                                        data-approved="{{ ($cell->is_approved ?? false) ? 'true' : 'false' }}"
+                                        aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_id) ? ', occupied by ' . ($fn?->name ?? 'a function') . ($fn?->category ? ', category ' . $fn->category : '') : ', available' }}{{ ($cell->is_approved ?? false) ? ', approved' : '' }}"
                                     >
                                         @if($fn?->image_path)
                                             {{-- Image scales with the zoom slider, fixed size on mobile --}}
@@ -127,16 +137,29 @@
                                         @endif
                                     </button>
 
+                                    {{-- Approve/revoke toggle sits OUTSIDE the button so its click never triggers the cell click --}}
+                                    @if($userRole === 'Policy maker' || $userRole === 'Administrator')
+                                        <span
+                                            class="approve-toggle material-symbols-outlined absolute top-1 right-1 z-10 cursor-pointer select-none transition-colors rounded border {{ ($cell->is_approved ?? false) ? 'text-purple-600 hover:text-red-500 border-purple-600' : 'text-gray-300 hover:text-purple-600 border-gray-300' }}"
+                                            style="font-size: max(10px, calc(var(--grid-size) * 0.14))"
+                                            data-cell-id="{{ $cell->id ?? '' }}"
+                                            data-approved="{{ ($cell->is_approved ?? false) ? 'true' : 'false' }}"
+                                            title="{{ ($cell->is_approved ?? false) ? 'Revoke approval' : 'Approve this cell' }}"
+                                            role="button"
+                                            tabindex="0"
+                                            aria-label="{{ ($cell->is_approved ?? false) ? 'Revoke approval for row ' . $cell->row_index . ' column ' . $cell->column_index : 'Approve row ' . $cell->row_index . ' column ' . $cell->column_index }}"
+                                        >{{ ($cell->is_approved ?? false) ? 'lock_open' : 'lock' }}</span>
+                                    @endif
+                                    </div>
+
                                 @endforeach
                             @endforeach
                         </div>
                     </div>
                 </div>
 
-                {{-- FUNCTION REMOVAL ZONE (SIM.3 - Subtask 2) ------------------------------------------
-                     This is the "trash" or "remove" zone where users can drag functions
-                     to remove them from the grid. It has a distinctive red/danger color
-                     to indicate this is a destructive action. --}}
+                {{-- FUNCTION REMOVAL ZONE (SIM.3 - Subtask 2) — hidden for policy makers --}}
+                @if($userRole !== 'Policy maker')
                 <div class="w-full lg:w-auto bg-red-50 dark:bg-red-900/20 border-2 border-dashed border-red-300 dark:border-red-700 rounded-2xl p-6 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                      id="removal-zone"
                      role="button"
@@ -147,13 +170,13 @@
                         Drag here to remove
                     </p>
                 </div>
+                @endif
 
                 {{-- Close the main grid section --}}
                 </section>
 
-                {{-- FUNCTION LIBRARY ------------------------------------------------
-                     Fills all the space the grid doesn't use.
-                     "active" holds the currently selected category filter. --}}
+                {{-- FUNCTION LIBRARY — hidden for policy makers --}}
+                @if($userRole !== 'Policy maker')
                 <section class="flex-1 min-w-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
                          x-data="functionLibrary"
                          aria-labelledby="function-library-heading">
@@ -213,6 +236,7 @@
                         </div>
                     @endif
                 </section>
+                @endif {{-- end policy maker check --}}
 
             </div>
         </div>

@@ -39,13 +39,19 @@ Route::get('/', function () {
     ]);
 });
 
-Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects'])->get('/dashboard', function () {
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects,Policy maker'])->get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
 
+// Grid view — accessible to city planners, administrators, and policy makers
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Policy maker'])->group(function () {
+    Route::get('/grid', [CityGridCellController::class, 'index'])->name('grid');
+    Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);
+    Route::get('/grid/valid-cells', [CityGridCellController::class, 'getValidCells']);
+});
+
 // City planner and administrator routes
 Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->group(function () {
-    Route::get('/grid', [CityGridCellController::class, 'index'])->name('grid');
     Route::get('/events', [CityEventController::class, 'index'])->name('city_events.index');
     Route::post('/events', [CityEventController::class, 'store'])->name('city_events.store');
     Route::put('/events/{id}', [CityEventController::class, 'update'])->name('city_events.update');
@@ -55,19 +61,20 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::post('/grid/select/{id}', [CityGridCellController::class, 'select']);
     Route::post('/grid/{id}/assign', [CityGridCellController::class, 'assignFunction']);
 
-    // SIM.1.4 - QoL score calculation
-    Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);
-
-    // Get valid/invalid cells for adjacency rules
-    Route::get('/grid/valid-cells', [CityGridCellController::class, 'getValidCells']);
-
     // SIM.3 - Remove a function from a cell
     Route::delete('/grid/{id}/remove', [CityGridCellController::class, 'removeFunction']);
 
     // SIM.5 - Undo a function from a cell
     Route::post('/grid/undo', [CityGridCellController::class, 'undo']);
-
 });
+
+// BES.3 - Approval management — policy maker and administrator
+Route::middleware(['auth', 'verified', 'role:Policy maker,Administrator'])->group(function () {
+    Route::post('/grid/approve-all', [CityGridCellController::class, 'approveAllCells']);
+    Route::post('/grid/{id}/approve', [CityGridCellController::class, 'approveCell']);
+    Route::delete('/grid/{id}/revoke', [CityGridCellController::class, 'revokeCell']);
+});
+
 
 // EFF.1 - Effect management table — accessible to city planners, effects experts, and administrators
 Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects'])->group(function () {

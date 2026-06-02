@@ -51,6 +51,127 @@ export class GridController {
         });
         this.#setupRemovalZone();
         this.#setupUndoButton();
+        this.#setupApprovalToggles(cells);
+        this.#setupApproveAllButton(cells);
+    }
+
+    // Returns true if the cell is approved; shows an error message if so
+    #isApproved(cell) {
+        if (cell.dataset.approved === 'true') {
+            const msg = 'This cell is approved — its destination is protected and cannot be modified.';
+            notify(msg);
+            this.#announce(msg);
+            return true;
+        }
+        return false;
+    }
+
+    // Applies the approved visual state to a cell element
+    #applyApprovedState(cell) {
+        cell.dataset.approved = 'true';
+        cell.classList.add('is-approved', 'border-purple-600', 'dark:border-purple-500');
+        cell.classList.remove('border-gray-200', 'dark:border-gray-700');
+
+        // Update the approve toggle if present
+        const toggle = cell.parentElement?.querySelector('.approve-toggle');
+        if (toggle) {
+            toggle.textContent = 'lock_open';
+            toggle.dataset.approved = 'true';
+            toggle.title = 'Revoke approval';
+            toggle.setAttribute('aria-label', toggle.getAttribute('aria-label')?.replace('Approve', 'Revoke approval for') ?? 'Revoke approval');
+            toggle.classList.remove('text-gray-300', 'hover:text-purple-600', 'border-gray-300');
+            toggle.classList.add('text-purple-600', 'hover:text-red-500', 'border-purple-600');
+        }
+
+        // Update aria-label on the cell button
+        const current = cell.getAttribute('aria-label') ?? '';
+        if (!current.includes(', approved')) {
+            cell.setAttribute('aria-label', current + ', approved');
+        }
+    }
+
+    // Removes the approved visual state from a cell element
+    #removeApprovedState(cell) {
+        cell.dataset.approved = 'false';
+        cell.classList.remove('is-approved', 'border-purple-600', 'dark:border-purple-500');
+        cell.classList.add('border-gray-200', 'dark:border-gray-700');
+
+        // Update the approve toggle if present
+        const toggle = cell.parentElement?.querySelector('.approve-toggle');
+        if (toggle) {
+            toggle.textContent = 'lock';
+            toggle.dataset.approved = 'false';
+            toggle.title = 'Approve this cell';
+            toggle.classList.remove('text-purple-600', 'hover:text-red-500', 'border-purple-600');
+            toggle.classList.add('text-gray-300', 'hover:text-purple-600', 'border-gray-300');
+        }
+
+        // Remove ', approved' from aria-label
+        const current = cell.getAttribute('aria-label') ?? '';
+        cell.setAttribute('aria-label', current.replace(', approved', ''));
+    }
+
+    // Wires up the approve/revoke toggle spans inside each cell
+    #setupApprovalToggles(cells) {
+        cells.forEach((cell) => {
+            const toggle = cell.parentElement?.querySelector('.approve-toggle');
+            if (!toggle) return;
+
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation(); // Don't trigger the parent cell click
+                const cellId = toggle.dataset.cellId;
+                const isApproved = toggle.dataset.approved === 'true';
+
+                if (isApproved) {
+                    this.#api.revoke(cellId)
+                        .then(() => {
+                            this.#removeApprovedState(cell);
+                            const msg = 'Approval revoked.';
+                            notify(msg);
+                            this.#announce(msg);
+                        })
+                        .catch((err) => {
+                            const msg = err.message || 'Failed to revoke approval.';
+                            notify(msg);
+                            this.#announce(msg);
+                        });
+                } else {
+                    this.#api.approve(cellId)
+                        .then(() => {
+                            this.#applyApprovedState(cell);
+                            const msg = 'Cell approved.';
+                            notify(msg);
+                            this.#announce(msg);
+                        })
+                        .catch((err) => {
+                            const msg = err.message || 'Failed to approve cell.';
+                            notify(msg);
+                            this.#announce(msg);
+                        });
+                }
+            });
+        });
+    }
+
+    // Wires up the "Approve All" button
+    #setupApproveAllButton(cells) {
+        const btn = document.getElementById('approve-all-button');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            this.#api.approveAll()
+                .then(() => {
+                    cells.forEach((cell) => this.#applyApprovedState(cell));
+                    const msg = 'All cells approved.';
+                    notify(msg);
+                    this.#announce(msg);
+                })
+                .catch((err) => {
+                    const msg = err.message || 'Failed to approve all cells.';
+                    notify(msg);
+                    this.#announce(msg);
+                });
+        });
     }
 
     // Makes every library card draggable and stores its data in the drag transfer
@@ -217,6 +338,9 @@ export class GridController {
 
         // Drags that started from an occupied cell are only allowed in the removal zone, not on other cells
         if (e.dataTransfer.getData('fromCell') === 'true') return;
+
+        // Approved cells cannot be modified
+        if (this.#isApproved(cell)) return;
 
         // Occupied cells cannot be replaced — the user must remove the function first
         if (cell.dataset.function && cell.dataset.function !== '') {
@@ -402,6 +526,7 @@ export class GridController {
         cell.dataset.environmentQuality = environmentQuality;
         cell.dataset.facilities = facilities;
         cell.dataset.mobility = mobility;
+
     }
 
     // Resets a cell to its empty state, clearing all content and attributes
@@ -409,14 +534,14 @@ export class GridController {
         cell.innerHTML = '';
         cell.classList.remove('is-occupied');
         cell.classList.add('is-empty');
-        
+
         // Add visual indicator for empty cell
         const indicator = document.createElement('span');
         indicator.textContent = '+';
         indicator.setAttribute('aria-hidden', 'true');
         indicator.className = 'text-gray-400 dark:text-gray-600 text-2xl font-light';
         cell.appendChild(indicator);
-        
+
         cell.dataset.function = '';
         cell.dataset.functionId = '';
         cell.dataset.category = '';
@@ -437,6 +562,8 @@ export class GridController {
             notify('Focus an occupied grid cell first, then press Delete to remove it.');
             return;
         }
+
+        if (this.#isApproved(cellElement)) return;
 
         this.#api.remove(cellElement.dataset.cellId)
             .then(() => {
@@ -459,6 +586,7 @@ export class GridController {
 
     #pickUpCell(cell) {
         if (!cell || !cell.dataset.functionId) return;
+        if (this.#isApproved(cell)) return;
         // Mark visually as picked
         this.#pickedUpCell = cell;
         cell.classList.add('is-picked');
@@ -495,6 +623,9 @@ export class GridController {
             this.#cancelPickup();
             return;
         }
+
+        // cannot place onto an approved cell
+        if (this.#isApproved(targetCell)) return;
 
         // cannot place onto an occupied cell
         if (targetCell.dataset.function && targetCell.dataset.function !== '') {
@@ -554,6 +685,11 @@ export class GridController {
             const msg = (err && err.message) ? err.message : 'Failed to move function.';
             notify(msg);
             this.#announce(msg);
+            // Always exit pickup mode on failure to prevent further duplication
+            if (this.#pickedUpCell) {
+                this.#pickedUpCell.classList.remove('is-picked');
+                this.#pickedUpCell = null;
+            }
         }
     }
 
@@ -563,6 +699,8 @@ export class GridController {
             notify('Select a function first, then place it on a grid cell.');
             return;
         }
+
+        if (this.#isApproved(cell)) return;
 
         if (cell.dataset.function && cell.dataset.function !== '') {
             const msg = 'This grid slot already has a city-function';

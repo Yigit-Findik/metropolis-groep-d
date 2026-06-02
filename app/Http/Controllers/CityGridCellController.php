@@ -10,6 +10,19 @@ use App\Services\QolScoreService;
 
 class CityGridCellController extends Controller
 {
+    private function ensurePolicyMaker()
+    {
+        $role = auth()->user()?->role?->name;
+
+        if (! in_array($role, ['Policy maker', 'Administrator'], true)) {
+            return response()->json([
+                'message' => 'Only a municipal policy maker or administrator can approve or revoke approved grid cells.',
+            ], 403);
+        }
+
+        return null;
+    }
+
     public function index()
     {
         // Create missing cells on demand so the view always receives a complete grid structure.
@@ -22,6 +35,7 @@ class CityGridCellController extends Controller
             'gridCells' => $cells,
             'cityFunctions' => $cityFunctions,
             'categories' => $categories,
+            'userRole' => auth()->user()?->role?->name,
         ]);
 
     }
@@ -56,8 +70,13 @@ class CityGridCellController extends Controller
         ]);
 
         $cell = CityGridCell::findOrFail($id);
+
+        if ($cell->is_approved) {
+            return response()->json(['message' => 'This cell is approved and its destination is protected — it cannot be modified.'], 422);
+        }
+
         $function = CityFunction::with('functionConditions')->findOrFail($request->function_id);
-        
+
         // Check adjacency conditions
         $error = $this->checkAdjacencyConditions($function, $cell);
         if ($error) {
@@ -220,6 +239,10 @@ class CityGridCellController extends Controller
         // Load the target cell once so we can validate and update the same record.
         $cell = CityGridCell::findOrFail($id);
 
+        if ($cell->is_approved) {
+            return response()->json(['message' => 'This cell is approved and its destination is protected — it cannot be modified.'], 422);
+        }
+
         // Skip the write when the cell is already empty; that keeps the API response explicit.
         if (! $cell->function_id) {
             return response()->json([
@@ -254,6 +277,50 @@ class CityGridCellController extends Controller
         ]);
     }
 
+    // BES.3 - Approve a single grid cell (policy maker or administrator)
+    public function approveCell($id)
+    {
+        if ($response = $this->ensurePolicyMaker()) {
+            return $response;
+        }
+
+        $cell = CityGridCell::findOrFail($id);
+        $cell->update(['is_approved' => true]);
+
+        return response()->json([
+            'message' => 'Cell approved',
+            'cell' => $cell,
+        ]);
+    }
+
+    // BES.3 - Approve all grid cells at once (policy maker or administrator)
+    public function approveAllCells()
+    {
+        if ($response = $this->ensurePolicyMaker()) {
+            return $response;
+        }
+
+        CityGridCell::query()->update(['is_approved' => true]);
+
+        return response()->json(['message' => 'All cells approved']);
+    }
+
+    // BES.3 - Revoke approval from a single grid cell (policy maker or administrator)
+    public function revokeCell($id)
+    {
+        if ($response = $this->ensurePolicyMaker()) {
+            return $response;
+        }
+
+        $cell = CityGridCell::findOrFail($id);
+        $cell->update(['is_approved' => false]);
+
+        return response()->json([
+            'message' => 'Cell approval revoked',
+            'cell' => $cell,
+        ]);
+    }
+
     public function undo(){
 
         $lastAction = ActionHistory::where('user_id', auth()->id())->latest()->first();
@@ -264,7 +331,11 @@ class CityGridCellController extends Controller
         }
 
         $cell = CityGridCell::findOrFail($lastAction->cell_id);
-        
+
+        if ($cell->is_approved) {
+            return response()->json(['message' => 'Cannot undo — the target cell is approved and its destination is protected.'], 422);
+        }
+
         // undo the latest function
         $cell->update(['function_id' => $lastAction->old_city_function_id]);
 
