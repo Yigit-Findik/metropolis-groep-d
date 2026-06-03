@@ -1,24 +1,11 @@
-/**
- * Manages a floating effect preview popup for function library cards.
- * Shows effects (Safety, Recreation, Environment, Facilities, Mobility) when hovering
- * or focusing on function cards in the library.
- * Subtasks:
- * 1. Show preview on hover and focus
- * 2. Display positive/negative values clearly
- * 3. Keyboard accessible (Escape to close)
- * 4. Screen reader support
- * 5. Auto-close on mouse leave / blur / Escape
- */
 export class FunctionLibraryPreview {
     #popup = null;
     #visible = false;
     #activeCard = null;
 
     setup() {
-        // Create the popup element
         this.#popup = this.#createPopup();
 
-        // Listen for events dispatched from Alpine cards
         document.addEventListener('show-library-preview', (e) => {
             const card = e.detail.card;
             if (card) this.#show(card);
@@ -28,7 +15,7 @@ export class FunctionLibraryPreview {
             this.#hide();
         });
 
-        // Close on Escape key
+        // Close on escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.#visible) {
                 this.#hide();
@@ -40,7 +27,6 @@ export class FunctionLibraryPreview {
             if (this.#visible) this.#hide();
         }, { passive: true });
 
-        // Reposition popup as mouse moves
         document.addEventListener('mousemove', (e) => {
             if (this.#visible && this.#activeCard) {
                 this.#move(e);
@@ -69,7 +55,6 @@ export class FunctionLibraryPreview {
     #show(card) {
         if (!card || !card.dataset?.function) return;
 
-        // If already showing for this card, just reposition
         if (this.#activeCard === card && !this.#popup.classList.contains('hidden')) {
             return;
         }
@@ -79,7 +64,6 @@ export class FunctionLibraryPreview {
         this.#popup.classList.remove('hidden');
         this.#visible = true;
 
-        // Position with a slight offset
         const rect = card.getBoundingClientRect();
         this.#popup.style.left = `${Math.round(rect.right + 12)}px`;
         this.#popup.style.top = `${Math.round(rect.top)}px`;
@@ -99,13 +83,11 @@ export class FunctionLibraryPreview {
         this.#popup.style.top = `${e.clientY + 12}px`;
     }
 
-    // Builds the HTML shown inside the popup
     #buildHtml(card) {
         const ds = card.dataset || {};
         const name = ds.function || '';
         const category = ds.category || 'Uncategorized';
 
-        // Create effect badges - IMPORTANT: data-environment-quality becomes environmentQuality in dataset
         const badges = [
             ['safety', 'Saf'],
             ['recreation', 'Rec'],
@@ -118,7 +100,6 @@ export class FunctionLibraryPreview {
             return `<div class="flex items-center gap-2 mb-1"><div class="w-10 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">${label}</div>${badgeHtml}</div>`;
         }).join('');
 
-        // Build complete HTML
         const html = [
             `<div class="font-semibold mb-1.5 text-xs text-gray-900 dark:text-white">${name}</div>`,
             `<div class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-100 mb-2">${category}</div>`,
@@ -128,7 +109,7 @@ export class FunctionLibraryPreview {
         this.#popup.innerHTML = html;
     }
 
-    // Returns a coloured pill span for a numeric effect value (Subtask 2)
+    // Returns a coloured pill span for a numeric effect value
     #formatBadge(value) {
         const n = parseInt(value || 0, 10);
         const sign = n > 0 ? `+${n}` : `${n}`;
