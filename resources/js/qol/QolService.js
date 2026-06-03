@@ -98,6 +98,15 @@ export class QolService {
                         penaltyEl.setAttribute("aria-label", `${cat} penalty points ${penaltyDisplay}`);
                     }
 
+                    const eventMod = data.event_categories?.[cat] ?? 0;
+                    const eventEl = document.getElementById(`qol-event-${cat.replace(/\s+/g, "-")}`);
+                    if (eventEl) {
+                        const eventDisplay = (eventMod >= 0 ? "+" : "") + eventMod;
+                        eventEl.textContent = eventDisplay;
+                        eventEl.className = `font-semibold ${eventMod > 0 ? "text-green-600 dark:text-green-400" : eventMod < 0 ? "text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400"}`;
+                        eventEl.setAttribute("aria-label", `${cat} event modifier ${eventDisplay}`);
+                    }
+
                 }
             }
 

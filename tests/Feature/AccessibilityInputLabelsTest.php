@@ -112,6 +112,24 @@ test('grid page has a label associated with the category filter select', functio
     $response->assertSee('id="category-filter"', false);
 });
 
+test('grid page search input is labeled for name or category', function () {
+    $user = createAdminUser();
+
+    CityFunction::create([
+        'name'       => 'Test Park',
+        'category'   => 'Recreation',
+        'image_path' => 'images/placeholder.png',
+    ]);
+
+    $response = $this->withoutVite()->actingAs($user)->get('/grid');
+
+    $response->assertOk();
+
+    $response->assertSee('Search by name or category', false);
+    $response->assertSee('placeholder="Type a function name or category"', false);
+    $response->assertSee('id="function-search"', false);
+});
+
 test('city functions page create modal has labels associated with all fields', function () {
     $user = createAdminUser();
 
