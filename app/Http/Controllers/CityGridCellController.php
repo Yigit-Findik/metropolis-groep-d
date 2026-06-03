@@ -7,6 +7,7 @@ use App\Models\CityGridCell;
 use App\Models\CityFunction;
 use App\Models\ActionHistory;
 use App\Services\QolScoreService;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CityGridCellController extends Controller
 {
@@ -251,6 +252,33 @@ class CityGridCellController extends Controller
             'message' => 'Function removed successfully',
             'cell' => $cell
         ]);
+    }
+
+    public function exportPdf()
+    {
+        $cells         = CityGridCell::ensureGridExists();
+        $cityFunctions = CityFunction::orderBy('name')->get();
+        $qol           = (new QolScoreService())->calculate();
+
+        $placedCount = $cells->filter(fn ($c) => $c->function_id)->count();
+
+        // Resolve the compiled CSS filename from the Vite manifest so the PDF always
+        // picks up the correct hashed file rather than a hard-coded name.
+        $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+        $cssFile  = basename($manifest['resources/css/app.css']['file'] ?? 'app.css');
+
+        $pdf = Pdf::loadView('pdf.grid-report', [
+            'gridCells'    => $cells,
+            'cityFunctions'=> $cityFunctions,
+            'qol'          => $qol,
+            'placedCount'  => $placedCount,
+            'totalCells'   => $cells->count(),
+            'author'       => auth()->user()->name,
+            'exportedAt'   => now()->format('d F Y, H:i'),
+            'cssFile'      => $cssFile,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download('city-grid-report-' . now()->format('d-m-Y') . '.pdf');
     }
 
     public function undo(){
