@@ -28,6 +28,7 @@
             @csrf
             @method('PUT')
             @include('city_events.partials.form-fields', ['model' => 'editing'])
+            @include('city_events.partials.function-links', ['model' => 'editing', 'cityFunctions' => []])
 
             <div class="flex justify-end gap-3">
                 <x-secondary-button type="button" @click="closeEdit()">

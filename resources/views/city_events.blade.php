@@ -12,6 +12,9 @@
         </div>
     </x-slot>
 
+    {{-- Make city functions available to Alpine for the edit modal's dynamic function list. --}}
+    <script>window.cityFunctionsData = @json($cityFunctions);</script>
+
     <div class="py-12" x-data="cityEvents">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             @if(session('success'))
@@ -46,6 +49,7 @@
                         <form method="POST" action="{{ route('city_events.store') }}" class="space-y-6">
                             @csrf
                             @include('city_events.partials.form-fields', ['model' => 'creating'])
+                            @include('city_events.partials.function-links', ['model' => 'creating', 'cityFunctions' => $cityFunctions])
 
                             <div class="flex justify-end">
                                 <x-primary-button class="bg-cyan-600 hover:bg-cyan-500 focus:ring-cyan-500">
