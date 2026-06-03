@@ -3,6 +3,10 @@ export class FunctionLibraryPreview {
     #visible = false;
     #activeCard = null;
 
+    isVisible() {
+        return this.#visible;
+    }
+
     setup() {
         this.#popup = this.#createPopup();
 
