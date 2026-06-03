@@ -67,8 +67,11 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     // SIM.5 - Undo a function from a cell
     Route::post('/grid/undo', [CityGridCellController::class, 'undo']);
 
-    // REV.1 - Export the current grid state as a PDF report
-    Route::get('/grid/export-pdf', [CityGridCellController::class, 'exportPdf'])->name('grid.export-pdf');
+    // REV.1 - Preview the PDF report in the browser before downloading
+    Route::get('/grid/export-pdf', [CityGridCellController::class, 'previewPdf'])->name('grid.export-pdf');
+
+    // REV.1 - Trigger the actual PDF download
+    Route::get('/grid/download-pdf', [CityGridCellController::class, 'exportPdf'])->name('grid.download-pdf');
 
 });
 
