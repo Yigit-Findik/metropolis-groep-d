@@ -199,8 +199,11 @@
                                     data-mobility="{{ $cityFunction->Mobility ?? 0 }}"
                                     aria-label="Drag {{ $cityFunction->name }} onto the grid"
                                     data-conditions='@json($cityFunction->functionConditions ?? [])'
-                                    @mouseenter="highlightCells({{ $cityFunction->id }}, $event.target)"
-                                    @mouseleave="clearHighlights()">
+                                    @mouseenter="highlightCells({{ $cityFunction->id }}, $event.target); $dispatch('show-library-preview', { card: $event.target })"
+                                    @mouseleave="clearHighlights(); $dispatch('hide-library-preview')"
+                                    @focus="$dispatch('show-library-preview', { card: $event.target })"
+                                    @blur="$dispatch('hide-library-preview')"
+                                    @keydown.escape="$dispatch('hide-library-preview')">
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
                                              alt="{{ $cityFunction->name }}"

@@ -18,6 +18,7 @@ import { GridApi } from './api/GridApi';
 import { QolService } from './qol/QolService';
 import { GridController } from './grid/GridController';
 import { HoverPopup } from './hover/HoverPopup';
+import { FunctionLibraryPreview } from './library/FunctionLibraryPreview';
 
 // Register all Alpine components before Alpine.start()
 Alpine.data('gridZoom', gridZoom);
@@ -40,8 +41,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const qolService = new QolService(api);
     const gridController = new GridController(api, qolService);
     const hoverPopup = new HoverPopup();
+    const libraryPreview = new FunctionLibraryPreview();
 
     gridController.init();
     qolService.refresh();
     hoverPopup.setup();
+    libraryPreview.setup();
 });
