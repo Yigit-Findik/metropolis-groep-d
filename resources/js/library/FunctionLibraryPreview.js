@@ -28,7 +28,6 @@ export class FunctionLibraryPreview {
             }
         });
 
-        // Close on scroll to avoid floating position
         window.addEventListener('scroll', () => {
             if (this.#visible) this.#hide();
         }, { passive: true });
@@ -81,8 +80,21 @@ export class FunctionLibraryPreview {
         this.#visible = true;
 
         const rect = card.getBoundingClientRect();
-        this.#popup.style.left = `${Math.round(rect.right + 12)}px`;
-        this.#popup.style.top = `${Math.round(rect.top)}px`;
+        let left = rect.right + 12;
+        let top = rect.top;
+
+        // If the popup overflows the right edge show it on the left side
+        if (left + this.#popup.offsetWidth > window.innerWidth) {
+            left = rect.left - this.#popup.offsetWidth - 12;
+        }
+
+        // If the popup overflows the bottom edge shift it up safely
+        if (top + this.#popup.offsetHeight > window.innerHeight) {
+            top = window.innerHeight - this.#popup.offsetHeight - 12;
+        }
+
+        this.#popup.style.left = `${Math.round(left)}px`;
+        this.#popup.style.top = `${Math.round(top)}px`;
     }
 
     #hide() {
@@ -92,11 +104,23 @@ export class FunctionLibraryPreview {
         this.#activeCard = null;
     }
 
-    // Moves the popup to follow the cursor with a small offset
+    // Moves the popup to follow the cursor with simple edge adjustments
     #move(e) {
         if (!this.#visible) return;
-        this.#popup.style.left = `${e.clientX + 12}px`;
-        this.#popup.style.top = `${e.clientY + 12}px`;
+
+        let left = e.clientX + 12;
+        let top = e.clientY + 12;
+
+        // Keep inside bounds while dragging/moving mouse
+        if (left + this.#popup.offsetWidth > window.innerWidth) {
+            left = e.clientX - this.#popup.offsetWidth - 12;
+        }
+        if (top + this.#popup.offsetHeight > window.innerHeight) {
+            top = e.clientY - this.#popup.offsetHeight - 12;
+        }
+
+        this.#popup.style.left = `${left}px`;
+        this.#popup.style.top = `${top}px`;
     }
 
     #buildHtml(card) {
