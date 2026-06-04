@@ -2,6 +2,7 @@ export class FunctionLibraryPreview {
     #popup = null;
     #visible = false;
     #activeCard = null;
+    #functionNames = {};
 
     isVisible() {
         return this.#visible;
@@ -9,6 +10,7 @@ export class FunctionLibraryPreview {
 
     setup() {
         this.#popup = this.#createPopup();
+        this.#buildFunctionNameMap();
 
         document.addEventListener('show-library-preview', (e) => {
             const card = e.detail.card;
@@ -34,6 +36,16 @@ export class FunctionLibraryPreview {
         document.addEventListener('mousemove', (e) => {
             if (this.#visible && this.#activeCard) {
                 this.#move(e);
+            }
+        });
+    }
+
+    #buildFunctionNameMap() {
+        document.querySelectorAll('[data-library-card]').forEach(card => {
+            const id = card.dataset.functionId;
+            const name = card.dataset.function;
+            if (id && name) {
+                this.#functionNames[id] = name;
             }
         });
     }
@@ -104,13 +116,38 @@ export class FunctionLibraryPreview {
             return `<div class="flex items-center gap-2 mb-1"><div class="w-10 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">${label}</div>${badgeHtml}</div>`;
         }).join('');
 
+        let conditions = [];
+        try {
+            conditions = JSON.parse(ds.conditions || '[]');
+        } catch {
+            conditions = [];
+        }
+
+        const conditionsList = this.#formatConditions(conditions);
+
         const html = [
             `<div class="font-semibold mb-1.5 text-xs text-gray-900 dark:text-white">${name}</div>`,
             `<div class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-100 mb-2">${category}</div>`,
-            `<div class="grid gap-0.5">${badges}</div>`,
+            `<div class="grid gap-0.5 mb-2">${badges}</div>`,
+            `<div class="border-t border-gray-300 dark:border-gray-600 pt-2 mt-2 text-[10px] space-y-0.5">${conditionsList}</div>`,
         ].join('');
 
         this.#popup.innerHTML = html;
+    }
+
+    #formatConditions(conditions) {
+        if (!conditions || conditions.length === 0) {
+            return '<span class="text-gray-500 dark:text-gray-400">No placement conditions</span>';
+        }
+
+        return conditions.map(cond => {
+            const targetName = this.#functionNames[cond.target_function_id] || 'Unknown';
+            const text = cond.type === 'required'
+                ? `Must be adjacent to ${targetName}`
+                : `Cannot be adjacent to ${targetName}`;
+            const color = cond.type === 'required' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+            return `<div class="${color} font-semibold">• ${text}</div>`;
+        }).join('');
     }
 
     // Returns a coloured pill span for a numeric effect value
