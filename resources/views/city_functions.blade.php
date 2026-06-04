@@ -25,7 +25,7 @@
             @if($cityFunctions->isEmpty())
                 <p class="text-white">No city functions found.</p>
             @else
-                <div class="bg-gray-800 rounded-2xl shadow-sm overflow-hidden w-fit">
+                <div class="bg-gray-800 rounded-2xl shadow-sm overflow-x-auto w-full">
                     <table class="min-w-full divide-y divide-gray-700" role="grid" aria-label="City functions list">
                         <thead class="bg-gray-700">
                             <tr>
