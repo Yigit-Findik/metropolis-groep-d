@@ -185,6 +185,27 @@
                     </p>
                 </div>
 
+                {{-- SIM.12 - Access Road Panel --}}
+                <div class="w-full lg:w-auto bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-2xl p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-amber-800 dark:text-amber-200 uppercase tracking-wide">Access Roads</h3>
+                        <div class="flex gap-2">
+                            <button id="access-road-toggle"
+                                    type="button"
+                                    class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                                Place Road
+                            </button>
+                            <button id="access-road-cancel"
+                                    type="button"
+                                    class="hidden bg-gray-500 hover:bg-gray-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                    <p id="access-road-status" class="text-xs text-amber-700 dark:text-amber-300 mb-3 min-h-[1rem]" aria-live="polite" aria-atomic="true"></p>
+                    <div id="access-road-list" class="space-y-1"></div>
+                </div>
+
                 {{-- Close the main grid section --}}
                 </section>
 
@@ -275,6 +296,25 @@
             </div>
         </div>
     </div>
+
+    {{-- SIM.12 - Access road visual styles --}}
+    <style>
+        .road-cell {
+            background-color: rgba(245, 158, 11, 0.18) !important;
+            border-color: rgb(245, 158, 11) !important;
+        }
+        .road-start-selected {
+            outline: 3px solid rgb(34, 197, 94) !important;
+            outline-offset: -3px;
+        }
+        .road-selection-mode [data-grid-cell] {
+            cursor: crosshair;
+        }
+        .road-selection-mode [data-grid-cell]:hover {
+            outline: 3px solid rgb(245, 158, 11);
+            outline-offset: -3px;
+        }
+    </style>
 
     {{-- QoL Toast Notification --}}
         <div id="grid-a11y-announcer" aria-live="polite" aria-atomic="true" role="status" class="sr-only"></div>

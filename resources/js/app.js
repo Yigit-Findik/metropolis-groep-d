@@ -20,6 +20,7 @@ import { confirmModal } from './alpine/confirmModal';
 import { GridApi } from './api/GridApi';
 import { QolService } from './qol/QolService';
 import { GridController } from './grid/GridController';
+import { AccessRoadController } from './grid/AccessRoadController';
 import { HoverPopup } from './hover/HoverPopup';
 import { FunctionLibraryPreview } from './library/FunctionLibraryPreview';
 
@@ -53,4 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     qolService.refresh();
     hoverPopup.setup();
     libraryPreview.setup();
+
+    const accessRoadController = new AccessRoadController(api, qolService);
+    accessRoadController.init();
 });

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AccessRoad;
 use App\Models\CityEvent;
 use App\Models\CityGridCell;
 use Illuminate\Support\Collection;
@@ -75,6 +76,13 @@ class QolScoreService
                 'mobility'             => (int) $fn->{'Mobility'} + $adjustments['mobility'] + $eventMods['mobility'],
             ];
         }
+
+        // SIM.12 — each access road improves the mobility score by 5 points.
+        $roadCount = AccessRoad::count();
+        $roadMobilityBonus = $roadCount * 5;
+        $totals['mobility']       += $roadMobilityBonus;
+        $bonusTotals['mobility']  += $roadMobilityBonus;
+        $totalScore               += $roadMobilityBonus;
 
         $totalBonus = array_sum($bonusTotals);
         $totalPenalty = array_sum($penaltyTotals);
