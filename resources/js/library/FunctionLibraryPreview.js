@@ -105,15 +105,22 @@ export class FunctionLibraryPreview {
         const category = ds.category || 'Uncategorized';
 
         const badges = [
-            ['safety', 'Saf'],
-            ['recreation', 'Rec'],
-            ['environmentQuality', 'EnQ'],
-            ['facilities', 'Fac'],
-            ['mobility', 'Mob'],
-        ].map(([key, label]) => {
+            ['safety', 'Saf', 'Safety'],
+            ['recreation', 'Rec', 'Recreation'],
+            ['environmentQuality', 'EnQ', 'Environment Quality'],
+            ['facilities', 'Fac', 'Facilities'],
+            ['mobility', 'Mob', 'Mobility'],
+        ].map(([key, label, fullName]) => {
             const value = parseInt(ds[key] ?? 0, 10);
             const badgeHtml = this.#formatBadge(value);
-            return `<div class="flex items-center gap-2 mb-1"><div class="w-10 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">${label}</div>${badgeHtml}</div>`;
+
+            return `
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="w-10 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase" aria-hidden="true">${label}</div>
+                    <span class="sr-only">${fullName}:</span>
+                    ${badgeHtml}
+                </div>
+            `;
         }).join('');
 
         let conditions = [];
