@@ -7,6 +7,7 @@ use App\Models\CityGridCell;
 use App\Models\CityFunction;
 use App\Models\ActionHistory;
 use App\Services\QolScoreService;
+use App\Models\CityEvent;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class CityGridCellController extends Controller
@@ -281,6 +282,7 @@ class CityGridCellController extends Controller
             'gridCells'     => $cells,
             'cityFunctions' => $cityFunctions,
             'qol'           => $qol,
+            'events'        => CityEvent::orderBy('event_type')->orderBy('name')->get(),
             'placedCount'   => $cells->filter(fn ($c) => $c->function_id)->count(),
             'totalCells'    => $cells->count(),
             'author'        => auth()->user()->name,
