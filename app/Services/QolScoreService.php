@@ -78,7 +78,7 @@ class QolScoreService
         }
 
         // SIM.12 — each access road improves the mobility score by 5 points.
-        $roadCount = AccessRoad::count();
+        $roadCount = AccessRoad::where('is_active', true)->count();
         $roadMobilityBonus = $roadCount * 5;
         $totals['mobility']       += $roadMobilityBonus;
         $bonusTotals['mobility']  += $roadMobilityBonus;

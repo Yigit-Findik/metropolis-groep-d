@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class AccessRoad extends Model
 {
-    protected $fillable = ['user_id', 'start_cell_id', 'end_cell_id'];
+    protected $fillable = ['user_id', 'start_cell_id', 'end_cell_id', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 
     public function cells(): BelongsToMany
     {

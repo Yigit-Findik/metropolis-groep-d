@@ -7,6 +7,7 @@ use App\Models\CityGridCell;
 use App\Models\CityFunction;
 use App\Models\ActionHistory;
 use App\Services\QolScoreService;
+use App\Http\Controllers\AccessRoadController;
 
 class CityGridCellController extends Controller
 {
@@ -83,10 +84,14 @@ class CityGridCellController extends Controller
             ],
         ]);
 
-        return response()->json([
-            'message' => 'Function assigned',
-            'cell' => $cell
-        ]);
+        $response = ['message' => 'Function assigned', 'cell' => $cell];
+
+        // SIM.12.1 - A placed safety function may block existing road paths; recalculate all roads.
+        if (strtolower(trim($function->category ?? '')) === 'safety') {
+            $response['updated_roads'] = (new AccessRoadController)->recalculateAllRoads();
+        }
+
+        return response()->json($response);
     }
 
     /**
@@ -217,8 +222,8 @@ class CityGridCellController extends Controller
     // SIM.3 - Clears a function from the given cell and records the removal in ActionHistory.
     public function removeFunction($id)
     {
-        // Load the target cell once so we can validate and update the same record.
-        $cell = CityGridCell::findOrFail($id);
+        // Load the target cell with its function so we can check the category before clearing.
+        $cell = CityGridCell::with('cityFunction')->findOrFail($id);
 
         // Skip the write when the cell is already empty; that keeps the API response explicit.
         if (! $cell->function_id) {
@@ -229,6 +234,8 @@ class CityGridCellController extends Controller
         }
 
         $oldFunctionId = $cell->function_id;
+        $wasSafety = $cell->cityFunction
+            && strtolower(trim($cell->cityFunction->category ?? '')) === 'safety';
 
         // Remove the function by setting function_id to null
         // This leaves all other cells completely untouched
@@ -248,10 +255,17 @@ class CityGridCellController extends Controller
             ],
         ]);
 
-        return response()->json([
+        $response = [
             'message' => 'Function removed successfully',
-            'cell' => $cell
-        ]);
+            'cell' => $cell,
+        ];
+
+        // SIM.12.1 - A removed safety function may unblock shorter routes; recalculate all roads.
+        if ($wasSafety) {
+            $response['updated_roads'] = (new AccessRoadController)->recalculateAllRoads();
+        }
+
+        return response()->json($response);
     }
 
     public function undo(){

@@ -151,6 +151,26 @@ export class GridApi {
         return data;
     }
 
+    // Flips is_active on an access road
+    async toggleAccessRoad(id) {
+        const response = await fetch(`/access-roads/${id}/toggle`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': this.#csrfToken,
+            },
+        });
+
+        if (!response.ok) {
+            const data = await this.#readJsonResponse(response, 'access road toggle').catch(() => ({}));
+            throw new Error(data.message || `Toggle access road failed: ${response.status}`);
+        }
+
+        return this.#readJsonResponse(response, 'access road toggle');
+    }
+
     // Removes an access road by ID
     async destroyAccessRoad(id) {
         const response = await fetch(`/access-roads/${id}`, {

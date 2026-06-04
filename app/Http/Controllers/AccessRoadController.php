@@ -17,8 +17,9 @@ class AccessRoadController extends Controller
 
         return response()->json(
             $roads->map(fn ($road) => [
-                'id'       => $road->id,
-                'cell_ids' => $road->cells->pluck('id')->values()->all(),
+                'id'        => $road->id,
+                'is_active' => (bool) $road->is_active,
+                'cell_ids'  => $road->cells->pluck('id')->values()->all(),
             ])
         );
     }
@@ -73,8 +74,9 @@ class AccessRoadController extends Controller
         return response()->json([
             'message' => 'Access road placed',
             'road'    => [
-                'id'       => $road->id,
-                'cell_ids' => collect($path)->pluck('id')->values()->all(),
+                'id'        => $road->id,
+                'is_active' => true,
+                'cell_ids'  => collect($path)->pluck('id')->values()->all(),
             ],
         ]);
     }
@@ -90,6 +92,79 @@ class AccessRoadController extends Controller
         $road->delete();
 
         return response()->json(['message' => 'Access road removed']);
+    }
+
+    /**
+     * Flip the is_active flag on an access road.
+     * SIM.12.1 - Activate / deactivate main access road
+     */
+    public function toggle($id)
+    {
+        $road = AccessRoad::with('cells')->findOrFail($id);
+        $road->update(['is_active' => ! $road->is_active]);
+
+        return response()->json([
+            'id'        => $road->id,
+            'is_active' => (bool) $road->is_active,
+            'cell_ids'  => $road->cells->pluck('id')->values()->all(),
+        ]);
+    }
+
+    /**
+     * Re-run BFS for every existing road and update any that now have a shorter path.
+     * Called after a safety function is removed from the grid.
+     * Returns all roads with their (potentially updated) cell IDs.
+     */
+    public function recalculateAllRoads(): array
+    {
+        $allCells = CityGridCell::with('cityFunction')->get();
+        $roads    = AccessRoad::with('cells')->get();
+
+        $result = [];
+
+        foreach ($roads as $road) {
+            $currentIds = $road->cells->pluck('id')->values()->all();
+
+            // Skip inactive roads — preserve them as-is.
+            if (! $road->is_active) {
+                $result[] = ['id' => $road->id, 'is_active' => false, 'cell_ids' => $currentIds];
+                continue;
+            }
+
+            $startCell = $allCells->firstWhere('id', $road->start_cell_id);
+            $endCell   = $allCells->firstWhere('id', $road->end_cell_id);
+
+            if (! $startCell || ! $endCell) {
+                $result[] = ['id' => $road->id, 'is_active' => true, 'cell_ids' => $currentIds];
+                continue;
+            }
+
+            $newPath = $this->findShortestPath($startCell, $endCell, $allCells);
+
+            if (! $newPath) {
+                // No route available — keep existing path.
+                $result[] = ['id' => $road->id, 'is_active' => true, 'cell_ids' => $currentIds];
+                continue;
+            }
+
+            $newIds = collect($newPath)->pluck('id')->values()->all();
+
+            // Update whenever the path changed: shorter after safety removed, or
+            // re-routed around a newly placed safety function.
+            if ($newIds !== $currentIds) {
+                $road->cells()->detach();
+                $attachData = [];
+                foreach ($newPath as $order => $cell) {
+                    $attachData[$cell->id] = ['cell_order' => $order];
+                }
+                $road->cells()->attach($attachData);
+                $result[] = ['id' => $road->id, 'is_active' => true, 'cell_ids' => $newIds];
+            } else {
+                $result[] = ['id' => $road->id, 'is_active' => true, 'cell_ids' => $currentIds];
+            }
+        }
+
+        return $result;
     }
 
     /**

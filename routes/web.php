@@ -78,6 +78,9 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::post('/access-roads', [AccessRoadController::class, 'store']);
     Route::delete('/access-roads/{id}', [AccessRoadController::class, 'destroy']);
 
+    // SIM.12.1 - Activate / deactivate an access road
+    Route::patch('/access-roads/{id}/toggle', [AccessRoadController::class, 'toggle']);
+
 });
 
 // EFF.1 - Effect management table — accessible to city planners, effects experts, and administrators

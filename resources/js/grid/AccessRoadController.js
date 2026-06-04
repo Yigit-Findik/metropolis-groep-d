@@ -49,6 +49,13 @@ export class AccessRoadController {
         this.#toggleBtn.addEventListener('click', () => this.#enterRoadMode());
         this.#cancelBtn?.addEventListener('click', () => this.#exitRoadMode());
 
+        document.addEventListener('roads-updated', (e) => {
+            this.#roads = e.detail.roads;
+            this.#syncRoadCellIds();
+            this.#renderRoadHighlights();
+            this.#renderRoadList();
+        });
+
         this.#loadRoads();
     }
 
@@ -185,6 +192,20 @@ export class AccessRoadController {
         }
     }
 
+    async #toggleRoad(id) {
+        try {
+            const updated = await this.#api.toggleAccessRoad(id);
+            const idx = this.#roads.findIndex(r => r.id === updated.id);
+            if (idx !== -1) this.#roads[idx] = updated;
+            this.#syncRoadCellIds();
+            this.#renderRoadHighlights();
+            this.#renderRoadList();
+            this.#qolService?.refresh();
+        } catch (err) {
+            notify(err.message || 'Failed to toggle road.');
+        }
+    }
+
     async #removeRoad(id, label) {
         try {
             await this.#api.destroyAccessRoad(id);
@@ -208,7 +229,9 @@ export class AccessRoadController {
 
     #syncRoadCellIds() {
         this.#roadCellIds = new Set(
-            this.#roads.flatMap(r => r.cell_ids.map(String))
+            this.#roads
+                .filter(r => r.is_active)
+                .flatMap(r => r.cell_ids.map(String))
         );
     }
 
@@ -238,14 +261,29 @@ export class AccessRoadController {
         }
 
         this.#roads.forEach((road, index) => {
+            const active = road.is_active !== false;
             const label = `Road ${index + 1} (${road.cell_ids.length} cells)`;
 
             const row = document.createElement('div');
             row.className = 'flex items-center justify-between py-1';
 
             const span = document.createElement('span');
-            span.className = 'text-sm text-gray-700 dark:text-gray-200';
+            span.className = active
+                ? 'text-sm text-gray-700 dark:text-gray-200'
+                : 'text-sm text-gray-400 dark:text-gray-500 line-through';
             span.textContent = label;
+
+            const actions = document.createElement('div');
+            actions.className = 'flex gap-1';
+
+            const toggleBtn = document.createElement('button');
+            toggleBtn.type = 'button';
+            toggleBtn.className = active
+                ? 'text-xs text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1'
+                : 'text-xs text-green-600 dark:text-green-400 hover:underline focus:outline-none focus:ring-1 focus:ring-green-500 rounded px-1';
+            toggleBtn.textContent = active ? 'Deactivate' : 'Activate';
+            toggleBtn.setAttribute('aria-label', `${active ? 'Deactivate' : 'Activate'} ${label}`);
+            toggleBtn.addEventListener('click', () => this.#toggleRoad(road.id));
 
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
@@ -254,8 +292,10 @@ export class AccessRoadController {
             removeBtn.setAttribute('aria-label', `Remove ${label}`);
             removeBtn.addEventListener('click', () => this.#removeRoad(road.id, label));
 
+            actions.appendChild(toggleBtn);
+            actions.appendChild(removeBtn);
             row.appendChild(span);
-            row.appendChild(removeBtn);
+            row.appendChild(actions);
             this.#roadListEl.appendChild(row);
         });
     }

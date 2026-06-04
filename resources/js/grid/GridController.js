@@ -239,13 +239,16 @@ export class GridController {
         const cellId = cell.dataset.cellId;
 
         this.#api.assign(cellId, functionId)
-            .then(() => {
+            .then((data) => {
                 this.#renderFunctionInCell(cell, {
                     functionName, functionId, category, image,
                     safety, recreation, environmentQuality, facilities, mobility,
                 });
                 this.#qolService.refresh();
                 this.#qolService.showToast(functionName, qolScore);
+                if (data.updated_roads) {
+                    document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
+                }
             })
             .catch((error) => {
                 const msg = error.message || 'Failed to save — please refresh and try again.';
@@ -293,7 +296,7 @@ export class GridController {
 
             // SIM.3 - Subtask 5: Send removal request to backend
             this.#api.remove(cellId)
-                .then(() => {
+                .then((data) => {
                     const functionName = cellElement.dataset.function ?? 'Function';
                     const oldQolScore = parseInt(cellElement.dataset.qolScore ?? '0', 10);
 
@@ -301,6 +304,10 @@ export class GridController {
                     this.#qolService.refresh();
                     // Show the negative impact of the removal
                     this.#qolService.showToast(functionName, -oldQolScore);
+
+                    if (data.updated_roads) {
+                        document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
+                    }
                 })
                 .catch((error) => {
                     console.error('Error removing function:', error);
@@ -439,7 +446,7 @@ export class GridController {
         }
 
         this.#api.remove(cellElement.dataset.cellId)
-            .then(() => {
+            .then((data) => {
                 const functionName = cellElement.dataset.function ?? 'Function';
                 const oldQolScore = parseInt(cellElement.dataset.qolScore ?? '0', 10);
 
@@ -450,6 +457,10 @@ export class GridController {
                 cellElement.blur();
                 this.#qolService.refresh();
                 this.#qolService.showToast(functionName, -oldQolScore);
+
+                if (data.updated_roads) {
+                    document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
+                }
             })
             .catch((error) => {
                 console.error('Error removing function:', error);
@@ -518,7 +529,7 @@ export class GridController {
             const functionName = source.dataset.function ?? '';
             const qolScore = parseInt(source.dataset.qolScore ?? '0', 10);
 
-            await this.#api.assign(targetCell.dataset.cellId, functionId);
+            const assignData = await this.#api.assign(targetCell.dataset.cellId, functionId);
 
             // Determine image src: prefer an <img> inside the source cell, fall back to dataset
             const imgEl = source.querySelector('img');
@@ -537,9 +548,16 @@ export class GridController {
                 mobility: source.dataset.mobility ?? 0,
             });
 
+            if (assignData && assignData.updated_roads) {
+                document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: assignData.updated_roads } }));
+            }
+
             // Now remove the original
-            await this.#api.remove(source.dataset.cellId);
+            const removeData = await this.#api.remove(source.dataset.cellId);
             this.#clearCell(source);
+            if (removeData && removeData.updated_roads) {
+                document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: removeData.updated_roads } }));
+            }
 
             // Clean up pickup state
             source.classList.remove('is-picked');
@@ -577,7 +595,7 @@ export class GridController {
         }
 
         this.#api.assign(cell.dataset.cellId, selected.functionId)
-            .then(() => {
+            .then((data) => {
                 this.#renderFunctionInCell(cell, {
                     functionName: selected.functionName,
                     functionId: selected.functionId,
@@ -591,6 +609,9 @@ export class GridController {
                 });
                 this.#qolService.refresh();
                 this.#qolService.showToast(selected.functionName, selected.qolScore);
+                if (data.updated_roads) {
+                    document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
+                }
             })
             .catch((error) => {
                 const msg = error.message || 'Failed to save — please refresh and try again.';
