@@ -51,7 +51,7 @@
                 </div>
 
                 {{-- Active Events Panel --}}
-                <div class="xl:w-64 shrink-0 self-start bg-gray-200 dark:bg-gray-800 rounded-2xl shadow-sm px-6 py-6"
+                <div class="w-full xl:w-80 shrink-0 self-start bg-gray-200 dark:bg-gray-800 rounded-2xl shadow-sm px-6 py-6"
                      x-data="activeEvents"
                      role="region"
                      aria-label="Currently active events">
@@ -67,7 +67,7 @@
                                 :class="event.is_active
                                     ? 'bg-green-100 dark:bg-green-900/40 border-green-200 dark:border-green-700'
                                     : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700'">
-                                <p class="text-sm font-semibold truncate"
+                                <p class="text-sm font-semibold break-words"
                                    :class="event.is_active ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'"
                                    x-text="event.name"></p>
                                 <p class="text-xs mt-0.5"
