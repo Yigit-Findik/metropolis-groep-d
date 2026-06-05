@@ -14,11 +14,11 @@
             <div class="flex flex-col xl:flex-row gap-4 mb-6">
 
                 {{-- QoL Score Banner --}}
-                <div class="flex-1 min-w-0 bg-gray-200 dark:bg-gray-800 rounded-2xl shadow-sm px-8 py-6 overflow-x-auto" role="group" aria-label="Quality of life summary">
-                    <div class="grid min-w-[720px] grid-cols-[150px_repeat(5,minmax(120px,1fr))] gap-x-4 gap-y-3 items-start">
+                <div class="flex-1 min-w-0 bg-gray-200 dark:bg-gray-800 rounded-2xl shadow-sm px-4 sm:px-8 py-6" role="group" aria-label="Quality of life summary">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[150px_repeat(5,minmax(120px,1fr))] gap-x-4 gap-y-3 items-start">
 
-                        {{-- Total score --}}
-                        <div class="min-w-[120px]">
+                        {{-- Total score: spans both columns on mobile so it stands alone --}}
+                        <div class="col-span-2 sm:col-span-1 min-w-0">
                             <p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wide" aria-hidden="true">Total QoL</p>
                             <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-4xl font-bold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-value" aria-live="polite" aria-atomic="true">—</p>
                             <p tabindex="0" class="text-gray-600 dark:text-gray-300 text-sm font-semibold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-label" aria-live="polite" aria-atomic="true">—</p>
@@ -31,20 +31,21 @@
                             </div>
                         @endforeach
 
-                        <div class="col-span-6"></div>
-                        <div class="text-gray-700 dark:text-gray-200 font-medium">Bonus:</div>
+                        {{-- Bonus/Penalty/Events detail rows: only visible on large screens --}}
+                        <div class="hidden lg:block lg:col-span-6"></div>
+                        <div class="hidden lg:block text-gray-700 dark:text-gray-200 font-medium">Bonus:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="text-green-600 dark:text-green-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-bonus-{{ $slug }}" aria-live="polite" aria-atomic="true">+0</div>
+                            <div tabindex="0" class="hidden lg:block text-green-600 dark:text-green-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-bonus-{{ $slug }}" aria-live="polite" aria-atomic="true">+0</div>
                         @endforeach
 
-                        <div class="text-gray-700 dark:text-gray-200 font-medium">Penalty:</div>
+                        <div class="hidden lg:block text-gray-700 dark:text-gray-200 font-medium">Penalty:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="text-red-600 dark:text-red-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-penalty-{{ $slug }}" aria-live="polite" aria-atomic="true">-0</div>
+                            <div tabindex="0" class="hidden lg:block text-red-600 dark:text-red-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-penalty-{{ $slug }}" aria-live="polite" aria-atomic="true">-0</div>
                         @endforeach
 
-                        <div class="text-gray-700 dark:text-gray-200 font-medium">Events:</div>
+                        <div class="hidden lg:block text-gray-700 dark:text-gray-200 font-medium">Events:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="text-gray-500 dark:text-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-event-{{ $slug }}" aria-live="polite" aria-atomic="true">0</div>
+                            <div tabindex="0" class="hidden lg:block text-gray-500 dark:text-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-event-{{ $slug }}" aria-live="polite" aria-atomic="true">0</div>
                         @endforeach
                     </div>
                 </div>

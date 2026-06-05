@@ -95,7 +95,7 @@
                                                         image_alt: @js($fn->image_alt ?? ''),
                                                         functionConditions: @js($fn->functionConditions)
                                                     }, @js($cityFunctions->map(fn($f) => ['id' => $f->id, 'name' => $f->name, 'functionConditions' => $f->functionConditions])))"
-                                                    class="px-3 py-1 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-semibold rounded-lg transition">
+                                                    class="px-3 py-2 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-semibold rounded-lg transition">
                                                 Edit
                                             </button>
 
@@ -108,7 +108,7 @@
                                                 @method('DELETE')
                                                 <button type="submit"
                                                         aria-label="Delete {{ $fn->name }}"
-                                                        class="px-3 py-1 bg-red-700 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition">
+                                                        class="px-3 py-2 bg-red-700 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition">
                                                     Delete
                                                 </button>
                                             </form>
@@ -337,7 +337,7 @@
                                         <span x-text="' (' + condition.type + ')'" :class="condition.type === 'forbidden' ? 'text-red-400' : 'text-green-400'" class="text-sm ml-2"></span>
                                     </div>
                                     <button type="button" @click="removeCondition(index)"
-                                            class="px-3 py-1 bg-red-700 hover:bg-red-600 text-white text-xs font-semibold rounded transition">
+                                            class="px-3 py-2 bg-red-700 hover:bg-red-600 text-white text-xs font-semibold rounded transition">
                                         Remove
                                     </button>
                                 </div>
