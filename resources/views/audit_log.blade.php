@@ -8,26 +8,26 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <form id="filters" method="GET" class="mb-4 flex gap-2 items-end" aria-label="Filter audit log entries">
-                    <div>
+                <form id="filters" method="GET" class="mb-4 flex flex-wrap gap-3 items-end" aria-label="Filter audit log entries">
+                    <div class="flex-1 min-w-[140px]">
                         <label for="date_from" class="block text-sm text-gray-700 dark:text-gray-200">From</label>
-                        <input id="date_from" type="date" name="date_from" value="{{ request('date_from') }}" class="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label="Filter from date" />
+                        <input id="date_from" type="date" name="date_from" value="{{ request('date_from') }}" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label="Filter from date" />
                     </div>
-                    <div>
+                    <div class="flex-1 min-w-[140px]">
                         <label for="date_to" class="block text-sm text-gray-700 dark:text-gray-200">To</label>
-                        <input id="date_to" type="date" name="date_to" value="{{ request('date_to') }}" class="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label="Filter to date" />
+                        <input id="date_to" type="date" name="date_to" value="{{ request('date_to') }}" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label="Filter to date" />
                     </div>
-                    <div>
+                    <div class="flex-1 min-w-[120px]">
                         <label for="action_filter" class="block text-sm text-gray-700 dark:text-gray-200">Action</label>
-                        <select id="action_filter" name="action" class="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label="Filter by action type">
+                        <select id="action_filter" name="action" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label="Filter by action type">
                             <option value="">Any</option>
                             <option value="create" @if(request('action')=='create') selected @endif>create</option>
                             <option value="update" @if(request('action')=='update') selected @endif>update</option>
                             <option value="delete" @if(request('action')=='delete') selected @endif>delete</option>
                         </select>
                     </div>
-                    <div>
-                        <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800" aria-label="Apply audit log filters">Filter</button>
+                    <div class="shrink-0">
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800" aria-label="Apply audit log filters">Filter</button>
                     </div>
                 </form>
 

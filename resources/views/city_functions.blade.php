@@ -25,7 +25,7 @@
             @if($cityFunctions->isEmpty())
                 <p class="text-white">No city functions found.</p>
             @else
-                <div class="bg-gray-800 rounded-2xl shadow-sm overflow-hidden w-fit">
+                <div class="bg-gray-800 rounded-2xl shadow-sm overflow-x-auto w-full">
                     <table class="min-w-full divide-y divide-gray-700" role="grid" aria-label="City functions list">
                         <thead class="bg-gray-700">
                             <tr>
@@ -95,7 +95,7 @@
                                                         image_alt: @js($fn->image_alt ?? ''),
                                                         functionConditions: @js($fn->functionConditions)
                                                     }, @js($cityFunctions->map(fn($f) => ['id' => $f->id, 'name' => $f->name, 'functionConditions' => $f->functionConditions])))"
-                                                    class="px-3 py-1 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-semibold rounded-lg transition">
+                                                    class="px-3 py-2 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-semibold rounded-lg transition">
                                                 Edit
                                             </button>
 
@@ -108,7 +108,7 @@
                                                 @method('DELETE')
                                                 <button type="submit"
                                                         aria-label="Delete {{ $fn->name }}"
-                                                        class="px-3 py-1 bg-red-700 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition">
+                                                        class="px-3 py-2 bg-red-700 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition">
                                                     Delete
                                                 </button>
                                             </form>
@@ -337,7 +337,7 @@
                                         <span x-text="' (' + condition.type + ')'" :class="condition.type === 'forbidden' ? 'text-red-400' : 'text-green-400'" class="text-sm ml-2"></span>
                                     </div>
                                     <button type="button" @click="removeCondition(index)"
-                                            class="px-3 py-1 bg-red-700 hover:bg-red-600 text-white text-xs font-semibold rounded transition">
+                                            class="px-3 py-2 bg-red-700 hover:bg-red-600 text-white text-xs font-semibold rounded transition">
                                         Remove
                                     </button>
                                 </div>
