@@ -68,3 +68,25 @@ test('grid page simulation controls use the simulationControls Alpine component'
     $response->assertOk();
     $response->assertSee('x-data="simulationControls"', false);
 });
+
+// SCRUM-278: active events panel is present and connected so it responds to speed changes
+test('grid page has active events panel connected to simulation', function () {
+    $user = createAdminForSim();
+
+    $response = $this->withoutVite()->actingAs($user)->get('/grid');
+
+    $response->assertOk();
+    $response->assertSee('x-data="activeEvents"', false);
+});
+
+// SCRUM-279: each speed button has a click handler that calls setSpeed
+test('grid page speed buttons have correct click handlers', function () {
+    $user = createAdminForSim();
+
+    $response = $this->withoutVite()->actingAs($user)->get('/grid');
+
+    $response->assertOk();
+    $response->assertSee('setSpeed(1)', false);
+    $response->assertSee('setSpeed(2)', false);
+    $response->assertSee('setSpeed(5)', false);
+});

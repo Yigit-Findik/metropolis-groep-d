@@ -6,6 +6,7 @@ export const simulationControls = () => ({
 
     play() {
         this.paused = false;
+        window.dispatchEvent(new CustomEvent('simulation:play'));
         this.startTimer();
     },
 
@@ -13,6 +14,7 @@ export const simulationControls = () => ({
         this.paused = true;
         clearInterval(this.timer);
         this.timer = null;
+        window.dispatchEvent(new CustomEvent('simulation:pause'));
     },
 
     setSpeed(newSpeed) {
