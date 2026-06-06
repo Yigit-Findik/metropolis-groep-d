@@ -4,8 +4,9 @@ export const activeEvents = () => ({
 
     async init() {
         await this.fetchEvents();
-        setInterval(() => this.fetchEvents(), 30_000);
-        // Tick every second so formatExpiry re-evaluates and the countdown moves in real-time.
+        // Refresh events on each simulation tick so pause/speed changes take effect
+        window.addEventListener('simulation:tick', () => this.fetchEvents());
+        // Update the clock every second so countdowns stay smooth
         setInterval(() => { this.now = Date.now(); }, 1_000);
     },
 
