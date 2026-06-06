@@ -5,14 +5,14 @@
      x-transition:leave="transition ease-in duration-150"
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
-     class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+     class="fixed inset-0 z-50 overflow-y-auto bg-black/60"
     x-effect="if (editOpen) $nextTick(() => $refs.editName && $refs.editName.focus())"
      @keydown.escape.window="closeEdit()"
-     @click.self="closeEdit()"
      role="dialog"
      aria-modal="true"
      aria-labelledby="edit-event-title"
      aria-describedby="edit-event-description">
+    <div class="flex min-h-full items-center justify-center px-4 py-6" @click.self="closeEdit()">
     <div class="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl dark:bg-gray-800">
         <div class="mb-6 flex items-start justify-between gap-4">
             <div>
@@ -39,5 +39,6 @@
                 </x-primary-button>
             </div>
         </form>
+    </div>
     </div>
 </div>
