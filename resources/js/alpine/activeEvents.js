@@ -11,8 +11,9 @@ export const activeEvents = () => ({
         window.addEventListener('simulation:play',        () => { this.simPaused = false; });
         window.addEventListener('simulation:pause',       () => { this.simPaused = true; });
         window.addEventListener('simulation:speedchange', (e) => { this.simSpeed = e.detail.speed; });
-        // Advance the clock at simulation speed so countdowns visually speed up
-        setInterval(() => { if (!this.simPaused) this.now += 1000 * this.simSpeed; }, 1_000);
+        // When paused: clock runs at real-time (1x) so refreshing the page causes no jump.
+        // When playing: clock runs at simulation speed so countdowns visually speed up.
+        setInterval(() => { this.now += this.simPaused ? 1000 : 1000 * this.simSpeed; }, 1_000);
     },
 
     async fetchEvents() {
