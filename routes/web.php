@@ -39,13 +39,26 @@ Route::get('/', function () {
     ]);
 });
 
-Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects'])->get('/dashboard', function () {
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects,Municipal policy maker'])->get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
 
+// Read-only grid access — city planners, administrators, and municipal policy makers
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Municipal policy maker'])->group(function () {
+    Route::get('/grid', [CityGridCellController::class, 'index'])->name('grid');
+
+    // SIM.1.4 - QoL score calculation
+    Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);
+
+    // REV.1 - Preview the PDF report in the browser before downloading
+    Route::get('/grid/export-pdf', [CityGridCellController::class, 'previewPdf'])->name('grid.export-pdf');
+
+    // REV.1 - Trigger the actual PDF download
+    Route::get('/grid/download-pdf', [CityGridCellController::class, 'exportPdf'])->name('grid.download-pdf');
+});
+
 // City planner and administrator routes
 Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->group(function () {
-    Route::get('/grid', [CityGridCellController::class, 'index'])->name('grid');
     Route::get('/events', [CityEventController::class, 'index'])->name('city_events.index');
     Route::post('/events', [CityEventController::class, 'store'])->name('city_events.store');
     Route::put('/events/{id}', [CityEventController::class, 'update'])->name('city_events.update');
@@ -55,9 +68,6 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::post('/grid/select/{id}', [CityGridCellController::class, 'select']);
     Route::post('/grid/{id}/assign', [CityGridCellController::class, 'assignFunction']);
 
-    // SIM.1.4 - QoL score calculation
-    Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);
-
     // Get valid/invalid cells for adjacency rules
     Route::get('/grid/valid-cells', [CityGridCellController::class, 'getValidCells']);
 
@@ -66,13 +76,6 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
 
     // SIM.5 - Undo a function from a cell
     Route::post('/grid/undo', [CityGridCellController::class, 'undo']);
-
-    // REV.1 - Preview the PDF report in the browser before downloading
-    Route::get('/grid/export-pdf', [CityGridCellController::class, 'previewPdf'])->name('grid.export-pdf');
-
-    // REV.1 - Trigger the actual PDF download
-    Route::get('/grid/download-pdf', [CityGridCellController::class, 'exportPdf'])->name('grid.download-pdf');
-
 });
 
 // EFF.1 - Effect management table — accessible to city planners, effects experts, and administrators
