@@ -6,12 +6,14 @@ export const simulationControls = () => ({
 
     play() {
         this.paused = false;
+        localStorage.setItem('sim_paused', 'false');
         window.dispatchEvent(new CustomEvent('simulation:play'));
         this.startTimer();
     },
 
     pause() {
         this.paused = true;
+        localStorage.setItem('sim_paused', 'true');
         clearInterval(this.timer);
         this.timer = null;
         window.dispatchEvent(new CustomEvent('simulation:pause'));
@@ -19,6 +21,7 @@ export const simulationControls = () => ({
 
     setSpeed(newSpeed) {
         this.speed = newSpeed;
+        localStorage.setItem('sim_speed', String(newSpeed));
         window.dispatchEvent(new CustomEvent('simulation:speedchange', { detail: { speed: newSpeed } }));
         if (!this.paused) {
             clearInterval(this.timer);

@@ -5,11 +5,13 @@ export const expiryCountdown = (timestamp, mode) => ({
 
     init() {
         this.update();
-        setInterval(() => this.update(), 1_000);
+        // Countdown is static on the events page — only the grid simulation controls time
+        // setInterval(() => this.update(), 1_000);
     },
 
     update() {
-        const diffMs = this._target - Date.now();
+        const now = Number(localStorage.getItem('sim_now') || Date.now());
+        const diffMs = this._target - now;
 
         if (diffMs <= 0) {
             if (mode === 'reactivates')      this.label = 'Reactivating...';

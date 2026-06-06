@@ -11,11 +11,19 @@ export const recurringEventTimer = (expiresAtIso, nextActivationAtIso) => ({
 
     init() {
         this.update();
-        setInterval(() => this.update(), 1_000);
+        // Display is static — only check for auto-reload when cycle completes
+        setInterval(() => {
+            const now = Number(localStorage.getItem('sim_now') || Date.now());
+            const reactivateMs = this._nextActivationAt - now;
+            if (reactivateMs <= 0 && !this._reloadTriggered) {
+                this._reloadTriggered = true;
+                fetch('/events/active').finally(() => window.location.reload());
+            }
+        }, 1_000);
     },
 
     update() {
-        const now = Date.now();
+        const now = Number(localStorage.getItem('sim_now') || Date.now());
         const activeMs = this._expiresAt - now;
 
         if (activeMs > 0) {
