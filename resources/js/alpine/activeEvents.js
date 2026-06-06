@@ -2,21 +2,17 @@ export const activeEvents = () => ({
     events: [],
     now: Date.now(),
     simPaused: true,
+    simSpeed: 1,
 
     async init() {
         await this.fetchEvents();
-        // Refresh events on each simulation tick (respects pause and speed)
-        window.addEventListener('simulation:tick', () => this.fetchEvents());
-
-        // Slow fallback so the panel stays fresh even when simulation is paused
+        window.addEventListener('simulation:tick',        () => this.fetchEvents());
         setInterval(() => this.fetchEvents(), 30_000);
-
-        // Track simulation state so the countdown freezes when paused
-        window.addEventListener('simulation:play',  () => { this.simPaused = false; });
-        window.addEventListener('simulation:pause', () => { this.simPaused = true; });
-        
-        // Update clock every second, but only when simulation is running
-        setInterval(() => { if (!this.simPaused) this.now = Date.now(); }, 1_000);
+        window.addEventListener('simulation:play',        () => { this.simPaused = false; });
+        window.addEventListener('simulation:pause',       () => { this.simPaused = true; });
+        window.addEventListener('simulation:speedchange', (e) => { this.simSpeed = e.detail.speed; });
+        // Advance the clock at simulation speed so countdowns visually speed up
+        setInterval(() => { if (!this.simPaused) this.now += 1000 * this.simSpeed; }, 1_000);
     },
 
     async fetchEvents() {

@@ -19,8 +19,8 @@ export const simulationControls = () => ({
 
     setSpeed(newSpeed) {
         this.speed = newSpeed;
+        window.dispatchEvent(new CustomEvent('simulation:speedchange', { detail: { speed: newSpeed } }));
         if (!this.paused) {
-            // restart the timer with the new interval
             clearInterval(this.timer);
             this.startTimer();
         }
