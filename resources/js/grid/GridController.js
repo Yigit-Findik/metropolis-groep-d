@@ -53,12 +53,13 @@ export class GridController {
         this.#setupUndoButton();
         this.#setupApprovalToggles(cells);
         this.#setupApproveAllButton(cells);
+        this.#setupRevokeAllButton(cells);
     }
 
     // Returns true if the cell is approved; shows an error message if so
     #isApproved(cell) {
         if (cell.dataset.approved === 'true') {
-            const msg = 'This cell is approved — its destination is protected and cannot be modified.';
+            const msg = 'This cell is approved and cannot be modified.';
             notify(msg);
             this.#announce(msg);
             return true;
@@ -168,6 +169,27 @@ export class GridController {
                 })
                 .catch((err) => {
                     const msg = err.message || 'Failed to approve all cells.';
+                    notify(msg);
+                    this.#announce(msg);
+                });
+        });
+    }
+
+    // Wires up the "Disapprove All" button
+    #setupRevokeAllButton(cells) {
+        const btn = document.getElementById('revoke-all-button');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            this.#api.revokeAll()
+                .then(() => {
+                    cells.forEach((cell) => this.#removeApprovedState(cell));
+                    const msg = 'All cells disapproved.';
+                    notify(msg);
+                    this.#announce(msg);
+                })
+                .catch((err) => {
+                    const msg = err.message || 'Failed to disapprove all cells.';
                     notify(msg);
                     this.#announce(msg);
                 });
@@ -415,6 +437,8 @@ export class GridController {
                 return;
             }
 
+            if (this.#isApproved(cellElement)) return;
+
             // SIM.3 - Subtask 5: Send removal request to backend
             this.#api.remove(cellId)
                 .then(() => {
@@ -427,8 +451,9 @@ export class GridController {
                     this.#qolService.showToast(functionName, -oldQolScore);
                 })
                 .catch((error) => {
-                    console.error('Error removing function:', error);
-                    notify('Failed to remove function — please try again.');
+                    const msg = error.message || 'Failed to remove function — please try again.';
+                    notify(msg);
+                    this.#announce(msg);
                 });
         });
 

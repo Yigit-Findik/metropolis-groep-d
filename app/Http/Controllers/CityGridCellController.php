@@ -305,6 +305,18 @@ class CityGridCellController extends Controller
         return response()->json(['message' => 'All cells approved']);
     }
 
+    // BES.3 - Revoke approval from all grid cells at once (policy maker or administrator)
+    public function revokeAllCells()
+    {
+        if ($response = $this->ensurePolicyMaker()) {
+            return $response;
+        }
+
+        CityGridCell::query()->update(['is_approved' => false]);
+
+        return response()->json(['message' => 'All cells disapproved']);
+    }
+
     // BES.3 - Revoke approval from a single grid cell (policy maker or administrator)
     public function revokeCell($id)
     {

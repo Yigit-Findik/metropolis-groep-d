@@ -112,6 +112,12 @@
                                     <span class="material-symbols-outlined" style="font-size:1.1rem">lock</span>
                                     Approve All
                                 </button>
+                                <button id="revoke-all-button"
+                                        class="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm"
+                                        title="Disapprove the entire grid">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem">lock_open</span>
+                                    Disapprove All
+                                </button>
                             @endif
                             @if($userRole !== 'Policy maker')
                                 <button id="undo-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm">Undo Last Action</button>

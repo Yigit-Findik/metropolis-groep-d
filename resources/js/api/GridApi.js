@@ -174,4 +174,24 @@ export class GridApi {
 
         return this.#readJsonResponse(response, 'grid approve-all');
     }
+
+    // Revokes approval from all grid cells at once (policy maker only)
+    async revokeAll() {
+        const response = await fetch('/grid/revoke-all', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': this.#csrfToken,
+            },
+        });
+
+        if (!response.ok) {
+            const data = await this.#readJsonResponse(response, 'grid revoke-all').catch(() => ({}));
+            throw new Error(data.message || `Revoke all failed: ${response.status}`);
+        }
+
+        return this.#readJsonResponse(response, 'grid revoke-all');
+    }
 }

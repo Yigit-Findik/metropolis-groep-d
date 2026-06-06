@@ -76,6 +76,7 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
 // BES.3 - Approval management — policy maker and administrator
 Route::middleware(['auth', 'verified', 'role:Policy maker,Administrator'])->group(function () {
     Route::post('/grid/approve-all', [CityGridCellController::class, 'approveAllCells']);
+    Route::post('/grid/revoke-all', [CityGridCellController::class, 'revokeAllCells']);
     Route::post('/grid/{id}/approve', [CityGridCellController::class, 'approveCell']);
     Route::delete('/grid/{id}/revoke', [CityGridCellController::class, 'revokeCell']);
 });
