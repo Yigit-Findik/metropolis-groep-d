@@ -215,6 +215,9 @@ export class AccessRoadController {
             this.#renderRoadList();
             this.#qolService?.refresh();
 
+            // SIM.12.2 - Notify EventRouteController so it can drop routes that used this road.
+            document.dispatchEvent(new CustomEvent('road-removed', { detail: { road_id: id } }));
+
             const msg = `${label} removed. Mobility score updated.`;
             notify(msg);
             this.#announce(msg);

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AccessRoad;
 use App\Models\CityEvent;
 use App\Models\CityGridCell;
+use App\Models\EventRoute;
 use Illuminate\Support\Collection;
 
 class QolScoreService
@@ -83,6 +84,20 @@ class QolScoreService
         $totals['mobility']       += $roadMobilityBonus;
         $bonusTotals['mobility']  += $roadMobilityBonus;
         $totalScore               += $roadMobilityBonus;
+
+        // SIM.12.2 — each occupied cell on an event route gets +1 mobility.
+        $routeCellIds = EventRoute::with('cells')->get()
+            ->flatMap(fn ($r) => $r->cells->pluck('id'))
+            ->unique()
+            ->values()
+            ->all();
+
+        $occupiedCellIds = $cells->whereNotNull('function_id')->pluck('id')->all();
+        $routeOccupiedCount = count(array_intersect($routeCellIds, $occupiedCellIds));
+        $routeMobilityBonus = $routeOccupiedCount;
+        $totals['mobility']       += $routeMobilityBonus;
+        $bonusTotals['mobility']  += $routeMobilityBonus;
+        $totalScore               += $routeMobilityBonus;
 
         $totalBonus = array_sum($bonusTotals);
         $totalPenalty = array_sum($penaltyTotals);
