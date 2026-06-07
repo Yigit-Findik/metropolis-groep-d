@@ -107,11 +107,12 @@
                     </button>
 
                     {{-- Speed buttons: 1x, 2x, 5x --}}
-                    <div class="flex items-center gap-2" role="group" aria-label="Simulation speed">
+                    <div class="flex items-center gap-2" role="radiogroup" aria-label="Simulation speed">
                         @foreach([1, 2, 5] as $spd)
                             <button @click="setSpeed({{ $spd }})"
-                                    :aria-pressed="speed === {{ $spd }}"
-                                    aria-label="Set speed to {{ $spd }}x"
+                                    role="radio"
+                                    :aria-checked="speed === {{ $spd }}"
+                                    aria-label="{{ $spd }}x"
                                     data-speed="{{ $spd }}"
                                     class="px-3 py-1.5 rounded-lg text-sm font-semibold transition"
                                     :class="speed === {{ $spd }} ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'">
