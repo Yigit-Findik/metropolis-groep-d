@@ -191,12 +191,53 @@
             </thead>
             <tbody>
                 @foreach($events as $event)
-                    <tr class="{{ $loop->even ? 'bg-gray-50' : 'bg-white' }}">
+                    @php $rowBg = $loop->even ? 'bg-gray-50' : 'bg-white'; @endphp
+                    <tr class="{{ $rowBg }}">
                         <td class="px-3 py-2 border border-gray-200 font-semibold text-gray-800">{{ $event->name }}</td>
                         <td class="px-3 py-2 border border-gray-200 text-center">{{ $event->type_label }}</td>
                         <td class="px-3 py-2 border border-gray-200 text-gray-600">{{ $event->schedule_summary }}</td>
                         <td class="px-3 py-2 border border-gray-200 text-gray-600">{{ $event->description ?? '—' }}</td>
                     </tr>
+                    @if($event->cityFunctions->isNotEmpty())
+                        <tr class="{{ $rowBg }}">
+                            <td colspan="4" class="px-3 pb-3 border-x border-b border-gray-200">
+                                <p class="text-xs font-semibold text-gray-500 mb-1">QoL Modifiers</p>
+                                <table class="w-full border-collapse text-xs">
+                                    <thead>
+                                        <tr class="bg-gray-100 text-gray-600">
+                                            <th class="px-2 py-1 text-left font-semibold">Function</th>
+                                            <th class="px-2 py-1 text-center font-semibold">Safety</th>
+                                            <th class="px-2 py-1 text-center font-semibold">Recreation</th>
+                                            <th class="px-2 py-1 text-center font-semibold">Env. Quality</th>
+                                            <th class="px-2 py-1 text-center font-semibold">Facilities</th>
+                                            <th class="px-2 py-1 text-center font-semibold">Mobility</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($event->cityFunctions as $fn)
+                                            @php
+                                                $s = $fn->pivot->safety_modifier;
+                                                $r = $fn->pivot->recreation_modifier;
+                                                $e = $fn->pivot->environment_quality_modifier;
+                                                $f = $fn->pivot->facilities_modifier;
+                                                $m = $fn->pivot->mobility_modifier;
+                                                $modClass = fn($v) => $v > 0 ? 'text-green-700 font-bold' : ($v < 0 ? 'text-red-700 font-bold' : 'text-gray-400');
+                                                $fmt = fn($v) => $v > 0 ? '+' . $v : $v;
+                                            @endphp
+                                            <tr class="{{ $loop->even ? 'bg-white' : 'bg-gray-50' }}">
+                                                <td class="px-2 py-1 border border-gray-200 font-medium text-gray-700">{{ $fn->name }}</td>
+                                                <td class="px-2 py-1 border border-gray-200 text-center {{ $modClass($s) }}">{{ $fmt($s) }}</td>
+                                                <td class="px-2 py-1 border border-gray-200 text-center {{ $modClass($r) }}">{{ $fmt($r) }}</td>
+                                                <td class="px-2 py-1 border border-gray-200 text-center {{ $modClass($e) }}">{{ $fmt($e) }}</td>
+                                                <td class="px-2 py-1 border border-gray-200 text-center {{ $modClass($f) }}">{{ $fmt($f) }}</td>
+                                                <td class="px-2 py-1 border border-gray-200 text-center {{ $modClass($m) }}">{{ $fmt($m) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    @endif
                 @endforeach
             </tbody>
         </table>

@@ -231,7 +231,7 @@
                     <p class="text-xs text-gray-400">No events configured.</p>
                 @else
                     <table class="w-full border-collapse text-xs">
-                        <caption class="sr-only">List of city events with their type, schedule and description</caption>
+                        <caption class="sr-only">List of city events with their type, schedule, description and QoL modifiers per function</caption>
                         <thead>
                             <tr class="bg-gray-700 text-white">
                                 <th scope="col" class="px-3 py-2 text-left">Name</th>
@@ -242,7 +242,8 @@
                         </thead>
                         <tbody>
                             @foreach($events as $event)
-                                <tr class="{{ $loop->even ? 'bg-gray-50' : 'bg-white' }}">
+                                @php $rowBg = $loop->even ? 'bg-gray-50' : 'bg-white'; @endphp
+                                <tr class="{{ $rowBg }}">
                                     <th scope="row" class="px-3 py-2 border border-gray-200 font-semibold text-gray-800 text-left">{{ $event->name }}</th>
                                     <td class="px-3 py-2 border border-gray-200 text-center">
                                         <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold {{ $event->event_type === 'recurring' ? 'bg-cyan-100 text-cyan-800' : 'bg-amber-100 text-amber-800' }}">
@@ -252,6 +253,46 @@
                                     <td class="px-3 py-2 border border-gray-200 text-gray-600">{{ $event->schedule_summary }}</td>
                                     <td class="px-3 py-2 border border-gray-200 text-gray-600">{{ $event->description ?? '—' }}</td>
                                 </tr>
+                                @if($event->cityFunctions->isNotEmpty())
+                                    <tr class="{{ $rowBg }}">
+                                        <td colspan="4" class="px-3 pb-3 border-x border-b border-gray-200">
+                                            <p class="text-xs font-semibold text-gray-500 mb-1">QoL Modifiers</p>
+                                            <table class="w-full border-collapse text-xs">
+                                                <thead>
+                                                    <tr class="bg-gray-100 text-gray-600">
+                                                        <th scope="col" class="px-2 py-1 text-left font-semibold">Function</th>
+                                                        <th scope="col" class="px-2 py-1 text-center font-semibold">Safety</th>
+                                                        <th scope="col" class="px-2 py-1 text-center font-semibold">Recreation</th>
+                                                        <th scope="col" class="px-2 py-1 text-center font-semibold">Env. Quality</th>
+                                                        <th scope="col" class="px-2 py-1 text-center font-semibold">Facilities</th>
+                                                        <th scope="col" class="px-2 py-1 text-center font-semibold">Mobility</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($event->cityFunctions as $fn)
+                                                        @php
+                                                            $s = $fn->pivot->safety_modifier;
+                                                            $r = $fn->pivot->recreation_modifier;
+                                                            $e = $fn->pivot->environment_quality_modifier;
+                                                            $f = $fn->pivot->facilities_modifier;
+                                                            $m = $fn->pivot->mobility_modifier;
+                                                            $modClass = fn($v) => $v > 0 ? 'text-green-700 font-bold' : ($v < 0 ? 'text-red-700 font-bold' : 'text-gray-400');
+                                                            $fmt = fn($v) => $v > 0 ? '+' . $v : $v;
+                                                        @endphp
+                                                        <tr class="{{ $loop->even ? 'bg-white' : 'bg-gray-50' }}">
+                                                            <th scope="row" class="px-2 py-1 border border-gray-200 font-medium text-gray-700 text-left">{{ $fn->name }}</th>
+                                                            <td class="px-2 py-1 border border-gray-200 text-center {{ $modClass($s) }}">{{ $fmt($s) }}</td>
+                                                            <td class="px-2 py-1 border border-gray-200 text-center {{ $modClass($r) }}">{{ $fmt($r) }}</td>
+                                                            <td class="px-2 py-1 border border-gray-200 text-center {{ $modClass($e) }}">{{ $fmt($e) }}</td>
+                                                            <td class="px-2 py-1 border border-gray-200 text-center {{ $modClass($f) }}">{{ $fmt($f) }}</td>
+                                                            <td class="px-2 py-1 border border-gray-200 text-center {{ $modClass($m) }}">{{ $fmt($m) }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                @endif
                             @endforeach
                         </tbody>
                     </table>

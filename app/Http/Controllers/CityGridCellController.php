@@ -283,7 +283,7 @@ class CityGridCellController extends Controller
             'gridCells'     => $cells,
             'cityFunctions' => $cityFunctions,
             'qol'           => $qol,
-            'events'        => CityEvent::orderBy('event_type')->orderBy('name')->get(),
+            'events'        => CityEvent::with('cityFunctions')->orderBy('event_type')->orderBy('name')->get(),
             'placedCount'   => $cells->filter(fn ($c) => $c->function_id)->count(),
             'totalCells'    => $cells->count(),
             'author'        => auth()->user()->name,
