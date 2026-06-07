@@ -89,7 +89,7 @@
             </div>{{-- end top bar --}}
 
             {{-- Grid and library sit next to each other on desktop, above each other on mobile --}}
-            <div class="flex flex-col lg:flex-row gap-6 lg:items-start" x-data="gridZoom" :style="`--grid-size: ${size}px`">
+            <div class="flex flex-col lg:flex-row gap-6 lg:items-start" x-data="gridZoom" :style="`--grid-size: ${effectiveGridSize}px`">
 
                 {{-- MAIN GRID SECTION: Contains the city grid and the removal zone below it --}}
                  <section class="flex flex-col gap-4" aria-labelledby="city-grid-heading">
@@ -107,7 +107,7 @@
                             {{-- Zoom slider only shown on desktop --}}
                             <div class="hidden lg:flex items-center gap-3">
                                 <label for="grid-size" class="text-sm text-gray-600 dark:text-gray-300">Zoom</label>
-                                <input id="grid-size" type="range" min="64" max="224" step="16"
+                                <input id="grid-size" type="range" min="128" max="224" step="16"
                                     x-model="size"
                                     class="w-28 accent-blue-500"
                                     aria-label="Adjust grid size">
@@ -119,7 +119,7 @@
                     </div>
 
                     {{-- Scrollable on desktop so the grid can be zoomed without breaking the layout --}}
-                    <div class="lg:overflow-auto">
+                    <div class="lg:overflow-auto lg:p-1">
 
                         {{-- Always 4 columns. On mobile the columns shrink to fit the screen.
                              On desktop each column is a fixed number of pixels set by the zoom slider. --}}
@@ -139,7 +139,7 @@
                                     <button
                                         type="button"
                                         tabindex="0"
-                                        class="grid-cell border border-gray-200 dark:border-gray-700 aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }}"
+                                        class="grid-cell border border-gray-200 dark:border-gray-700 aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-2 lg:p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }}"
                                         :style="isDesktop ? `width: ${size}px; height: ${size}px; border-width: calc(var(--grid-size) / 48);` : 'border-width: calc(var(--grid-size) / 48);'"
                                         draggable="true"
                                         data-grid-cell
