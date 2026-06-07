@@ -7,6 +7,8 @@ use App\Models\CityGridCell;
 use App\Models\CityFunction;
 use App\Models\ActionHistory;
 use App\Services\QolScoreService;
+use App\Models\CityEvent;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CityGridCellController extends Controller
 {
@@ -252,6 +254,42 @@ class CityGridCellController extends Controller
             'message' => 'Function removed successfully',
             'cell' => $cell
         ]);
+    }
+
+    public function previewPdf()
+    {
+        return view('pdf.grid-preview', $this->buildReportData());
+    }
+
+    public function exportPdf()
+    {
+        $data = $this->buildReportData();
+
+        $pdf = Pdf::loadView('pdf.grid-report', $data)->setPaper('a4', 'portrait');
+
+        return $pdf->download('city-grid-report-' . now()->format('d-m-Y') . '.pdf');
+    }
+
+    private function buildReportData(): array
+    {
+        $cells         = CityGridCell::ensureGridExists();
+        $cityFunctions = CityFunction::orderBy('name')->get();
+        $qol           = (new QolScoreService())->calculate();
+
+        $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+        $cssFile  = basename($manifest['resources/css/app.css']['file'] ?? 'app.css');
+
+        return [
+            'gridCells'     => $cells,
+            'cityFunctions' => $cityFunctions,
+            'qol'           => $qol,
+            'events'        => CityEvent::with('cityFunctions')->orderBy('event_type')->orderBy('name')->get(),
+            'placedCount'   => $cells->filter(fn ($c) => $c->function_id)->count(),
+            'totalCells'    => $cells->count(),
+            'author'        => auth()->user()->name,
+            'exportedAt'    => now()->format('d F Y, H:i'),
+            'cssFile'       => $cssFile,
+        ];
     }
 
     public function undo(){
