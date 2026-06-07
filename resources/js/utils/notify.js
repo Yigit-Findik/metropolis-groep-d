@@ -15,7 +15,7 @@ export function notify(message) {
         document.body.appendChild(toast);
     }
 
-    toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-xl shadow-lg bg-red-700 text-white text-sm font-semibold';
+    toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-xl shadow-lg bg-red-700 text-white text-sm font-semibold whitespace-pre-line max-w-sm text-left';
     toast.textContent = message;
 
     clearTimeout(notifyTimer);

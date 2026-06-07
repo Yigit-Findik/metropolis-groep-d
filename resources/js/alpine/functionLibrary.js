@@ -1,7 +1,62 @@
-// Tracks the active category filter in the function library dropdown
-export const functionLibrary = () => ({
+// Tracks the active category filter and text search in the function library
+export const functionLibrary = (functions = []) => ({
     active: 'All', // 'All' shows every function; any other value filters by category name
+    searchTerm: '',
     highlightedCells: [],
+    noResultsAnnouncement: '',
+    noResultsAnnouncementTimeout: null,
+    functions,
+
+    normalizeSearch(value) {
+        return String(value ?? '').trim().toLowerCase();
+    },
+
+    matchesSearch(functionName, functionCategory) {
+        const searchTerm = this.normalizeSearch(this.searchTerm);
+
+        if (!searchTerm) {
+            return true;
+        }
+
+        return this.normalizeSearch(functionName).includes(searchTerm)
+            || this.normalizeSearch(functionCategory).includes(searchTerm);
+    },
+
+    isVisible(functionName, functionCategory) {
+        const categoryMatches = this.active === 'All' || this.active === functionCategory;
+
+        return categoryMatches && this.matchesSearch(functionName, functionCategory);
+    },
+
+    hasVisibleFunctions() {
+        return this.functions.some((functionItem) =>
+            this.isVisible(functionItem.name, functionItem.category),
+        );
+    },
+
+    syncNoResultsAnnouncement() {
+        const message = this.hasVisibleFunctions() ? '' : 'No results found.';
+
+        if (!message) {
+            if (this.noResultsAnnouncementTimeout) {
+                clearTimeout(this.noResultsAnnouncementTimeout);
+                this.noResultsAnnouncementTimeout = null;
+            }
+
+            this.noResultsAnnouncement = '';
+            return;
+        }
+
+        if (this.noResultsAnnouncementTimeout) {
+            clearTimeout(this.noResultsAnnouncementTimeout);
+        }
+
+        this.noResultsAnnouncement = '';
+        this.noResultsAnnouncementTimeout = setTimeout(() => {
+            this.noResultsAnnouncement = message;
+            this.noResultsAnnouncementTimeout = null;
+        }, 125);
+    },
 
     getAdjacentCells(row, col) {
         const positions = [

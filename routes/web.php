@@ -60,9 +60,14 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Municipa
 // City planner and administrator routes
 Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->group(function () {
     Route::get('/events', [CityEventController::class, 'index'])->name('city_events.index');
+    Route::get('/events/active', [CityEventController::class, 'activeEvents'])->name('city_events.active');
     Route::post('/events', [CityEventController::class, 'store'])->name('city_events.store');
     Route::put('/events/{id}', [CityEventController::class, 'update'])->name('city_events.update');
     Route::delete('/events/{id}', [CityEventController::class, 'destroy'])->name('city_events.destroy');
+
+    // SIM.4.2 - Activate / deactivate an event, triggering temporary QoL effect adjustments.
+    Route::post('/events/{id}/activate', [CityEventController::class, 'activate'])->name('city_events.activate');
+    Route::post('/events/{id}/deactivate', [CityEventController::class, 'deactivate'])->name('city_events.deactivate');
 
     // SIM.2 - Cell selection and function assignment
     Route::post('/grid/select/{id}', [CityGridCellController::class, 'select']);

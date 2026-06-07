@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CityEvent;
 use App\Models\CityGridCell;
 use Illuminate\Support\Collection;
 
@@ -33,9 +34,13 @@ class QolScoreService
         // Load the grid with its related function once so the score can be built from the current state.
         $cells = CityGridCell::with('cityFunction')->get();
 
+        // Build a per-function modifier map from all currently active events.
+        $eventModifiers = $this->buildEventModifierMap();
+
         $totals = array_fill_keys(array_keys(self::CATEGORIES), 0);
         $bonusTotals = array_fill_keys(array_keys(self::CATEGORIES), 0);
         $penaltyTotals = array_fill_keys(array_keys(self::CATEGORIES), 0);
+        $eventTotals = array_fill_keys(array_keys(self::CATEGORIES), 0);
         $totalScore = 0;
         $breakdown = [];
 
@@ -47,12 +52,14 @@ class QolScoreService
             $fn = $cell->cityFunction;
             $adjustmentData = $this->calculateCellAdjustmentBreakdown($cells, $cell);
             $adjustments = $adjustmentData['adjustments'];
+            $eventMods = $eventModifiers[$fn->id] ?? array_fill_keys(array_keys(self::CATEGORIES), 0);
 
             foreach (self::CATEGORIES as $slug => $col) {
-                $categoryScore = (int) $fn->{$col} + $adjustments[$slug];
+                $categoryScore = (int) $fn->{$col} + $adjustments[$slug] + $eventMods[$slug];
                 $totals[$slug] += $categoryScore;
                 $bonusTotals[$slug] += $adjustmentData['bonus'][$slug];
                 $penaltyTotals[$slug] += $adjustmentData['penalty'][$slug];
+                $eventTotals[$slug] += $eventMods[$slug];
                 $totalScore += $categoryScore;
             }
 
@@ -61,26 +68,54 @@ class QolScoreService
                 'row'                  => $cell->row_index,
                 'column'               => $cell->column_index,
                 'function'             => $fn->name,
-                'safety'               => (int) $fn->{'Safety'} + $adjustments['safety'],
-                'recreation'           => (int) $fn->{'Recreation'} + $adjustments['recreation'],
-                'environment_quality'  => (int) $fn->{'Environment Quality'} + $adjustments['environment_quality'],
-                'facilities'           => (int) $fn->{'Facilities'} + $adjustments['facilities'],
-                'mobility'             => (int) $fn->{'Mobility'} + $adjustments['mobility'],
+                'safety'               => (int) $fn->{'Safety'} + $adjustments['safety'] + $eventMods['safety'],
+                'recreation'           => (int) $fn->{'Recreation'} + $adjustments['recreation'] + $eventMods['recreation'],
+                'environment_quality'  => (int) $fn->{'Environment Quality'} + $adjustments['environment_quality'] + $eventMods['environment_quality'],
+                'facilities'           => (int) $fn->{'Facilities'} + $adjustments['facilities'] + $eventMods['facilities'],
+                'mobility'             => (int) $fn->{'Mobility'} + $adjustments['mobility'] + $eventMods['mobility'],
             ];
         }
 
         $totalBonus = array_sum($bonusTotals);
         $totalPenalty = array_sum($penaltyTotals);
+        $totalEvent = array_sum($eventTotals);
 
         return [
-            'total_score' => $totalScore,
-            'categories'  => $totals,
-            'bonus_categories' => $bonusTotals,
+            'total_score'        => $totalScore,
+            'categories'         => $totals,
+            'bonus_categories'   => $bonusTotals,
             'penalty_categories' => $penaltyTotals,
+            'event_categories'   => $eventTotals,
+            'total_event'        => $totalEvent,
             'total_bonus' => $totalBonus,
             'total_penalty' => $totalPenalty,
             'breakdown'   => $breakdown,
         ];
+    }
+
+    private function buildEventModifierMap(): array
+    {
+        $map = [];
+
+        $activeEvents = CityEvent::where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->with('cityFunctions')
+            ->get();
+
+        foreach ($activeEvents as $event) {
+            foreach ($event->cityFunctions as $fn) {
+                $map[$fn->id] ??= array_fill_keys(array_keys(self::CATEGORIES), 0);
+                $map[$fn->id]['safety']               += (int) ($fn->pivot->safety_modifier ?? 0);
+                $map[$fn->id]['recreation']           += (int) ($fn->pivot->recreation_modifier ?? 0);
+                $map[$fn->id]['environment_quality']  += (int) ($fn->pivot->environment_quality_modifier ?? 0);
+                $map[$fn->id]['facilities']           += (int) ($fn->pivot->facilities_modifier ?? 0);
+                $map[$fn->id]['mobility']             += (int) ($fn->pivot->mobility_modifier ?? 0);
+            }
+        }
+
+        return $map;
     }
 
     private function calculateCellAdjustmentBreakdown(Collection $cells, CityGridCell $cell): array
