@@ -41,13 +41,26 @@ Route::get('/', function () {
     ]);
 });
 
-Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects'])->get('/dashboard', function () {
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects,Municipal policy maker'])->get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
 
+// Read-only grid access — city planners, administrators, and municipal policy makers
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Municipal policy maker'])->group(function () {
+    Route::get('/grid', [CityGridCellController::class, 'index'])->name('grid');
+
+    // SIM.1.4 - QoL score calculation
+    Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);
+
+    // REV.1 - Preview the PDF report in the browser before downloading
+    Route::get('/grid/export-pdf', [CityGridCellController::class, 'previewPdf'])->name('grid.export-pdf');
+
+    // REV.1 - Trigger the actual PDF download
+    Route::get('/grid/download-pdf', [CityGridCellController::class, 'exportPdf'])->name('grid.download-pdf');
+});
+
 // City planner and administrator routes
 Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->group(function () {
-    Route::get('/grid', [CityGridCellController::class, 'index'])->name('grid');
     Route::get('/events', [CityEventController::class, 'index'])->name('city_events.index');
     Route::get('/events/active', [CityEventController::class, 'activeEvents'])->name('city_events.active');
     Route::post('/events', [CityEventController::class, 'store'])->name('city_events.store');
@@ -61,9 +74,6 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     // SIM.2 - Cell selection and function assignment
     Route::post('/grid/select/{id}', [CityGridCellController::class, 'select']);
     Route::post('/grid/{id}/assign', [CityGridCellController::class, 'assignFunction']);
-
-    // SIM.1.4 - QoL score calculation
-    Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);
 
     // Get valid/invalid cells for adjacency rules
     Route::get('/grid/valid-cells', [CityGridCellController::class, 'getValidCells']);
@@ -81,6 +91,7 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
 
     // SIM.12.1 - Activate / deactivate an access road
     Route::patch('/access-roads/{id}/toggle', [AccessRoadController::class, 'toggle']);
+<<<<<<< HEAD
 
     // SIM.12.2 - Event routes: create routes from access roads to event locations
     Route::get('/event-routes', [EventRouteController::class, 'index']);
@@ -88,6 +99,8 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::delete('/event-routes/{id}', [EventRouteController::class, 'destroy']);
     Route::get('/event-cells', [EventRouteController::class, 'eventCells']);
 
+=======
+>>>>>>> sim12.1
 });
 
 // EFF.1 - Effect management table — accessible to city planners, effects experts, and administrators

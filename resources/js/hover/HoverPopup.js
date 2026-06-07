@@ -140,11 +140,27 @@ export class HoverPopup {
         this.#visible = false;
     }
 
-    // Moves the popup to follow the cursor with a small offset
+    // Moves the popup to follow the cursor, flipping sides if it would overflow the viewport
     #move(e) {
         if (!this.#visible) return;
-        this.#popup.style.left = `${e.clientX + 12}px`;
-        this.#popup.style.top = `${e.clientY + 12}px`;
+        const offset = 12;
+
+        // Place at default position first so getBoundingClientRect reflects the scaled size
+        this.#popup.style.left = `${e.clientX + offset}px`;
+        this.#popup.style.top = `${e.clientY + offset}px`;
+
+        const rect = this.#popup.getBoundingClientRect();
+
+        const left = rect.right > window.innerWidth
+            ? Math.max(0, e.clientX - offset - rect.width)
+            : e.clientX + offset;
+
+        const top = rect.bottom > window.innerHeight
+            ? Math.max(0, e.clientY - offset - rect.height)
+            : e.clientY + offset;
+
+        this.#popup.style.left = `${left}px`;
+        this.#popup.style.top = `${top}px`;
     }
 
     #isMobileViewport() {
