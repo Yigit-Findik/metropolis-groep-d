@@ -4,6 +4,14 @@
             <h1 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Grid') }}
             </h1>
+            <a href="{{ route('grid.export-pdf') }}"
+               class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition"
+               aria-label="Export grid report as PDF">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2M7 7l5-5 5 5" />
+                </svg>
+                Export PDF
+            </a>
         </div>
     </x-slot>
 
@@ -81,7 +89,7 @@
             </div>{{-- end top bar --}}
 
             {{-- Grid and library sit next to each other on desktop, above each other on mobile --}}
-            <div class="flex flex-col lg:flex-row gap-6 lg:items-start" x-data="gridZoom" :style="`--grid-size: ${size}px`">
+            <div class="flex flex-col lg:flex-row gap-6 lg:items-start" x-data="gridZoom" :style="`--grid-size: ${effectiveGridSize}px`">
 
                 {{-- MAIN GRID SECTION: Contains the city grid and the removal zone below it --}}
                  <section class="flex flex-col gap-4" aria-labelledby="city-grid-heading">
@@ -99,7 +107,7 @@
                             {{-- Zoom slider only shown on desktop --}}
                             <div class="hidden lg:flex items-center gap-3">
                                 <label for="grid-size" class="text-sm text-gray-600 dark:text-gray-300">Zoom</label>
-                                <input id="grid-size" type="range" min="64" max="224" step="16"
+                                <input id="grid-size" type="range" min="128" max="224" step="16"
                                     x-model="size"
                                     class="w-28 accent-blue-500"
                                     aria-label="Adjust grid size">
@@ -127,7 +135,7 @@
                     </div>
 
                     {{-- Scrollable on desktop so the grid can be zoomed without breaking the layout --}}
-                    <div class="lg:overflow-auto">
+                    <div class="lg:overflow-auto lg:p-1">
 
                         {{-- Always 4 columns. On mobile the columns shrink to fit the screen.
                              On desktop each column is a fixed number of pixels set by the zoom slider. --}}
@@ -146,7 +154,7 @@
                                     <button
                                         type="button"
                                         tabindex="0"
-                                        class="grid-cell w-full relative border aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }} {{ ($cell->is_approved ?? false) ? 'is-approved border-purple-600 dark:border-purple-500' : 'border-gray-200 dark:border-gray-700' }}"
+                                        class="grid-cell w-full relative border aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-2 lg:p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }} {{ ($cell->is_approved ?? false) ? 'is-approved border-purple-600 dark:border-purple-500' : 'border-gray-200 dark:border-gray-700' }}"
                                         :style="isDesktop ? `width: ${size}px; height: ${size}px; border-width: calc(var(--grid-size) / 48);` : 'border-width: calc(var(--grid-size) / 48);'"
                                         draggable="true"
                                         data-grid-cell

@@ -7,6 +7,8 @@ use App\Models\CityGridCell;
 use App\Models\CityFunction;
 use App\Models\ActionHistory;
 use App\Services\QolScoreService;
+use App\Models\CityEvent;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CityGridCellController extends Controller
 {
@@ -277,60 +279,48 @@ class CityGridCellController extends Controller
         ]);
     }
 
-    // BES.3 - Approve a single grid cell (policy maker or administrator)
-    public function approveCell($id)
+    public function previewPdf()
     {
-        if ($response = $this->ensurePolicyMaker()) {
-            return $response;
-        }
+        $cells         = CityGridCell::ensureGridExists();
+        $cityFunctions = CityFunction::orderBy('name')->get();
+        $qol           = (new QolScoreService())->calculate();
+        $events        = CityEvent::with('cityFunctions')->orderBy('name')->get();
 
-        $cell = CityGridCell::findOrFail($id);
-        $cell->update(['is_approved' => true]);
-
-        return response()->json([
-            'message' => 'Cell approved',
-            'cell' => $cell,
+        return view('pdf.grid-preview', [
+            'gridCells'     => $cells,
+            'cityFunctions' => $cityFunctions,
+            'qol'           => $qol,
+            'events'        => $events,
+            'exportedAt'    => now()->format('d M Y, H:i'),
+            'author'        => auth()->user()->name,
+            'placedCount'   => $cells->whereNotNull('function_id')->count(),
+            'totalCells'    => $cells->count(),
         ]);
     }
 
-    // BES.3 - Approve all grid cells at once (policy maker or administrator)
-    public function approveAllCells()
+    public function exportPdf()
     {
-        if ($response = $this->ensurePolicyMaker()) {
-            return $response;
-        }
+        $cells         = CityGridCell::ensureGridExists();
+        $cityFunctions = CityFunction::orderBy('name')->get();
+        $qol           = (new QolScoreService())->calculate();
+        $events        = CityEvent::with('cityFunctions')->orderBy('name')->get();
 
-        CityGridCell::query()->update(['is_approved' => true]);
+        $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+        $cssFile  = $manifest['resources/css/app.css']['file'] ?? '';
 
-        return response()->json(['message' => 'All cells approved']);
-    }
+        $pdf = Pdf::loadView('pdf.grid-report', [
+            'gridCells'     => $cells,
+            'cityFunctions' => $cityFunctions,
+            'qol'           => $qol,
+            'events'        => $events,
+            'exportedAt'    => now()->format('d M Y, H:i'),
+            'author'        => auth()->user()->name,
+            'placedCount'   => $cells->whereNotNull('function_id')->count(),
+            'totalCells'    => $cells->count(),
+            'cssFile'       => $cssFile,
+        ])->setPaper('a4', 'portrait');
 
-    // BES.3 - Revoke approval from all grid cells at once (policy maker or administrator)
-    public function revokeAllCells()
-    {
-        if ($response = $this->ensurePolicyMaker()) {
-            return $response;
-        }
-
-        CityGridCell::query()->update(['is_approved' => false]);
-
-        return response()->json(['message' => 'All cells disapproved']);
-    }
-
-    // BES.3 - Revoke approval from a single grid cell (policy maker or administrator)
-    public function revokeCell($id)
-    {
-        if ($response = $this->ensurePolicyMaker()) {
-            return $response;
-        }
-
-        $cell = CityGridCell::findOrFail($id);
-        $cell->update(['is_approved' => false]);
-
-        return response()->json([
-            'message' => 'Cell approval revoked',
-            'cell' => $cell,
-        ]);
+        return $pdf->stream('city-grid-report.pdf');
     }
 
     public function undo(){

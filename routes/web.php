@@ -46,8 +46,15 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert i
 // Grid view — accessible to city planners, administrators, and policy makers
 Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Policy maker'])->group(function () {
     Route::get('/grid', [CityGridCellController::class, 'index'])->name('grid');
+
+    // SIM.1.4 - QoL score calculation
     Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);
-    Route::get('/grid/valid-cells', [CityGridCellController::class, 'getValidCells']);
+
+    // REV.1 - Preview the PDF report in the browser before downloading
+    Route::get('/grid/export-pdf', [CityGridCellController::class, 'previewPdf'])->name('grid.export-pdf');
+
+    // REV.1 - Trigger the actual PDF download
+    Route::get('/grid/download-pdf', [CityGridCellController::class, 'exportPdf'])->name('grid.download-pdf');
 });
 
 // City planner and administrator routes
@@ -65,6 +72,10 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     // SIM.2 - Cell selection and function assignment
     Route::post('/grid/select/{id}', [CityGridCellController::class, 'select']);
     Route::post('/grid/{id}/assign', [CityGridCellController::class, 'assignFunction']);
+
+    // Get valid/invalid cells for adjacency rules
+    Route::get('/grid/valid-cells', [CityGridCellController::class, 'getValidCells']);
+
 
     // SIM.3 - Remove a function from a cell
     Route::delete('/grid/{id}/remove', [CityGridCellController::class, 'removeFunction']);
