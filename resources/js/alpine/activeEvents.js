@@ -1,19 +1,12 @@
 export const activeEvents = () => ({
     events: [],
     now: Date.now(),
-    simPaused: true,
-    simSpeed: 1,
 
     async init() {
         await this.fetchEvents();
-        window.addEventListener('simulation:tick',        () => this.fetchEvents());
         setInterval(() => this.fetchEvents(), 30_000);
-        window.addEventListener('simulation:play',        () => { this.simPaused = false; });
-        window.addEventListener('simulation:pause',       () => { this.simPaused = true; });
-        window.addEventListener('simulation:speedchange', (e) => { this.simSpeed = e.detail.speed; });
-        // When paused: clock runs at real-time (1x) so refreshing the page causes no jump.
-        // When playing: clock runs at simulation speed so countdowns visually speed up.
-        setInterval(() => { this.now += this.simPaused ? 1000 : 1000 * this.simSpeed; }, 1_000);
+        // Tick every second so formatExpiry re-evaluates and the countdown moves in real-time.
+        setInterval(() => { this.now = Date.now(); }, 1_000);
     },
 
     async fetchEvents() {
