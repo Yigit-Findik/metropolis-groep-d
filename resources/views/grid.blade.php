@@ -111,12 +111,11 @@
                         @foreach([1, 2, 5] as $spd)
                             <button @click="setSpeed({{ $spd }})"
                                     role="radio"
-                                    :aria-checked="speed === {{ $spd }}"
-                                    aria-label="{{ $spd }}x"
+                                    :aria-label="speed === {{ $spd }} ? '{{ $spd }}x, selected' : '{{ $spd }}x'"
                                     data-speed="{{ $spd }}"
                                     class="px-3 py-1.5 rounded-lg text-sm font-semibold transition"
                                     :class="speed === {{ $spd }} ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'">
-                                {{ $spd }}x
+                                <span aria-hidden="true">{{ $spd }}x</span>
                             </button>
                         @endforeach
                     </div>
