@@ -91,7 +91,6 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
 
     // SIM.12.1 - Activate / deactivate an access road
     Route::patch('/access-roads/{id}/toggle', [AccessRoadController::class, 'toggle']);
-<<<<<<< HEAD
 
     // SIM.12.2 - Event routes: create routes from access roads to event locations
     Route::get('/event-routes', [EventRouteController::class, 'index']);
@@ -99,8 +98,6 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::delete('/event-routes/{id}', [EventRouteController::class, 'destroy']);
     Route::get('/event-cells', [EventRouteController::class, 'eventCells']);
 
-=======
->>>>>>> sim12.1
 });
 
 // EFF.1 - Effect management table — accessible to city planners, effects experts, and administrators
