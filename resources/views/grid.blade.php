@@ -88,6 +88,54 @@
 
             </div>{{-- end top bar --}}
 
+            {{-- SIM.6 — Simulation speed controls --}}
+            <div class="w-full bg-gray-800 rounded-2xl shadow-sm px-6 py-4 mb-6"
+                 x-data="simulationControls">
+
+                <div class="flex flex-wrap items-center gap-4">
+
+                    {{-- Section label --}}
+                    <span class="text-gray-400 text-xs font-semibold uppercase tracking-wide">Simulation</span>
+
+                    {{-- Play / Pause button --}}
+                    <button id="simulation-play-pause"
+                            @click="paused ? play() : pause()"
+                            :aria-label="paused ? 'Play simulation' : 'Pause simulation'"
+                            class="px-4 py-2 rounded-lg text-sm font-semibold transition text-white"
+                            :class="paused ? 'bg-green-600 hover:bg-green-500' : 'bg-yellow-500 hover:bg-yellow-400'">
+                        <span x-text="paused ? 'Play' : 'Pause'">Play</span>
+                    </button>
+
+                    {{-- Speed buttons: 1x, 2x, 5x --}}
+                    <div class="flex items-center gap-2" role="radiogroup" aria-label="Simulation speed">
+                        @foreach([1, 2, 5] as $spd)
+                            <button @click="setSpeed({{ $spd }})"
+                                    role="radio"
+                                    :aria-label="speed === {{ $spd }} ? '{{ $spd }}x, selected' : '{{ $spd }}x'"
+                                    data-speed="{{ $spd }}"
+                                    class="px-3 py-1.5 rounded-lg text-sm font-semibold transition"
+                                    :class="speed === {{ $spd }} ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'">
+                                <span aria-hidden="true">{{ $spd }}x</span>
+                            </button>
+                        @endforeach
+                    </div>
+
+                    {{-- Current speed display --}}
+                    <div class="ml-auto flex items-center gap-2 text-sm">
+                        <span class="text-gray-400">Speed:</span>
+                        <span id="simulation-current-speed"
+                              class="text-white font-bold"
+                              aria-live="polite"
+                              x-text="speed + 'x'">1x</span>
+                        <span id="simulation-status"
+                              class="text-gray-400"
+                              aria-live="polite"
+                              x-text="paused ? '(paused)' : '(running)'">(paused)</span>
+                    </div>
+
+                </div>
+            </div>
+
             {{-- Grid and library sit next to each other on desktop, above each other on mobile --}}
             <div class="flex flex-col lg:flex-row gap-6 lg:items-start" x-data="gridZoom" :style="`--grid-size: ${effectiveGridSize}px`">
 

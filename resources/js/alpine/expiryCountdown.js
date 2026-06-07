@@ -1,36 +1,59 @@
-// mode: 'expires' | 'recurring-active' | 'reactivates'
-export const expiryCountdown = (timestamp, mode) => ({
+const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+const simPost   = (url) => fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' } });
+
+export const expiryCountdown = (durationSeconds, mode, eventId, activatedAt) => ({
     label: '',
-    _target: new Date(timestamp).getTime(),
+    _remaining: 0,
+    _deactivateTriggered: false,
 
     init() {
+        const fullMs = durationSeconds * 1000;
+        const key    = 'sim_evt_' + eventId + '_exp';
+        const stored = JSON.parse(localStorage.getItem(key) || 'null');
+
+        if (stored && stored.activatedAt === activatedAt) {
+            this._remaining = stored.remaining;
+        } else {
+            this._remaining = fullMs;
+            localStorage.setItem(key, JSON.stringify({ remaining: fullMs, activatedAt }));
+        }
+
         this.update();
-        setInterval(() => this.update(), 1_000);
+
+        setInterval(() => {
+            if (localStorage.getItem('sim_paused') === 'false') {
+                this._remaining -= Number(localStorage.getItem('sim_speed') || 1) * 1_000;
+                localStorage.setItem(key, JSON.stringify({ remaining: this._remaining, activatedAt }));
+                this.update();
+            }
+
+            // One-off event expired in sim time — deactivate in DB
+            if (this._remaining <= 0 && !this._deactivateTriggered) {
+                this._deactivateTriggered = true;
+                localStorage.removeItem(key);
+                simPost('/events/' + eventId + '/deactivate');
+            }
+        }, 1_000);
     },
 
     update() {
-        const diffMs = this._target - Date.now();
+        const diffMs = this._remaining;
 
         if (diffMs <= 0) {
-            if (mode === 'reactivates')      this.label = 'Reactivating...';
-            else if (mode === 'recurring-active') this.label = 'Active — restarting next cycle...';
-            else                             this.label = 'Ending...';
+            this.label = 'Ending...';
             return;
         }
 
-        const diffSec = Math.floor(diffMs / 1_000);
-        const diffMin = Math.floor(diffSec / 60);
-        const diffHrs = Math.floor(diffMin / 60);
-        const diffDays = Math.floor(diffHrs / 24);
+        const sec  = Math.floor(diffMs / 1_000);
+        const min  = Math.floor(sec / 60);
+        const hrs  = Math.floor(min / 60);
+        const days = Math.floor(hrs / 24);
+        let t;
+        if (days > 0)      t = `${days}d ${hrs % 24}h`;
+        else if (hrs > 0)  t = `${hrs}h ${min % 60}m`;
+        else if (min > 0)  t = `${min}m ${sec % 60}s`;
+        else               t = `${sec}s`;
 
-        let timeStr;
-        if (diffDays > 0)      timeStr = `${diffDays}d ${diffHrs % 24}h`;
-        else if (diffHrs > 0)  timeStr = `${diffHrs}h ${diffMin % 60}m`;
-        else if (diffMin > 0)  timeStr = `${diffMin}m ${diffSec % 60}s`;
-        else                   timeStr = `${diffSec}s`;
-
-        if (mode === 'reactivates')           this.label = `Reactivates in ${timeStr}`;
-        else if (mode === 'recurring-active') this.label = `Active — next cycle starts in ${timeStr}`;
-        else                                  this.label = `Expires in ${timeStr}`;
+        this.label = `Expires in ${t}`;
     },
 });
