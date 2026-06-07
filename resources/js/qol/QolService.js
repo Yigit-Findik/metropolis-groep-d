@@ -4,6 +4,7 @@
 export class QolService {
     #api;
     #toastTimer = null; // Tracks the auto-hide timeout so it can be reset on rapid updates
+    #refreshing = false; // Prevents overlapping requests at high simulation speeds
 
     constructor(api) {
         this.#api = api;
@@ -42,12 +43,12 @@ export class QolService {
     }
 
     // Fetches fresh QoL scores from the server and updates all score elements in the DOM
-    async refresh() {
-        const total = document.getElementById("qol-score-value");
-        if (total) total.textContent = "Calculating...";
-
+    async refresh(force = false) {
+        if (!force && this.#refreshing) return;
+        this.#refreshing = true;
         try {
             const data = await this.#api.getQolScore();
+            const total = document.getElementById("qol-score-value");
 
             if (total) {
                 total.textContent = data.total_score;
@@ -123,6 +124,8 @@ export class QolService {
             }
         } catch {
             // Silently ignore — the display stays at the last known value.
+        } finally {
+            this.#refreshing = false;
         }
     }
 }

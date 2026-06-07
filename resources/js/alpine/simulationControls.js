@@ -1,27 +1,42 @@
-// SIM.6 — controls for play/pause and simulation speed
 export const simulationControls = () => ({
-    paused: true,  // starts paused
-    speed: 1,      // current speed: 1, 2, or 5
+    paused: true,
+    speed: 1,
     timer: null,
 
+    init() {
+        // Remove all old keys from previous implementations
+        ['sim_freeze_offset', 'sim_paused_since', 'sim_now', 'sim_play_started_at', 'sim_base_time']
+            .forEach(k => localStorage.removeItem(k));
+        // Always start paused on page load
+        localStorage.setItem('sim_paused', 'true');
+        if (!localStorage.getItem('sim_speed')) {
+            localStorage.setItem('sim_speed', '1');
+        }
+        this.speed = Number(localStorage.getItem('sim_speed'));
+        // When leaving the Grid page, pause so Events page timers stay frozen
+        window.addEventListener('beforeunload', () => {
+            localStorage.setItem('sim_paused', 'true');
+        });
+    },
+
     play() {
-        this.paused = false;
         localStorage.setItem('sim_paused', 'false');
+        this.paused = false;
         window.dispatchEvent(new CustomEvent('simulation:play'));
         this.startTimer();
     },
 
     pause() {
-        this.paused = true;
         localStorage.setItem('sim_paused', 'true');
+        this.paused = true;
         clearInterval(this.timer);
         this.timer = null;
         window.dispatchEvent(new CustomEvent('simulation:pause'));
     },
 
     setSpeed(newSpeed) {
-        this.speed = newSpeed;
         localStorage.setItem('sim_speed', String(newSpeed));
+        this.speed = newSpeed;
         window.dispatchEvent(new CustomEvent('simulation:speedchange', { detail: { speed: newSpeed } }));
         if (!this.paused) {
             clearInterval(this.timer);
@@ -30,7 +45,6 @@ export const simulationControls = () => ({
     },
 
     startTimer() {
-        // 1x = every 5 seconds, 2x = every 2.5 seconds, 5x = every 1 second
         const intervalMs = 5000 / this.speed;
         this.timer = setInterval(() => {
             window.dispatchEvent(new CustomEvent('simulation:tick'));

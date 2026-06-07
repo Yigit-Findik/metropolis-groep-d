@@ -95,7 +95,7 @@
                             :aria-label="paused ? 'Play simulation' : 'Pause simulation'"
                             class="px-4 py-2 rounded-lg text-sm font-semibold transition text-white"
                             :class="paused ? 'bg-green-600 hover:bg-green-500' : 'bg-yellow-500 hover:bg-yellow-400'">
-                        <span x-text="paused ? '▶ Play' : '⏸ Pause'">▶ Play</span>
+                        <span x-text="paused ? 'Play' : 'Pause'">Play</span>
                     </button>
 
                     {{-- Speed buttons: 1x, 2x, 5x --}}
