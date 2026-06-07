@@ -23,20 +23,20 @@
 
             {{-- Functions table — hidden when no functions exist yet --}}
             @if($cityFunctions->isEmpty())
-                <p class="text-white">No city functions found.</p>
+                <p class="text-gray-700 dark:text-white">No city functions found.</p>
             @else
-                <div class="bg-gray-800 rounded-2xl shadow-sm overflow-x-auto w-full">
-                    <table class="min-w-full divide-y divide-gray-700" role="grid" aria-label="City functions list">
-                        <thead class="bg-gray-700">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-x-auto w-full">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" role="grid" aria-label="City functions list">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Image</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Name</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Category</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Description</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider" aria-hidden="true">Actions</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white uppercase tracking-wider">Image</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white uppercase tracking-wider">Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white uppercase tracking-wider">Category</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white uppercase tracking-wider">Description</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-white uppercase tracking-wider" aria-hidden="true">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-700">
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @foreach($cityFunctions as $fn)
                                 <tr role="row" tabindex="0"
                                     aria-label="Row {{ $loop->iteration }}. Name: {{ $fn->name }}. Category: {{ $fn->category ?? 'Put in a category here' }}. Description: {{ $fn->description ?? 'Put in a description here' }}">
@@ -47,28 +47,28 @@
                                                  alt="{{ $fn->image_alt ?? $fn->name }}"
                                                  class="w-12 h-12 object-contain rounded">
                                         @else
-                                            <div class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-white text-xs" aria-hidden="true">—</div>
+                                            <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center text-gray-500 dark:text-white text-xs" aria-hidden="true">—</div>
                                         @endif
                                     </td>
 
                                     {{-- Name column --}}
-                                    <td id="fn-name-{{ $fn->id }}" class="px-6 py-4 font-semibold text-white whitespace-nowrap">
+                                    <td id="fn-name-{{ $fn->id }}" class="px-6 py-4 font-semibold text-gray-900 dark:text-white whitespace-nowrap">
                                         {{ $fn->name }}
                                     </td>
 
                                     {{-- Category column: displayed as a pill badge --}}
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span id="fn-cat-{{ $fn->id }}" class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-blue-900/40 text-white">
+                                        <span id="fn-cat-{{ $fn->id }}" class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-white">
                                             {{ $fn->category ?? '—' }}
                                         </span>
                                     </td>
 
                                     {{-- Description column --}}
-                                    <td id="fn-desc-{{ $fn->id }}" class="px-6 py-4 text-sm text-white max-w-md">
+                                    <td id="fn-desc-{{ $fn->id }}" class="px-6 py-4 text-sm text-gray-700 dark:text-white max-w-md">
                                         @if($fn->description)
                                             {{ $fn->description }}
                                         @else
-                                            <span aria-hidden="true" class="text-white">—</span>
+                                            <span aria-hidden="true" class="text-gray-400 dark:text-white">—</span>
                                             <span class="sr-only">Put in a description here</span>
                                         @endif
                                     </td>
