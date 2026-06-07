@@ -10,9 +10,10 @@ class UsersSeeder extends Seeder
 {
     public function run(): void
     {
-        $administratorId    = DB::table('roles')->where('name', 'Administrator')->value('id');
-        $cityPlannerId      = DB::table('roles')->where('name', 'City planner')->value('id');
-        $expertInEffectsId  = DB::table('roles')->where('name', 'Expert in effects')->value('id');
+        $administratorId       = DB::table('roles')->where('name', 'Administrator')->value('id');
+        $cityPlannerId         = DB::table('roles')->where('name', 'City planner')->value('id');
+        $expertInEffectsId     = DB::table('roles')->where('name', 'Expert in effects')->value('id');
+        $municipalPoliceMakerId = DB::table('roles')->where('name', 'Municipal policy maker')->value('id');
 
         DB::table('users')->insert([
             [
@@ -43,14 +44,14 @@ class UsersSeeder extends Seeder
                 'updated_at'        => now(),
             ],
             [
-                'name'              => 'Yigit',
-                'email'             => 'ny.findik@student.avans.nl',
-                'password'          => Hash::make('ny.findik@student.avans.nl'),
-                'role_id'           => $expertInEffectsId,
+                'name'              => 'Municipal Policy Maker',
+                'email'             => 'policymaker@metropolis.test',
+                'password'          => Hash::make('policymaker@metropolis.test'),
+                'role_id'           => $municipalPoliceMakerId,
                 'email_verified_at' => now(),
                 'created_at'        => now(),
                 'updated_at'        => now(),
-            ]
+            ],
         ]);
     }
 }
