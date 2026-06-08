@@ -69,6 +69,10 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::post('/events/{id}/activate', [CityEventController::class, 'activate'])->name('city_events.activate');
     Route::post('/events/{id}/deactivate', [CityEventController::class, 'deactivate'])->name('city_events.deactivate');
 
+    // Day/Night Cycle specific routes
+    Route::put('/events/{id}/day-night', [CityEventController::class, 'updateDayNight'])->name('city_events.update_day_night');
+    Route::post('/events/{id}/switch-phase', [CityEventController::class, 'switchPhase'])->name('city_events.switch_phase');
+
     // SIM.2 - Cell selection and function assignment
     Route::post('/grid/select/{id}', [CityGridCellController::class, 'select']);
     Route::post('/grid/{id}/assign', [CityGridCellController::class, 'assignFunction']);

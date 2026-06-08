@@ -8,10 +8,31 @@ export const activeEvents = () => ({
             if (localStorage.getItem('sim_paused') === 'false') {
                 const tick = Number(localStorage.getItem('sim_speed') || 1) * 1_000;
                 this.events = this.events.map(e => {
-                    const updated = { ...e };
+                    const updated      = { ...e };
+                    const prevRemaining = updated._remainingMs;
+
                     if (updated._remainingMs  != null) updated._remainingMs  = Math.max(0, updated._remainingMs  - tick);
                     if (updated._reactivateMs != null) updated._reactivateMs = Math.max(0, updated._reactivateMs - tick);
                     this._save(updated);
+
+                    // Trigger phase switch when day/night timer transitions to 0
+                    if (updated.event_type === 'day-night' && updated.is_active &&
+                        prevRemaining != null && prevRemaining > 0 && updated._remainingMs === 0 &&
+                        !updated._phaseSwitchTriggered) {
+                        updated._phaseSwitchTriggered = true;
+                        const fromPhase = updated._currentPhase;
+                        localStorage.removeItem('sim_dnc_' + updated.id);
+                        fetch('/events/' + updated.id + '/switch-phase', {
+                            method:  'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                                'Accept':       'application/json',
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ from_phase: fromPhase }),
+                        }).then(() => this.fetchEvents());
+                    }
+
                     return updated;
                 });
             }
@@ -19,7 +40,13 @@ export const activeEvents = () => ({
     },
 
     _save(e) {
-        if (e.event_type === 'recurring') {
+        if (e.event_type === 'day-night') {
+            localStorage.setItem('sim_dnc_' + e.id, JSON.stringify({
+                phaseStartedAt: e._phaseStartedAt,
+                phase:          e._currentPhase,
+                remaining:      e._remainingMs,
+            }));
+        } else if (e.event_type === 'recurring') {
             // Same key/format as recurringEventTimer on Events page
             localStorage.setItem('sim_evt_' + e.id, JSON.stringify({
                 activatedAt:  e._activatedAt,
@@ -43,6 +70,34 @@ export const activeEvents = () => ({
             const playing = localStorage.getItem('sim_paused') === 'false';
 
             this.events = raw.map(e => {
+                if (e.event_type === 'day-night') {
+                    const phase         = e.current_phase;
+                    const phaseStartedAt = e.phase_started_at_timestamp;
+                    const phaseDuration  = phase === 'day' ? e.day_duration_seconds : e.night_duration_seconds;
+                    const fullPhaseMs    = phaseDuration != null ? phaseDuration * 1000 : null;
+                    const key            = 'sim_dnc_' + e.id;
+
+                    let remainingMs = fullPhaseMs;
+
+                    const stored = JSON.parse(localStorage.getItem(key) || 'null');
+                    if (stored && stored.phaseStartedAt === phaseStartedAt && stored.phase === phase) {
+                        remainingMs = stored.remaining;
+                    } else if (!playing) {
+                        localStorage.setItem(key, JSON.stringify({
+                            phaseStartedAt, phase, remaining: remainingMs,
+                        }));
+                    }
+
+                    return {
+                        ...e,
+                        _activatedAt:   phaseStartedAt,
+                        _phaseStartedAt: phaseStartedAt,
+                        _currentPhase:  phase,
+                        _remainingMs:   remainingMs,
+                        _reactivateMs:  null,
+                    };
+                }
+
                 const activatedAt     = e.activated_at_timestamp;
                 const fullRemainingMs = e.active_duration_seconds != null ? e.active_duration_seconds * 1000 : null;
                 const fullCycleMs     = e.cycle_duration_seconds  != null ? e.cycle_duration_seconds  * 1000 : null;
@@ -84,6 +139,16 @@ export const activeEvents = () => ({
     },
 
     formatStatus(event) {
+        if (event.event_type === 'day-night') {
+            const phase = event._currentPhase;
+            if (!phase) return 'Inactive';
+            const time = event._remainingMs > 0 ? this.formatTime(event._remainingMs) : '';
+            if (phase === 'day') {
+                return time ? `Day — night ${time}` : 'Switching...';
+            }
+            return time ? `Night — day ${time}` : 'Switching...';
+        }
+
         if (event.is_active && event._remainingMs != null) {
             return event._remainingMs <= 0 ? 'Ending...' : `Ends ${this.formatTime(event._remainingMs)}`;
         }
