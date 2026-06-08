@@ -62,17 +62,13 @@ class CityEventController extends Controller
     {
         $event = CityEvent::findOrFail($id);
 
-        $expiresAt = $event->event_type === 'one-off'
-            ? now()->add($event->one_off_duration_unit, $event->one_off_duration_value)
-            : now()->addSeconds($event->activeDurationSeconds());
-
         $event->update([
             'is_active'    => true,
             'activated_at' => now(),
-            'expires_at'   => $expiresAt,
+            'expires_at'   => null,
         ]);
 
-        $this->recordAuditLog('activate', $event, null, ['is_active' => true, 'expires_at' => $expiresAt]);
+        $this->recordAuditLog('activate', $event, null, ['is_active' => true, 'expires_at' => null]);
 
         return redirect()->route('city_events.index')->with('success', "{$event->name} is now active.");
     }
@@ -96,17 +92,24 @@ class CityEventController extends Controller
                 $q->where('is_active', true)
                   ->orWhere('event_type', 'recurring');
             })
-            ->get(['id', 'name', 'event_type', 'is_active', 'expires_at', 'activated_at',
-                   'recurring_frequency_value', 'recurring_frequency_unit'])
+            ->get([
+                'id', 'name', 'event_type', 'is_active', 'expires_at', 'activated_at',
+                'recurring_frequency_value', 'recurring_frequency_unit',
+                'recurring_active_duration_value', 'recurring_active_duration_unit',
+                'one_off_duration_value', 'one_off_duration_unit',
+            ])
             ->map(function ($event) {
                 return [
-                    'id'                 => $event->id,
-                    'name'               => $event->name,
-                    'event_type'         => $event->event_type,
-                    'is_active'          => $event->is_active,
-                    'expires_at'         => $event->expires_at?->toIso8601String(),
-                    'next_activation_at' => ($event->event_type === 'recurring' && $event->activated_at)
-                        ? $event->activated_at->copy()->addSeconds($event->cycleDurationSeconds())->toIso8601String()
+                    'id'                      => $event->id,
+                    'name'                    => $event->name,
+                    'event_type'              => $event->event_type,
+                    'is_active'               => $event->is_active,
+                    'activated_at_timestamp'  => $event->activated_at ? $event->activated_at->timestamp : null,
+                    'active_duration_seconds' => $event->event_type === 'recurring'
+                        ? $event->activeDurationSeconds()
+                        : $event->oneOffDurationSeconds(),
+                    'cycle_duration_seconds'  => $event->event_type === 'recurring'
+                        ? $event->cycleDurationSeconds()
                         : null,
                 ];
             });
@@ -130,9 +133,11 @@ class CityEventController extends Controller
             ->where('expires_at', '<=', $now)
             ->update(['is_active' => false]);
 
+        // Only auto-reactivate events that have a real expires_at (not simulation-managed ones)
         CityEvent::where('is_active', false)
             ->where('event_type', 'recurring')
             ->whereNotNull('activated_at')
+            ->whereNotNull('expires_at')
             ->get()
             ->filter(fn ($event) => $now->gte(
                 $event->activated_at->addSeconds($event->cycleDurationSeconds())
@@ -141,7 +146,7 @@ class CityEventController extends Controller
                 $event->update([
                     'is_active'    => true,
                     'activated_at' => $now,
-                    'expires_at'   => $now->copy()->addSeconds($event->activeDurationSeconds()),
+                    'expires_at'   => null,
                 ]);
             });
     }

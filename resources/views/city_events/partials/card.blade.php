@@ -31,19 +31,15 @@
 
             <p class="mt-3 text-sm font-medium text-slate-700 dark:text-gray-200">{{ $event->schedule_summary }}</p>
 
-            {{-- Live countdown timers — tick every second client-side. --}}
-            @if($event->event_type === 'recurring' && $event->activated_at && $event->expires_at)
-                {{-- One component handles both active ("Cycle ends in X") and inactive ("Reactivates in X")
-                     so the transition happens in the browser without needing a page reload. --}}
-                @php $nextActivationAt = $event->activated_at->copy()->addSeconds($event->cycleDurationSeconds()); @endphp
+            {{-- Live countdown timers — tick only when simulation is playing. --}}
+            @if($event->event_type === 'recurring' && $event->activated_at)
                 <p class="mt-1 text-xs"
-                   x-data="recurringEventTimer(@js($event->expires_at->toIso8601String()), @js($nextActivationAt->toIso8601String()))"
+                   x-data="recurringEventTimer({{ $event->activeDurationSeconds() }}, {{ $event->cycleDurationSeconds() }}, {{ $event->id }}, {{ $event->activated_at->timestamp }})"
                    :class="colorClass"
                    x-text="label"></p>
-            @elseif($event->isCurrentlyActive() && $event->expires_at)
-                {{-- One-off active: simple expiry countdown. --}}
+            @elseif($event->event_type === 'one-off' && $event->is_active && $event->activated_at)
                 <p class="mt-1 text-xs text-emerald-600 dark:text-emerald-400"
-                   x-data="expiryCountdown(@js($event->expires_at->toIso8601String()), 'expires')"
+                   x-data="expiryCountdown({{ $event->oneOffDurationSeconds() }}, 'expires', {{ $event->id }}, {{ $event->activated_at->timestamp }})"
                    x-text="label"></p>
             @endif
 

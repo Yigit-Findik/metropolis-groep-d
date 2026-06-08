@@ -1,52 +1,84 @@
-// Handles the full cycle of a recurring event in one component:
-// while the active window is open  → green "Cycle ends in X"
-// while waiting for the next cycle → amber "Reactivates in X"
-// When the reactivation moment arrives, triggers server-side processing then reloads.
-export const recurringEventTimer = (expiresAtIso, nextActivationAtIso) => ({
+const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+const simPost   = (url) => fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' } });
+
+export const recurringEventTimer = (activeDurationSeconds, cycleDurationSeconds, eventId, activatedAt) => ({
     label: '',
     colorClass: '',
-    _expiresAt: new Date(expiresAtIso).getTime(),
-    _nextActivationAt: new Date(nextActivationAtIso).getTime(),
-    _reloadTriggered: false,
+    _expires: 0,
+    _reactivates: 0,
+    _deactivateTriggered: false,
+    _reactivateTriggered: false,
 
     init() {
+        const fullExpiresMs = activeDurationSeconds * 1000;
+        const fullCycleMs   = cycleDurationSeconds  * 1000;
+        const key           = 'sim_evt_' + eventId;
+        const stored        = JSON.parse(localStorage.getItem(key) || 'null');
+
+        if (stored && stored.activatedAt === activatedAt) {
+            this._expires     = stored.expires;
+            this._reactivates = stored.reactivates;
+        } else {
+            this._expires     = fullExpiresMs;
+            this._reactivates = fullCycleMs;
+            this._save(key);
+        }
+
+        // If already past expiry (e.g. after reload), don't fire duplicate API calls
+        if (this._expires <= 0)     this._deactivateTriggered = true;
+        if (this._reactivates <= 0) this._reactivateTriggered = true;
+
         this.update();
-        setInterval(() => this.update(), 1_000);
+
+        setInterval(() => {
+            if (localStorage.getItem('sim_paused') === 'false') {
+                const tick        = Number(localStorage.getItem('sim_speed') || 1) * 1_000;
+                this._expires    -= tick;
+                this._reactivates -= tick;
+                this._save(key);
+                this.update();
+            }
+
+            // Sim cycle ended — deactivate in DB
+            if (this._expires <= 0 && !this._deactivateTriggered) {
+                this._deactivateTriggered = true;
+                simPost('/events/' + eventId + '/deactivate');
+            }
+
+            // Sim cycle fully elapsed — reactivate and reload
+            if (this._reactivates <= 0 && !this._reactivateTriggered) {
+                this._reactivateTriggered = true;
+                localStorage.removeItem(key);
+                simPost('/events/' + eventId + '/activate').finally(() => window.location.reload());
+            }
+        }, 1_000);
+    },
+
+    _save(key) {
+        localStorage.setItem(key, JSON.stringify({
+            activatedAt,
+            expires:     this._expires,
+            reactivates: this._reactivates,
+        }));
     },
 
     update() {
-        const now = Date.now();
-        const activeMs = this._expiresAt - now;
-
-        if (activeMs > 0) {
-            this.label = `Cycle ends in ${this.formatTime(activeMs)}`;
+        if (this._expires > 0) {
+            this.label      = `Cycle ends in ${this.formatTime(this._expires)}`;
             this.colorClass = 'text-emerald-600 dark:text-emerald-400';
-            return;
-        }
-
-        const reactivateMs = this._nextActivationAt - now;
-
-        if (reactivateMs > 0) {
-            this.label = `Reactivates in ${this.formatTime(reactivateMs)}`;
+        } else if (this._reactivates > 0) {
+            this.label      = `Reactivates in ${this.formatTime(this._reactivates)}`;
             this.colorClass = 'text-amber-600 dark:text-amber-400';
-            return;
-        }
-
-        // Reactivation moment has arrived — tell the server, then reload the page.
-        this.label = 'Reactivating...';
-        this.colorClass = 'text-amber-600 dark:text-amber-400';
-
-        if (!this._reloadTriggered) {
-            this._reloadTriggered = true;
-            fetch('/events/active')
-                .finally(() => window.location.reload());
+        } else {
+            this.label      = 'Reactivating...';
+            this.colorClass = 'text-amber-600 dark:text-amber-400';
         }
     },
 
     formatTime(ms) {
-        const sec = Math.floor(ms / 1_000);
-        const min = Math.floor(sec / 60);
-        const hrs = Math.floor(min / 60);
+        const sec  = Math.floor(ms / 1_000);
+        const min  = Math.floor(sec / 60);
+        const hrs  = Math.floor(min / 60);
         const days = Math.floor(hrs / 24);
         if (days > 0) return `${days}d ${hrs % 24}h`;
         if (hrs > 0)  return `${hrs}h ${min % 60}m`;

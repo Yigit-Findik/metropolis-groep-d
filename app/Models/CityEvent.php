@@ -80,6 +80,17 @@ class CityEvent extends Model
         return (int) $unitSeconds * max(1, (int) $this->recurring_active_duration_value);
     }
 
+    public function oneOffDurationSeconds(): int
+    {
+        $unitSeconds = match ($this->one_off_duration_unit) {
+            'day'  => 86400,
+            'week' => 604800,
+            default => 3600,
+        };
+
+        return (int) $unitSeconds * max(1, (int) $this->one_off_duration_value);
+    }
+
     public function getTypeLabelAttribute(): string
     {
         return $this->event_type === 'recurring' ? 'Recurring' : 'One-off';

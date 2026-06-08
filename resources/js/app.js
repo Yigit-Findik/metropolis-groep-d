@@ -15,6 +15,7 @@ import { autoHideToast } from './alpine/autoHideToast';
 import { deleteForm } from './alpine/deleteForm';
 import { effectEditor } from './alpine/effectEditor';
 import { confirmModal } from './alpine/confirmModal';
+import { simulationControls } from './alpine/simulationControls';
 
 // Core modules
 import { GridApi } from './api/GridApi';
@@ -37,6 +38,7 @@ Alpine.data('autoHideToast', autoHideToast);
 Alpine.data('deleteForm', deleteForm);
 Alpine.data('effectEditor', effectEditor);
 Alpine.data('confirmModal', confirmModal);
+Alpine.data('simulationControls', simulationControls);
 
 window.Alpine = Alpine;
 Alpine.start();
@@ -53,4 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
     qolService.refresh();
     hoverPopup.setup();
     libraryPreview.setup();
+
+    // SIM.6 — refresh QoL scores on every simulation tick
+    window.addEventListener('simulation:tick', () => {
+        qolService.refresh();
+    });
 });
