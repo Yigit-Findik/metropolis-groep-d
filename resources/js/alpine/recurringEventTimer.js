@@ -24,6 +24,10 @@ export const recurringEventTimer = (activeDurationSeconds, cycleDurationSeconds,
             this._save(key);
         }
 
+        // If already past expiry (e.g. after reload), don't fire duplicate API calls
+        if (this._expires <= 0)     this._deactivateTriggered = true;
+        if (this._reactivates <= 0) this._reactivateTriggered = true;
+
         this.update();
 
         setInterval(() => {

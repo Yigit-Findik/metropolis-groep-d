@@ -37,7 +37,7 @@
                    x-data="recurringEventTimer({{ $event->activeDurationSeconds() }}, {{ $event->cycleDurationSeconds() }}, {{ $event->id }}, {{ $event->activated_at->timestamp }})"
                    :class="colorClass"
                    x-text="label"></p>
-            @elseif($event->event_type === 'one-off' && $event->activated_at)
+            @elseif($event->event_type === 'one-off' && $event->is_active && $event->activated_at)
                 <p class="mt-1 text-xs text-emerald-600 dark:text-emerald-400"
                    x-data="expiryCountdown({{ $event->oneOffDurationSeconds() }}, 'expires', {{ $event->id }}, {{ $event->activated_at->timestamp }})"
                    x-text="label"></p>
