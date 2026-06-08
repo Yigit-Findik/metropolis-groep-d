@@ -28,14 +28,14 @@
                         {{-- Total score: spans both columns on mobile so it stands alone --}}
                         <div class="col-span-2 sm:col-span-1 min-w-0">
                             <p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wide" aria-hidden="true">Total QoL</p>
-                            <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-4xl font-bold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-value" aria-live="polite" aria-atomic="true">—</p>
-                            <p tabindex="0" class="text-gray-600 dark:text-gray-300 text-sm font-semibold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-label" aria-live="polite" aria-atomic="true">—</p>
+                            <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-4xl font-bold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-value" aria-live="polite" aria-atomic="true" aria-label="Total quality of life score">—</p>
+                            <p tabindex="0" class="text-gray-600 dark:text-gray-300 text-sm font-semibold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-label">—</p>
                         </div>
 
                         @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
                             <div>
                                 <p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wide">{{ $label }}</p>
-                                <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-xl font-semibold mt-0.5 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-{{ $slug }}" aria-live="polite" aria-atomic="true">—</p>
+                                <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-xl font-semibold mt-0.5 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-{{ $slug }}">—</p>
                             </div>
                         @endforeach
 
@@ -43,17 +43,17 @@
                         <div class="hidden lg:block lg:col-span-6"></div>
                         <div class="hidden lg:block text-gray-700 dark:text-gray-200 font-medium">Bonus:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-green-600 dark:text-green-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-bonus-{{ $slug }}" aria-live="polite" aria-atomic="true">+0</div>
+                            <div tabindex="0" class="hidden lg:block text-green-600 dark:text-green-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-bonus-{{ $slug }}">+0</div>
                         @endforeach
 
                         <div class="hidden lg:block text-gray-700 dark:text-gray-200 font-medium">Penalty:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-red-600 dark:text-red-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-penalty-{{ $slug }}" aria-live="polite" aria-atomic="true">-0</div>
+                            <div tabindex="0" class="hidden lg:block text-red-600 dark:text-red-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-penalty-{{ $slug }}">-0</div>
                         @endforeach
 
                         <div class="hidden lg:block text-gray-700 dark:text-gray-200 font-medium">Events:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-gray-500 dark:text-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-event-{{ $slug }}" aria-live="polite" aria-atomic="true">0</div>
+                            <div tabindex="0" class="hidden lg:block text-gray-500 dark:text-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-event-{{ $slug }}">0</div>
                         @endforeach
                     </div>
                 </div>
@@ -69,7 +69,7 @@
                         <p class="text-gray-500 dark:text-gray-400 text-sm">No active events.</p>
                     </template>
 
-                    <ul class="space-y-2 overflow-y-auto h-48 pr-1" aria-live="polite" aria-atomic="true">
+                    <ul class="space-y-2 overflow-y-auto h-48 pr-1" aria-label="Active events list">
                         <template x-for="event in events" :key="event.id">
                             <li class="rounded-xl px-3 py-2 border"
                                 :class="event.is_active
