@@ -1,5 +1,6 @@
 export const cityEvents = () => ({
     editOpen: false,
+    dayNightEditOpen: false,
 
     allFunctions: [],
 
@@ -29,6 +30,16 @@ export const cityEvents = () => ({
         linkedFunctions: [],
     },
 
+    dayNightEditing: {
+        id: null,
+        day_duration_value: 8,
+        day_duration_unit: 'hour',
+        night_duration_value: 8,
+        night_duration_unit: 'hour',
+        dayLinkedFunctions: [],
+        nightLinkedFunctions: [],
+    },
+
     init() {
         this.allFunctions = window.cityFunctionsData ?? [];
     },
@@ -53,5 +64,23 @@ export const cityEvents = () => ({
 
     closeEdit() {
         this.editOpen = false;
+    },
+
+    openDayNightEdit(event) {
+        this.dayNightEditing = {
+            id: event.id,
+            day_duration_value: event.day_duration_value ?? 8,
+            day_duration_unit: event.day_duration_unit ?? 'hour',
+            night_duration_value: event.night_duration_value ?? 8,
+            night_duration_unit: event.night_duration_unit ?? 'hour',
+            dayLinkedFunctions: event.dayLinkedFunctions ?? [],
+            nightLinkedFunctions: event.nightLinkedFunctions ?? [],
+        };
+
+        this.dayNightEditOpen = true;
+    },
+
+    closeDayNightEdit() {
+        this.dayNightEditOpen = false;
     },
 });

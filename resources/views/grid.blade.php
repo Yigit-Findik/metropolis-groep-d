@@ -69,15 +69,17 @@
                         <p class="text-gray-500 dark:text-gray-400 text-sm">No active events.</p>
                     </template>
 
-                    <ul class="space-y-2 overflow-y-auto h-48 pr-1" aria-label="Active events list">
+                    <ul class="space-y-2 overflow-y-auto h-48 pr-1" aria-label="Active events">
                         <template x-for="event in events" :key="event.id">
-                            <li class="rounded-xl px-3 py-2 border"
+                            <li class="rounded-xl px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                tabindex="0"
                                 :class="event.is_active
                                     ? 'bg-green-100 dark:bg-green-900/40 border-green-200 dark:border-green-700'
-                                    : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700'">
+                                    : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700'"
+                                :aria-label="event.name + ', ' + formatStatus(event)">
                                 <p class="text-sm font-semibold break-words"
                                    :class="event.is_active ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'"
-                                   x-text="event.name"></p>
+                                   x-text="event.name"></p>     
                                 <p class="text-xs mt-0.5"
                                    :class="event.is_active ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'"
                                    x-text="formatStatus(event)"></p>
