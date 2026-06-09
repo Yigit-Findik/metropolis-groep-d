@@ -157,26 +157,6 @@ export class GridApi {
         return data;
     }
 
-    // Flips is_active on an access road
-    async toggleAccessRoad(id) {
-        const response = await fetch(`/access-roads/${id}/toggle`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': this.#csrfToken,
-            },
-        });
-
-        if (!response.ok) {
-            const data = await this.#readJsonResponse(response, 'access road toggle').catch(() => ({}));
-            throw new Error(data.message || `Toggle access road failed: ${response.status}`);
-        }
-
-        return this.#readJsonResponse(response, 'access road toggle');
-    }
-
     // Returns all grid cells that are event locations (function linked to a city event)
     async getEventCells() {
         const response = await fetch('/event-cells', {

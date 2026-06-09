@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\ActionHistory;
 use App\Models\CityEvent;
 use App\Models\CityFunction;
+use App\Models\CityGridCell;
+use App\Models\EventRoute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -154,6 +156,10 @@ class CityEventController extends Controller
         }
 
         $event->update($update);
+
+        $functionIds = $event->cityFunctions()->pluck('city_functions.id');
+        $cellIds = CityGridCell::whereIn('function_id', $functionIds)->pluck('id');
+        EventRoute::whereIn('event_cell_id', $cellIds)->delete();
 
         $this->recordAuditLog('deactivate', $event, null, ['is_active' => false]);
 

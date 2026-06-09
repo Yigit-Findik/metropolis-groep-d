@@ -40,7 +40,10 @@ class EventRouteController extends Controller
         $cells = CityGridCell::with('cityFunction')
             ->whereNotNull('function_id')
             ->whereIn('function_id', function ($query) {
-                $query->select('city_function_id')->from('city_event_city_function');
+                $query->select('city_function_id')
+                    ->from('city_event_city_function')
+                    ->join('city_events', 'city_events.id', '=', 'city_event_city_function.city_event_id')
+                    ->where('city_events.is_active', true);
             })
             ->get()
             ->map(fn ($cell) => [
