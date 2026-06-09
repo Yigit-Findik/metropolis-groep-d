@@ -10,10 +10,10 @@ class UsersSeeder extends Seeder
 {
     public function run(): void
     {
-        $administratorId       = DB::table('roles')->where('name', 'Administrator')->value('id');
-        $cityPlannerId         = DB::table('roles')->where('name', 'City planner')->value('id');
-        $expertInEffectsId     = DB::table('roles')->where('name', 'Expert in effects')->value('id');
-        $municipalPoliceMakerId = DB::table('roles')->where('name', 'Municipal policy maker')->value('id');
+        $administratorId   = DB::table('roles')->where('name', 'Administrator')->value('id');
+        $cityPlannerId     = DB::table('roles')->where('name', 'City planner')->value('id');
+        $expertInEffectsId = DB::table('roles')->where('name', 'Expert in effects')->value('id');
+        $policyMakerId     = DB::table('roles')->where('name', 'Policy maker')->value('id');
 
         DB::table('users')->insert([
             [
@@ -44,10 +44,10 @@ class UsersSeeder extends Seeder
                 'updated_at'        => now(),
             ],
             [
-                'name'              => 'Municipal Policy Maker',
+                'name'              => 'Policy Maker',
                 'email'             => 'policymaker@metropolis.test',
                 'password'          => Hash::make('policymaker@metropolis.test'),
-                'role_id'           => $municipalPoliceMakerId,
+                'role_id'           => $policyMakerId,
                 'email_verified_at' => now(),
                 'created_at'        => now(),
                 'updated_at'        => now(),

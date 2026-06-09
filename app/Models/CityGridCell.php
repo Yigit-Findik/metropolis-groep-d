@@ -17,12 +17,14 @@ class CityGridCell extends Model
         'column_index',
         'function_id',
         'is_selected',
+        'is_approved',
     ];
 
     protected $casts = [
         'row_index' => 'integer',
         'column_index' => 'integer',
         'function_id' => 'integer',
+        'is_approved' => 'boolean',
     ];
 
     public function cityFunction()

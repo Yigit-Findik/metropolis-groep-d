@@ -41,12 +41,12 @@ Route::get('/', function () {
     ]);
 });
 
-Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects,Municipal policy maker'])->get('/dashboard', function () {
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects,Policy maker'])->get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
 
-// Read-only grid access — city planners, administrators, and municipal policy makers
-Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Municipal policy maker'])->group(function () {
+// Grid view — accessible to city planners, administrators, and policy makers
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Policy maker'])->group(function () {
     Route::get('/grid', [CityGridCellController::class, 'index'])->name('grid');
 
     // SIM.1.4 - QoL score calculation
@@ -82,6 +82,7 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     // Get valid/invalid cells for adjacency rules
     Route::get('/grid/valid-cells', [CityGridCellController::class, 'getValidCells']);
 
+
     // SIM.3 - Remove a function from a cell
     Route::delete('/grid/{id}/remove', [CityGridCellController::class, 'removeFunction']);
 
@@ -103,6 +104,15 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::get('/event-cells', [EventRouteController::class, 'eventCells']);
 
 });
+
+// BES.3 - Approval management — policy maker and administrator
+Route::middleware(['auth', 'verified', 'role:Policy maker,Administrator'])->group(function () {
+    Route::post('/grid/approve-all', [CityGridCellController::class, 'approveAllCells']);
+    Route::post('/grid/revoke-all', [CityGridCellController::class, 'revokeAllCells']);
+    Route::post('/grid/{id}/approve', [CityGridCellController::class, 'approveCell']);
+    Route::delete('/grid/{id}/revoke', [CityGridCellController::class, 'revokeCell']);
+});
+
 
 // EFF.1 - Effect management table — accessible to city planners, effects experts, and administrators
 Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects'])->group(function () {
