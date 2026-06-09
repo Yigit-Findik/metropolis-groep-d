@@ -164,7 +164,7 @@
                         <div class="mb-4 flex items-center gap-2">
                             @if($userRole === 'Policy maker' || $userRole === 'Administrator')
                                 <button id="approve-all-button"
-                                        class="flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm"
+                                        class="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm"
                                         title="Approve the entire grid">
                                     <span class="material-symbols-outlined" style="font-size:1.1rem">lock</span>
                                     Approve All
@@ -202,7 +202,7 @@
                                     <button
                                         type="button"
                                         tabindex="0"
-                                        class="grid-cell w-full relative border aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-2 lg:p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }} {{ ($cell->is_approved ?? false) ? 'is-approved border-purple-600 dark:border-purple-500' : 'border-gray-200 dark:border-gray-700' }}"
+                                        class="grid-cell w-full relative border aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-2 lg:p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }} {{ ($cell->is_approved ?? false) ? 'is-approved border-green-600 dark:border-green-500' : 'border-gray-200 dark:border-gray-700' }}"
                                         :style="isDesktop ? `width: ${size}px; height: ${size}px; border-width: calc(var(--grid-size) / 48);` : 'border-width: calc(var(--grid-size) / 48);'"
                                         draggable="true"
                                         data-grid-cell
@@ -240,7 +240,7 @@
                                     {{-- Approve/revoke toggle sits OUTSIDE the button so its click never triggers the cell click --}}
                                     @if($userRole === 'Policy maker' || $userRole === 'Administrator')
                                         <span
-                                            class="approve-toggle material-symbols-outlined absolute top-1 right-1 z-10 cursor-pointer select-none transition-colors rounded border {{ ($cell->is_approved ?? false) ? 'text-purple-600 hover:text-red-500 border-purple-600' : 'text-gray-300 hover:text-purple-600 border-gray-300' }}"
+                                            class="approve-toggle material-symbols-outlined absolute top-1 right-1 z-10 cursor-pointer select-none transition-colors rounded border {{ ($cell->is_approved ?? false) ? 'text-green-600 hover:text-red-500 border-green-600' : 'text-gray-300 hover:text-green-600 border-gray-300' }}"
                                             style="font-size: max(10px, calc(var(--grid-size) * 0.14))"
                                             data-cell-id="{{ $cell->id ?? '' }}"
                                             data-approved="{{ ($cell->is_approved ?? false) ? 'true' : 'false' }}"
@@ -248,7 +248,7 @@
                                             role="button"
                                             tabindex="0"
                                             aria-label="{{ ($cell->is_approved ?? false) ? 'Revoke approval for row ' . $cell->row_index . ' column ' . $cell->column_index : 'Approve row ' . $cell->row_index . ' column ' . $cell->column_index }}"
-                                        >{{ ($cell->is_approved ?? false) ? 'lock_open' : 'lock' }}</span>
+                                        >{{ ($cell->is_approved ?? false) ? 'lock' : 'lock_open' }}</span>
                                     @endif
                                     </div>
 

@@ -70,18 +70,18 @@ export class GridController {
     // Applies the approved visual state to a cell element
     #applyApprovedState(cell) {
         cell.dataset.approved = 'true';
-        cell.classList.add('is-approved', 'border-purple-600', 'dark:border-purple-500');
+        cell.classList.add('is-approved', 'border-green-600', 'dark:border-green-500');
         cell.classList.remove('border-gray-200', 'dark:border-gray-700');
 
         // Update the approve toggle if present
         const toggle = cell.parentElement?.querySelector('.approve-toggle');
         if (toggle) {
-            toggle.textContent = 'lock_open';
+            toggle.textContent = 'lock';
             toggle.dataset.approved = 'true';
             toggle.title = 'Revoke approval';
             toggle.setAttribute('aria-label', toggle.getAttribute('aria-label')?.replace('Approve', 'Revoke approval for') ?? 'Revoke approval');
-            toggle.classList.remove('text-gray-300', 'hover:text-purple-600', 'border-gray-300');
-            toggle.classList.add('text-purple-600', 'hover:text-red-500', 'border-purple-600');
+            toggle.classList.remove('text-gray-300', 'hover:text-green-600', 'border-gray-300');
+            toggle.classList.add('text-green-600', 'hover:text-red-500', 'border-green-600');
         }
 
         // Update aria-label on the cell button
@@ -94,17 +94,17 @@ export class GridController {
     // Removes the approved visual state from a cell element
     #removeApprovedState(cell) {
         cell.dataset.approved = 'false';
-        cell.classList.remove('is-approved', 'border-purple-600', 'dark:border-purple-500');
+        cell.classList.remove('is-approved', 'border-green-600', 'dark:border-green-500');
         cell.classList.add('border-gray-200', 'dark:border-gray-700');
 
         // Update the approve toggle if present
         const toggle = cell.parentElement?.querySelector('.approve-toggle');
         if (toggle) {
-            toggle.textContent = 'lock';
+            toggle.textContent = 'lock_open';
             toggle.dataset.approved = 'false';
             toggle.title = 'Approve this cell';
-            toggle.classList.remove('text-purple-600', 'hover:text-red-500', 'border-purple-600');
-            toggle.classList.add('text-gray-300', 'hover:text-purple-600', 'border-gray-300');
+            toggle.classList.remove('text-green-600', 'hover:text-red-500', 'border-green-600');
+            toggle.classList.add('text-gray-300', 'hover:text-green-600', 'border-gray-300');
         }
 
         // Remove ', approved' from aria-label
