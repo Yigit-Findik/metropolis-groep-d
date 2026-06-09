@@ -184,10 +184,50 @@ export class GridApi {
         });
 
         if (!response.ok) {
-            const data = await this.#readJsonResponse(response, 'access road destroy').catch(() => ({}));
-            throw new Error(data.message || `Delete access road failed: ${response.status}`);
+            const data = await this.#readJsonResponse(response, 'grid revoke').catch(() => ({}));
+            throw new Error(data.message || `Revoke failed: ${response.status}`);
         }
 
-        return this.#readJsonResponse(response, 'access road destroy');
+        return this.#readJsonResponse(response, 'grid revoke');
+    }
+
+    // Approves all grid cells at once (policy maker only)
+    async approveAll() {
+        const response = await fetch('/grid/approve-all', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': this.#csrfToken,
+            },
+        });
+
+        if (!response.ok) {
+            const data = await this.#readJsonResponse(response, 'grid approve-all').catch(() => ({}));
+            throw new Error(data.message || `Approve all failed: ${response.status}`);
+        }
+
+        return this.#readJsonResponse(response, 'grid approve-all');
+    }
+
+    // Revokes approval from all grid cells at once (policy maker only)
+    async revokeAll() {
+        const response = await fetch('/grid/revoke-all', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': this.#csrfToken,
+            },
+        });
+
+        if (!response.ok) {
+            const data = await this.#readJsonResponse(response, 'grid revoke-all').catch(() => ({}));
+            throw new Error(data.message || `Revoke all failed: ${response.status}`);
+        }
+
+        return this.#readJsonResponse(response, 'grid revoke-all');
     }
 }

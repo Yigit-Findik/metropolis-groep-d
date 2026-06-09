@@ -15,7 +15,7 @@ class RolesSeeder extends Seeder
         DB::table('roles')->truncate();
         Schema::enableForeignKeyConstraints();
 
-        foreach (['Administrator', 'City planner', 'Expert in effects', 'Municipal policy maker'] as $name) {
+        foreach (['Administrator', 'City planner', 'Expert in effects', 'Policy maker'] as $name) {
             DB::table('roles')->insert([
                 'name'       => $name,
                 'created_at' => now(),
