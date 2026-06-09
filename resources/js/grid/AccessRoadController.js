@@ -181,6 +181,7 @@ export class AccessRoadController {
             this.#renderRoadHighlights();
             this.#renderRoadList();
             this.#qolService?.refresh();
+            document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: this.#roads } }));
 
             const msg = `Access road placed (${result.road.cell_ids.length} cells). Mobility score updated.`;
             notify(msg);
@@ -201,6 +202,7 @@ export class AccessRoadController {
             this.#renderRoadHighlights();
             this.#renderRoadList();
             this.#qolService?.refresh();
+            document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: this.#roads } }));
         } catch (err) {
             notify(err.message || 'Failed to toggle road.');
         }
@@ -214,6 +216,7 @@ export class AccessRoadController {
             this.#renderRoadHighlights();
             this.#renderRoadList();
             this.#qolService?.refresh();
+            document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: this.#roads } }));
 
             // SIM.12.2 - Notify EventRouteController so it can drop routes that used this road.
             document.dispatchEvent(new CustomEvent('road-removed', { detail: { road_id: id } }));

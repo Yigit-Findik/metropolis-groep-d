@@ -8,12 +8,9 @@ use App\Models\CityFunction;
 use App\Models\ActionHistory;
 use App\Services\QolScoreService;
 use App\Http\Controllers\AccessRoadController;
-<<<<<<< HEAD
 use App\Http\Controllers\EventRouteController;
-=======
 use App\Models\CityEvent;
 use Barryvdh\DomPDF\Facade\Pdf;
->>>>>>> sim12.1
 
 class CityGridCellController extends Controller
 {

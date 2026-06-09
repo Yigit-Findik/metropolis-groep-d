@@ -266,8 +266,8 @@
                 </div>
 
                 {{-- SIM.12.2 - Event Route Panel --}}
-                <section class="w-full lg:w-auto bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-700 rounded-2xl p-6 shadow-sm"
-                         aria-labelledby="event-route-heading">
+                <div class="w-full lg:w-auto bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-700 rounded-2xl p-6 shadow-sm"
+                     aria-labelledby="event-route-heading">
                     <div class="flex items-center justify-between mb-3">
                         <h3 id="event-route-heading" class="text-sm font-semibold text-violet-800 dark:text-violet-200 uppercase tracking-wide">Event Routes</h3>
                         <div class="flex gap-2">
@@ -286,11 +286,8 @@
                         </div>
                     </div>
 
-                    {{-- Road selector --}}
                     <div class="mb-3">
-                        <label for="event-route-road-select" class="block text-xs font-medium text-violet-700 dark:text-violet-300 mb-1">
-                            Access road to route from
-                        </label>
+                        <label for="event-route-road-select" class="block text-xs font-medium text-violet-700 dark:text-violet-300 mb-1">Access road to route from</label>
                         <select id="event-route-road-select"
                                 class="w-full text-xs rounded-lg border border-violet-300 dark:border-violet-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-violet-500">
                             <option value="" disabled selected>Select an access road…</option>
@@ -298,25 +295,12 @@
                     </div>
 
                     <p id="event-route-status"
-                       class="text-xs text-violet-700 dark:text-violet-300 mb-3 min-h-[2rem]"
+                       class="text-xs text-violet-700 dark:text-violet-300 mb-3 min-h-[1rem]"
                        aria-live="polite"
                        aria-atomic="true"></p>
 
                     <div id="event-route-list" class="space-y-1"></div>
-
-                    {{-- Legend --}}
-                    <div class="mt-4 pt-3 border-t border-violet-200 dark:border-violet-700 space-y-1">
-                        <p class="text-xs text-violet-600 dark:text-violet-400 font-medium">Legend</p>
-                        <div class="flex items-center gap-2">
-                            <span class="inline-block w-4 h-4 rounded border-2 border-violet-500 bg-violet-100 dark:bg-violet-800/40" aria-hidden="true"></span>
-                            <span class="text-xs text-violet-700 dark:text-violet-300">Event location</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="inline-block w-4 h-4 rounded border-2 border-violet-700 bg-violet-200 dark:bg-violet-700/60" aria-hidden="true"></span>
-                            <span class="text-xs text-violet-700 dark:text-violet-300">Event route path</span>
-                        </div>
-                    </div>
-                </section>
+                </div>
 
                 {{-- Close the main grid section --}}
                 </section>
