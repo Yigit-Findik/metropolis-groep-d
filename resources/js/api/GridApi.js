@@ -118,7 +118,10 @@ export class GridApi {
     // Returns all stored access roads with their cell IDs
     async getAccessRoads() {
         const response = await fetch('/access-roads', {
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
         });
 
         if (!response.ok) {
@@ -139,7 +142,10 @@ export class GridApi {
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': this.#csrfToken,
             },
-            body: JSON.stringify({ start_cell_id: parseInt(startCellId), end_cell_id: parseInt(endCellId) }),
+            body: JSON.stringify({
+                start_cell_id: parseInt(startCellId),
+                end_cell_id: parseInt(endCellId),
+            }),
         });
 
         const data = await this.#readJsonResponse(response, 'access road store').catch(() => ({}));
@@ -174,6 +180,46 @@ export class GridApi {
     // Removes an access road by ID
     async destroyAccessRoad(id) {
         const response = await fetch(`/access-roads/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': this.#csrfToken,
+            },
+        });
+
+        if (!response.ok) {
+            const data = await this.#readJsonResponse(response, 'access road destroy').catch(() => ({}));
+            throw new Error(data.message || `Destroy access road failed: ${response.status}`);
+        }
+
+        return this.#readJsonResponse(response, 'access road destroy');
+    }
+
+    // Approves a single grid cell (policy maker only)
+    async approve(cellId) {
+        const response = await fetch(`/grid/${cellId}/approve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': this.#csrfToken,
+            },
+        });
+
+        if (!response.ok) {
+            const data = await this.#readJsonResponse(response, 'grid approve').catch(() => ({}));
+            throw new Error(data.message || `Approve failed: ${response.status}`);
+        }
+
+        return this.#readJsonResponse(response, 'grid approve');
+    }
+
+    // Revokes approval from a single grid cell (policy maker only)
+    async revoke(cellId) {
+        const response = await fetch(`/grid/${cellId}/revoke`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
