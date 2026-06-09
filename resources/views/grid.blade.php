@@ -295,6 +295,43 @@
                     <div id="access-road-list" class="space-y-1"></div>
                 </div>
 
+                {{-- SIM.12.2 - Event Route Panel --}}
+                <div class="w-full lg:w-auto bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-700 rounded-2xl p-6 shadow-sm"
+                     aria-labelledby="event-route-heading">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 id="event-route-heading" class="text-sm font-semibold text-violet-800 dark:text-violet-200 uppercase tracking-wide">Event Routes</h3>
+                        <div class="flex gap-2">
+                            <button id="event-route-create"
+                                    type="button"
+                                    disabled
+                                    aria-disabled="true"
+                                    class="bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400">
+                                Create Route
+                            </button>
+                            <button id="event-route-cancel"
+                                    type="button"
+                                    class="hidden bg-gray-500 hover:bg-gray-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="event-route-road-select" class="block text-xs font-medium text-violet-700 dark:text-violet-300 mb-1">Access road to route from</label>
+                        <select id="event-route-road-select"
+                                class="w-full text-xs rounded-lg border border-violet-300 dark:border-violet-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                            <option value="" disabled selected>Select an access road…</option>
+                        </select>
+                    </div>
+
+                    <p id="event-route-status"
+                       class="text-xs text-violet-700 dark:text-violet-300 mb-3 min-h-[1rem]"
+                       aria-live="polite"
+                       aria-atomic="true"></p>
+
+                    <div id="event-route-list" class="space-y-1"></div>
+                </div>
+
                 {{-- Close the main grid section --}}
                 </section>
 
@@ -387,7 +424,9 @@
     </div>
 
     {{-- SIM.12 - Access road visual styles --}}
+    {{-- SIM.12.2 - Event route visual styles --}}
     <style>
+        /* Access road cells — amber */
         .road-cell {
             background-color: rgba(245, 158, 11, 0.18) !important;
             border-color: rgb(245, 158, 11) !important;
@@ -401,6 +440,38 @@
         }
         .road-selection-mode [data-grid-cell]:hover {
             outline: 3px solid rgb(245, 158, 11);
+            outline-offset: -3px;
+        }
+
+        /* Event location cells — violet outline + light background */
+        .event-location-cell {
+            background-color: rgba(139, 92, 246, 0.12) !important;
+            border-color: rgb(139, 92, 246) !important;
+            border-style: dashed !important;
+        }
+
+        /* Event route path cells — solid violet, stronger fill */
+        .event-route-cell {
+            background-color: rgba(109, 40, 217, 0.22) !important;
+            border-color: rgb(109, 40, 217) !important;
+        }
+
+        /* When a cell is both a road and a route, route takes visual precedence */
+        .event-route-cell.road-cell {
+            background-color: rgba(109, 40, 217, 0.30) !important;
+            border-color: rgb(109, 40, 217) !important;
+        }
+
+        /* Event route selection mode cursor and hover */
+        .event-route-selection-mode [data-grid-cell] {
+            cursor: default;
+        }
+        .event-route-selection-mode [data-grid-cell].event-location-cell {
+            cursor: pointer;
+        }
+        .event-route-selection-mode [data-grid-cell].event-location-cell:hover,
+        .event-route-selection-mode [data-grid-cell].event-location-cell:focus {
+            outline: 3px solid rgb(139, 92, 246);
             outline-offset: -3px;
         }
     </style>

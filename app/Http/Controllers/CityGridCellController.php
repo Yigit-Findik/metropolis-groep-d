@@ -8,6 +8,7 @@ use App\Models\CityFunction;
 use App\Models\ActionHistory;
 use App\Services\QolScoreService;
 use App\Http\Controllers\AccessRoadController;
+use App\Http\Controllers\EventRouteController;
 use App\Models\CityEvent;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -117,9 +118,21 @@ class CityGridCellController extends Controller
 
         $response = ['message' => 'Function assigned', 'cell' => $cell];
 
-        // SIM.12.1 - A placed safety function may block existing road paths; recalculate all roads.
+        // SIM.12.1/12.2 - A placed safety function may block road and event route paths; recalculate both.
         if (strtolower(trim($function->category ?? '')) === 'safety') {
-            $response['updated_roads'] = (new AccessRoadController)->recalculateAllRoads();
+            $response['updated_roads']        = (new AccessRoadController)->recalculateAllRoads();
+            $response['updated_event_routes'] = (new EventRouteController)->recalculateAllEventRoutes();
+        }
+
+        // SIM.12.2 - If this cell was an event destination and the new function is no longer an
+        // event location, remove any event routes that ended here.
+        $isEventLocation = \DB::table('city_event_city_function')
+            ->where('city_function_id', $request->function_id)
+            ->exists();
+
+        if (! $isEventLocation) {
+            (new EventRouteController)->removeRoutesForCell((int) $id);
+            $response['removed_event_routes'] = true;
         }
 
         return response()->json($response);
@@ -295,10 +308,14 @@ class CityGridCellController extends Controller
             'cell' => $cell,
         ];
 
-        // SIM.12.1 - A removed safety function may unblock shorter routes; recalculate all roads.
+        // SIM.12.1/12.2 - A removed safety function may unblock road and event route paths; recalculate both.
         if ($wasSafety) {
-            $response['updated_roads'] = (new AccessRoadController)->recalculateAllRoads();
+            $response['updated_roads']        = (new AccessRoadController)->recalculateAllRoads();
+            $response['updated_event_routes'] = (new EventRouteController)->recalculateAllEventRoutes();
         }
+
+        // SIM.12.2 - Removing a function strips the event location from this cell; clean up routes.
+        (new EventRouteController)->removeRoutesForCell((int) $id);
 
         return response()->json($response);
     }

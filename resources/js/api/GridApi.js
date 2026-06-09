@@ -157,10 +157,60 @@ export class GridApi {
         return data;
     }
 
-    // Flips is_active on an access road
-    async toggleAccessRoad(id) {
-        const response = await fetch(`/access-roads/${id}/toggle`, {
-            method: 'PATCH',
+    // Returns all grid cells that are event locations (function linked to a city event)
+    async getEventCells() {
+        const response = await fetch('/event-cells', {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        });
+
+        if (!response.ok) {
+            const data = await this.#readJsonResponse(response, 'event cells').catch(() => ({}));
+            throw new Error(data.message || `Event cells fetch failed: ${response.status}`);
+        }
+
+        return this.#readJsonResponse(response, 'event cells');
+    }
+
+    // Returns all stored event routes with their cell IDs
+    async getEventRoutes() {
+        const response = await fetch('/event-routes', {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        });
+
+        if (!response.ok) {
+            const data = await this.#readJsonResponse(response, 'event routes index').catch(() => ({}));
+            throw new Error(data.message || `Event routes fetch failed: ${response.status}`);
+        }
+
+        return this.#readJsonResponse(response, 'event routes index');
+    }
+
+    // Creates an event route from an access road to an event cell
+    async storeEventRoute(accessRoadId, eventCellId) {
+        const response = await fetch('/event-routes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': this.#csrfToken,
+            },
+            body: JSON.stringify({ access_road_id: parseInt(accessRoadId), event_cell_id: parseInt(eventCellId) }),
+        });
+
+        const data = await this.#readJsonResponse(response, 'event route store').catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(data.message || `Store event route failed: ${response.status}`);
+        }
+
+        return data;
+    }
+
+    // Removes an event route by ID
+    async destroyEventRoute(id) {
+        const response = await fetch(`/event-routes/${id}`, {
+            method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
@@ -170,11 +220,11 @@ export class GridApi {
         });
 
         if (!response.ok) {
-            const data = await this.#readJsonResponse(response, 'access road toggle').catch(() => ({}));
-            throw new Error(data.message || `Toggle access road failed: ${response.status}`);
+            const data = await this.#readJsonResponse(response, 'event route destroy').catch(() => ({}));
+            throw new Error(data.message || `Delete event route failed: ${response.status}`);
         }
 
-        return this.#readJsonResponse(response, 'access road toggle');
+        return this.#readJsonResponse(response, 'event route destroy');
     }
 
     // Removes an access road by ID

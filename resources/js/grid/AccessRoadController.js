@@ -181,6 +181,7 @@ export class AccessRoadController {
             this.#renderRoadHighlights();
             this.#renderRoadList();
             this.#qolService?.refresh();
+            document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: this.#roads } }));
 
             const msg = `Access road placed (${result.road.cell_ids.length} cells). Mobility score updated.`;
             notify(msg);
@@ -192,20 +193,6 @@ export class AccessRoadController {
         }
     }
 
-    async #toggleRoad(id) {
-        try {
-            const updated = await this.#api.toggleAccessRoad(id);
-            const idx = this.#roads.findIndex(r => r.id === updated.id);
-            if (idx !== -1) this.#roads[idx] = updated;
-            this.#syncRoadCellIds();
-            this.#renderRoadHighlights();
-            this.#renderRoadList();
-            this.#qolService?.refresh();
-        } catch (err) {
-            notify(err.message || 'Failed to toggle road.');
-        }
-    }
-
     async #removeRoad(id, label) {
         try {
             await this.#api.destroyAccessRoad(id);
@@ -214,6 +201,10 @@ export class AccessRoadController {
             this.#renderRoadHighlights();
             this.#renderRoadList();
             this.#qolService?.refresh();
+            document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: this.#roads } }));
+
+            // SIM.12.2 - Notify EventRouteController so it can drop routes that used this road.
+            document.dispatchEvent(new CustomEvent('road-removed', { detail: { road_id: id } }));
 
             const msg = `${label} removed. Mobility score updated.`;
             notify(msg);
@@ -276,15 +267,6 @@ export class AccessRoadController {
             const actions = document.createElement('div');
             actions.className = 'flex gap-1';
 
-            const toggleBtn = document.createElement('button');
-            toggleBtn.type = 'button';
-            toggleBtn.className = active
-                ? 'text-xs text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1'
-                : 'text-xs text-green-600 dark:text-green-400 hover:underline focus:outline-none focus:ring-1 focus:ring-green-500 rounded px-1';
-            toggleBtn.textContent = active ? 'Deactivate' : 'Activate';
-            toggleBtn.setAttribute('aria-label', `${active ? 'Deactivate' : 'Activate'} ${label}`);
-            toggleBtn.addEventListener('click', () => this.#toggleRoad(road.id));
-
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
             removeBtn.className = 'text-xs text-red-600 dark:text-red-400 hover:underline focus:outline-none focus:ring-1 focus:ring-red-500 rounded px-1';
@@ -292,7 +274,6 @@ export class AccessRoadController {
             removeBtn.setAttribute('aria-label', `Remove ${label}`);
             removeBtn.addEventListener('click', () => this.#removeRoad(road.id, label));
 
-            actions.appendChild(toggleBtn);
             actions.appendChild(removeBtn);
             row.appendChild(span);
             row.appendChild(actions);

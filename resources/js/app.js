@@ -23,6 +23,7 @@ import { GridApi } from './api/GridApi';
 import { QolService } from './qol/QolService';
 import { GridController } from './grid/GridController';
 import { AccessRoadController } from './grid/AccessRoadController';
+import { EventRouteController } from './grid/EventRouteController';
 import { HoverPopup } from './hover/HoverPopup';
 import { FunctionLibraryPreview } from './library/FunctionLibraryPreview';
 
@@ -66,4 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const accessRoadController = new AccessRoadController(api, qolService);
     accessRoadController.init();
+
+    const eventRouteController = new EventRouteController(api, qolService);
+    eventRouteController.init();
 });

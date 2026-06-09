@@ -392,8 +392,12 @@ export class GridController {
                 });
                 this.#qolService.refresh(true);
                 this.#qolService.showToast(functionName, qolScore);
+                document.dispatchEvent(new CustomEvent('grid-updated'));
                 if (data.updated_roads) {
                     document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
+                }
+                if (data.updated_event_routes) {
+                    document.dispatchEvent(new CustomEvent('event-routes-updated', { detail: { routes: data.updated_event_routes } }));
                 }
             })
             .catch((error) => {
@@ -452,6 +456,7 @@ export class GridController {
                     this.#qolService.refresh(true);
                     // Show the negative impact of the removal
                     this.#qolService.showToast(functionName, -oldQolScore);
+                    document.dispatchEvent(new CustomEvent('grid-updated'));
 
                     if (data.updated_roads) {
                         document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
@@ -513,6 +518,7 @@ export class GridController {
 
                     this.#qolService.refresh(true);
                     this.#qolService.showToast('Action undone', 0);
+                    document.dispatchEvent(new CustomEvent('grid-updated'));
                 })
                 .catch(() => notify('Nothing to undo'));
         });
@@ -609,9 +615,13 @@ export class GridController {
                 cellElement.blur();
                 this.#qolService.refresh(true);
                 this.#qolService.showToast(functionName, -oldQolScore);
+                document.dispatchEvent(new CustomEvent('grid-updated'));
 
                 if (data.updated_roads) {
                     document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
+                }
+                if (data.updated_event_routes) {
+                    document.dispatchEvent(new CustomEvent('event-routes-updated', { detail: { routes: data.updated_event_routes } }));
                 }
             })
             .catch((error) => {
@@ -721,6 +731,7 @@ export class GridController {
 
             this.#qolService.refresh(true);
             this.#qolService.showToast(functionName, qolScore);
+            document.dispatchEvent(new CustomEvent('grid-updated'));
             const msg = `Moved ${functionName} to the selected cell.`;
             notify(msg);
             this.#announce(msg);
@@ -772,8 +783,12 @@ export class GridController {
                 });
                 this.#qolService.refresh(true);
                 this.#qolService.showToast(selected.functionName, selected.qolScore);
+                document.dispatchEvent(new CustomEvent('grid-updated'));
                 if (data.updated_roads) {
                     document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
+                }
+                if (data.updated_event_routes) {
+                    document.dispatchEvent(new CustomEvent('event-routes-updated', { detail: { routes: data.updated_event_routes } }));
                 }
             })
             .catch((error) => {

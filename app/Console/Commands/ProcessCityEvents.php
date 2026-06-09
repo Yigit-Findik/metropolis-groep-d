@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\CityEvent;
+use App\Models\CityGridCell;
+use App\Models\EventRoute;
 use Illuminate\Console\Command;
 
 class ProcessCityEvents extends Command
@@ -15,19 +17,23 @@ class ProcessCityEvents extends Command
         $now = now();
 
         // --- Deactivate expired one-off events ---
-        $deactivatedOneOff = CityEvent::where('is_active', true)
+        $expiredOneOff = CityEvent::where('is_active', true)
             ->where('event_type', 'one-off')
             ->whereNotNull('expires_at')
             ->where('expires_at', '<=', $now)
-            ->update(['is_active' => false]);
+            ->get();
+        $this->deleteRoutesForEvents($expiredOneOff);
+        $deactivatedOneOff = CityEvent::whereIn('id', $expiredOneOff->pluck('id'))->update(['is_active' => false]);
 
         // --- Deactivate recurring events whose active window has closed ---
         // expires_at marks the end of the active window (activated_at + active_duration).
-        $deactivatedRecurring = CityEvent::where('is_active', true)
+        $expiredRecurring = CityEvent::where('is_active', true)
             ->where('event_type', 'recurring')
             ->whereNotNull('expires_at')
             ->where('expires_at', '<=', $now)
-            ->update(['is_active' => false]);
+            ->get();
+        $this->deleteRoutesForEvents($expiredRecurring);
+        $deactivatedRecurring = CityEvent::whereIn('id', $expiredRecurring->pluck('id'))->update(['is_active' => false]);
 
         // --- Reactivate recurring events whose next cycle start is due ---
         // Next cycle starts at activated_at + cycle_duration.
@@ -53,5 +59,14 @@ class ProcessCityEvents extends Command
             "Recurring deactivated: {$deactivatedRecurring}. " .
             "Recurring reactivated: {$toReactivate->count()}."
         );
+    }
+
+    private function deleteRoutesForEvents($events): void
+    {
+        foreach ($events as $event) {
+            $functionIds = $event->cityFunctions()->pluck('city_functions.id');
+            $cellIds = CityGridCell::whereIn('function_id', $functionIds)->pluck('id');
+            EventRoute::whereIn('event_cell_id', $cellIds)->delete();
+        }
     }
 }

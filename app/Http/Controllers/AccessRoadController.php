@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\AccessRoad;
 use App\Models\CityGridCell;
+use App\Http\Controllers\EventRouteController;
 
 class AccessRoadController extends Controller
 {
@@ -88,6 +89,10 @@ class AccessRoadController extends Controller
     public function destroy($id)
     {
         $road = AccessRoad::findOrFail($id);
+
+        // SIM.12.2 - Remove event routes that depend on this road before deleting it.
+        (new EventRouteController)->removeRoutesForRoad((int) $id);
+
         $road->cells()->detach();
         $road->delete();
 

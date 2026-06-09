@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CityGridCellController;
 use App\Http\Controllers\AccessRoadController;
+use App\Http\Controllers\EventRouteController;
 use App\Http\Controllers\EffectController;
 use App\Http\Controllers\PendingActionController;
 use App\Http\Controllers\AuditLogController;
@@ -95,6 +96,13 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
 
     // SIM.12.1 - Activate / deactivate an access road
     Route::patch('/access-roads/{id}/toggle', [AccessRoadController::class, 'toggle']);
+
+    // SIM.12.2 - Event routes: create routes from access roads to event locations
+    Route::get('/event-routes', [EventRouteController::class, 'index']);
+    Route::post('/event-routes', [EventRouteController::class, 'store']);
+    Route::delete('/event-routes/{id}', [EventRouteController::class, 'destroy']);
+    Route::get('/event-cells', [EventRouteController::class, 'eventCells']);
+
 });
 
 // BES.3 - Approval management — policy maker and administrator
