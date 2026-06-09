@@ -323,6 +323,48 @@ class CityGridCellController extends Controller
         return $pdf->stream('city-grid-report.pdf');
     }
 
+    // BES.3 - Approve a single cell
+    public function approveCell($id)
+    {
+        if ($denied = $this->ensurePolicyMaker()) return $denied;
+
+        $cell = CityGridCell::findOrFail($id);
+        $cell->update(['is_approved' => true]);
+
+        return response()->json(['message' => 'Cell approved', 'cell' => $cell]);
+    }
+
+    // BES.3 - Revoke approval from a single cell
+    public function revokeCell($id)
+    {
+        if ($denied = $this->ensurePolicyMaker()) return $denied;
+
+        $cell = CityGridCell::findOrFail($id);
+        $cell->update(['is_approved' => false]);
+
+        return response()->json(['message' => 'Cell approval revoked', 'cell' => $cell]);
+    }
+
+    // BES.3 - Approve all cells at once
+    public function approveAllCells()
+    {
+        if ($denied = $this->ensurePolicyMaker()) return $denied;
+
+        CityGridCell::query()->update(['is_approved' => true]);
+
+        return response()->json(['message' => 'All cells approved']);
+    }
+
+    // BES.3 - Revoke approval from all cells at once
+    public function revokeAllCells()
+    {
+        if ($denied = $this->ensurePolicyMaker()) return $denied;
+
+        CityGridCell::query()->update(['is_approved' => false]);
+
+        return response()->json(['message' => 'All cells disapproved']);
+    }
+
     public function undo(){
 
         $lastAction = ActionHistory::where('user_id', auth()->id())->latest()->first();
