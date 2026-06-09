@@ -33,6 +33,22 @@
                 </div>
             @endif
 
+            @if(session('error'))
+                <div x-data="autoHideToast"
+                     x-show="show"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 translate-y-2"
+                     class="fixed bottom-6 right-6 z-50 rounded-xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white shadow-lg"
+                     role="alert"
+                     aria-live="assertive">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <div class="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
                 <section tabindex="0" role="region" aria-labelledby="create-event-heading" class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
                     <div class="border-b border-gray-200 px-6 py-8 dark:border-gray-700">
@@ -101,6 +117,7 @@
         </div>
 
         @include('city_events.partials.edit-modal')
+        @include('city_events.partials.day-night-edit-modal')
 
         {{-- CONFIRMATION MODAL --------------------------------------------------
              Shared delete confirmation dialog for event deletes. Keeps keyboard
