@@ -244,7 +244,7 @@ export class GridController {
                     functionName, functionId, category, image,
                     safety, recreation, environmentQuality, facilities, mobility,
                 });
-                this.#qolService.refresh();
+                this.#qolService.refresh(true);
                 this.#qolService.showToast(functionName, qolScore);
                 if (data.updated_roads) {
                     document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
@@ -301,7 +301,7 @@ export class GridController {
                     const oldQolScore = parseInt(cellElement.dataset.qolScore ?? '0', 10);
 
                     this.#clearCell(cellElement);
-                    this.#qolService.refresh();
+                    this.#qolService.refresh(true);
                     // Show the negative impact of the removal
                     this.#qolService.showToast(functionName, -oldQolScore);
 
@@ -362,7 +362,7 @@ export class GridController {
                         });
                     }
 
-                    this.#qolService.refresh();
+                    this.#qolService.refresh(true);
                     this.#qolService.showToast('Action undone', 0);
                 })
                 .catch(() => notify('Nothing to undo'));
@@ -455,7 +455,7 @@ export class GridController {
 
                 this.#clearCell(cellElement);
                 cellElement.blur();
-                this.#qolService.refresh();
+                this.#qolService.refresh(true);
                 this.#qolService.showToast(functionName, -oldQolScore);
 
                 if (data.updated_roads) {
@@ -563,7 +563,7 @@ export class GridController {
             source.classList.remove('is-picked');
             this.#pickedUpCell = null;
 
-            this.#qolService.refresh();
+            this.#qolService.refresh(true);
             this.#qolService.showToast(functionName, qolScore);
             const msg = `Moved ${functionName} to the selected cell.`;
             notify(msg);
@@ -607,7 +607,7 @@ export class GridController {
                     facilities: selected.facilities,
                     mobility: selected.mobility,
                 });
-                this.#qolService.refresh();
+                this.#qolService.refresh(true);
                 this.#qolService.showToast(selected.functionName, selected.qolScore);
                 if (data.updated_roads) {
                     document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));

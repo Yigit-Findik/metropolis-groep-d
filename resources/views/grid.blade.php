@@ -28,14 +28,14 @@
                         {{-- Total score: spans both columns on mobile so it stands alone --}}
                         <div class="col-span-2 sm:col-span-1 min-w-0">
                             <p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wide" aria-hidden="true">Total QoL</p>
-                            <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-4xl font-bold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-value" aria-live="polite" aria-atomic="true">—</p>
-                            <p tabindex="0" class="text-gray-600 dark:text-gray-300 text-sm font-semibold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-label" aria-live="polite" aria-atomic="true">—</p>
+                            <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-4xl font-bold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-value" aria-live="polite" aria-atomic="true" aria-label="Total quality of life score">—</p>
+                            <p tabindex="0" class="text-gray-600 dark:text-gray-300 text-sm font-semibold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-label">—</p>
                         </div>
 
                         @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
                             <div>
                                 <p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wide">{{ $label }}</p>
-                                <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-xl font-semibold mt-0.5 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-{{ $slug }}" aria-live="polite" aria-atomic="true">—</p>
+                                <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-xl font-semibold mt-0.5 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-{{ $slug }}">—</p>
                             </div>
                         @endforeach
 
@@ -43,17 +43,17 @@
                         <div class="hidden lg:block lg:col-span-6"></div>
                         <div class="hidden lg:block text-gray-700 dark:text-gray-200 font-medium">Bonus:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-green-600 dark:text-green-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-bonus-{{ $slug }}" aria-live="polite" aria-atomic="true">+0</div>
+                            <div tabindex="0" class="hidden lg:block text-green-600 dark:text-green-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-bonus-{{ $slug }}">+0</div>
                         @endforeach
 
                         <div class="hidden lg:block text-gray-700 dark:text-gray-200 font-medium">Penalty:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-red-600 dark:text-red-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-penalty-{{ $slug }}" aria-live="polite" aria-atomic="true">-0</div>
+                            <div tabindex="0" class="hidden lg:block text-red-600 dark:text-red-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-penalty-{{ $slug }}">-0</div>
                         @endforeach
 
                         <div class="hidden lg:block text-gray-700 dark:text-gray-200 font-medium">Events:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-gray-500 dark:text-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-event-{{ $slug }}" aria-live="polite" aria-atomic="true">0</div>
+                            <div tabindex="0" class="hidden lg:block text-gray-500 dark:text-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-event-{{ $slug }}">0</div>
                         @endforeach
                     </div>
                 </div>
@@ -69,15 +69,17 @@
                         <p class="text-gray-500 dark:text-gray-400 text-sm">No active events.</p>
                     </template>
 
-                    <ul class="space-y-2 overflow-y-auto h-48 pr-1" aria-live="polite" aria-atomic="true">
+                    <ul class="space-y-2 overflow-y-auto h-48 pr-1" aria-label="Active events">
                         <template x-for="event in events" :key="event.id">
-                            <li class="rounded-xl px-3 py-2 border"
+                            <li class="rounded-xl px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                tabindex="0"
                                 :class="event.is_active
                                     ? 'bg-green-100 dark:bg-green-900/40 border-green-200 dark:border-green-700'
-                                    : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700'">
+                                    : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700'"
+                                :aria-label="event.name + ', ' + formatStatus(event)">
                                 <p class="text-sm font-semibold break-words"
                                    :class="event.is_active ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'"
-                                   x-text="event.name"></p>
+                                   x-text="event.name"></p>     
                                 <p class="text-xs mt-0.5"
                                    :class="event.is_active ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'"
                                    x-text="formatStatus(event)"></p>
@@ -87,6 +89,54 @@
                 </div>
 
             </div>{{-- end top bar --}}
+
+            {{-- SIM.6 — Simulation speed controls --}}
+            <div class="w-full bg-gray-800 rounded-2xl shadow-sm px-6 py-4 mb-6"
+                 x-data="simulationControls">
+
+                <div class="flex flex-wrap items-center gap-4">
+
+                    {{-- Section label --}}
+                    <span class="text-gray-400 text-xs font-semibold uppercase tracking-wide">Simulation</span>
+
+                    {{-- Play / Pause button --}}
+                    <button id="simulation-play-pause"
+                            @click="paused ? play() : pause()"
+                            :aria-label="paused ? 'Play simulation' : 'Pause simulation'"
+                            class="px-4 py-2 rounded-lg text-sm font-semibold transition text-white"
+                            :class="paused ? 'bg-green-600 hover:bg-green-500' : 'bg-yellow-500 hover:bg-yellow-400'">
+                        <span x-text="paused ? 'Play' : 'Pause'">Play</span>
+                    </button>
+
+                    {{-- Speed buttons: 1x, 2x, 5x --}}
+                    <div class="flex items-center gap-2" role="radiogroup" aria-label="Simulation speed">
+                        @foreach([1, 2, 5] as $spd)
+                            <button @click="setSpeed({{ $spd }})"
+                                    role="radio"
+                                    :aria-label="speed === {{ $spd }} ? '{{ $spd }}x, selected' : '{{ $spd }}x'"
+                                    data-speed="{{ $spd }}"
+                                    class="px-3 py-1.5 rounded-lg text-sm font-semibold transition"
+                                    :class="speed === {{ $spd }} ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'">
+                                <span aria-hidden="true">{{ $spd }}x</span>
+                            </button>
+                        @endforeach
+                    </div>
+
+                    {{-- Current speed display --}}
+                    <div class="ml-auto flex items-center gap-2 text-sm">
+                        <span class="text-gray-400">Speed:</span>
+                        <span id="simulation-current-speed"
+                              class="text-white font-bold"
+                              aria-live="polite"
+                              x-text="speed + 'x'">1x</span>
+                        <span id="simulation-status"
+                              class="text-gray-400"
+                              aria-live="polite"
+                              x-text="paused ? '(paused)' : '(running)'">(paused)</span>
+                    </div>
+
+                </div>
+            </div>
 
             {{-- Grid and library sit next to each other on desktop, above each other on mobile --}}
             <div class="flex flex-col lg:flex-row gap-6 lg:items-start" x-data="gridZoom" :style="`--grid-size: ${effectiveGridSize}px`">
