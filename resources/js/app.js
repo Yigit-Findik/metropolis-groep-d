@@ -22,6 +22,7 @@ import { dayNightCycleTimer } from './alpine/dayNightCycleTimer';
 import { GridApi } from './api/GridApi';
 import { QolService } from './qol/QolService';
 import { GridController } from './grid/GridController';
+import { AccessRoadController } from './grid/AccessRoadController';
 import { HoverPopup } from './hover/HoverPopup';
 import { FunctionLibraryPreview } from './library/FunctionLibraryPreview';
 
@@ -62,4 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('simulation:tick', () => {
         qolService.refresh();
     });
+
+    const accessRoadController = new AccessRoadController(api, qolService);
+    accessRoadController.init();
 });

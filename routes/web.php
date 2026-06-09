@@ -5,6 +5,7 @@ use App\Http\Controllers\CityFunctionController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CityGridCellController;
+use App\Http\Controllers\AccessRoadController;
 use App\Http\Controllers\EffectController;
 use App\Http\Controllers\PendingActionController;
 use App\Http\Controllers\AuditLogController;
@@ -86,6 +87,14 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
 
     // SIM.5 - Undo a function from a cell
     Route::post('/grid/undo', [CityGridCellController::class, 'undo']);
+
+    // SIM.12 - Main access road placement and removal
+    Route::get('/access-roads', [AccessRoadController::class, 'index']);
+    Route::post('/access-roads', [AccessRoadController::class, 'store']);
+    Route::delete('/access-roads/{id}', [AccessRoadController::class, 'destroy']);
+
+    // SIM.12.1 - Activate / deactivate an access road
+    Route::patch('/access-roads/{id}/toggle', [AccessRoadController::class, 'toggle']);
 });
 
 // BES.3 - Approval management — policy maker and administrator

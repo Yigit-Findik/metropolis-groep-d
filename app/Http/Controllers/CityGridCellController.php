@@ -7,6 +7,7 @@ use App\Models\CityGridCell;
 use App\Models\CityFunction;
 use App\Models\ActionHistory;
 use App\Services\QolScoreService;
+use App\Http\Controllers\AccessRoadController;
 use App\Models\CityEvent;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -85,6 +86,16 @@ class CityGridCellController extends Controller
             return response()->json(['message' => $error], 422);
         }
 
+        // Safety functions cannot be placed on cells that are part of an active route.
+        if (strtolower(trim($function->category ?? '')) === 'safety') {
+            $onRoute = \App\Models\AccessRoad::where('is_active', true)
+                ->whereHas('cells', fn($q) => $q->where('city_grid_cells.id', $cell->id))
+                ->exists();
+            if ($onRoute) {
+                return response()->json(['message' => 'Safety functions cannot be placed on an active route.'], 422);
+            }
+        }
+
         $oldFunctionId = $cell->function_id; // Saved so we can record it in ActionHistory before it is replaced
 
         $cell->update([
@@ -104,10 +115,14 @@ class CityGridCellController extends Controller
             ],
         ]);
 
-        return response()->json([
-            'message' => 'Function assigned',
-            'cell' => $cell
-        ]);
+        $response = ['message' => 'Function assigned', 'cell' => $cell];
+
+        // SIM.12.1 - A placed safety function may block existing road paths; recalculate all roads.
+        if (strtolower(trim($function->category ?? '')) === 'safety') {
+            $response['updated_roads'] = (new AccessRoadController)->recalculateAllRoads();
+        }
+
+        return response()->json($response);
     }
 
     /**
@@ -238,8 +253,8 @@ class CityGridCellController extends Controller
     // SIM.3 - Clears a function from the given cell and records the removal in ActionHistory.
     public function removeFunction($id)
     {
-        // Load the target cell once so we can validate and update the same record.
-        $cell = CityGridCell::findOrFail($id);
+        // Load the target cell with its function so we can check the category before clearing.
+        $cell = CityGridCell::with('cityFunction')->findOrFail($id);
 
         if ($cell->is_approved) {
             return response()->json(['message' => 'This cell is approved and its destination is protected — it cannot be modified.'], 422);
@@ -254,6 +269,8 @@ class CityGridCellController extends Controller
         }
 
         $oldFunctionId = $cell->function_id;
+        $wasSafety = $cell->cityFunction
+            && strtolower(trim($cell->cityFunction->category ?? '')) === 'safety';
 
         // Remove the function by setting function_id to null
         // This leaves all other cells completely untouched
@@ -273,10 +290,17 @@ class CityGridCellController extends Controller
             ],
         ]);
 
-        return response()->json([
+        $response = [
             'message' => 'Function removed successfully',
-            'cell' => $cell
-        ]);
+            'cell' => $cell,
+        ];
+
+        // SIM.12.1 - A removed safety function may unblock shorter routes; recalculate all roads.
+        if ($wasSafety) {
+            $response['updated_roads'] = (new AccessRoadController)->recalculateAllRoads();
+        }
+
+        return response()->json($response);
     }
 
     public function previewPdf()
