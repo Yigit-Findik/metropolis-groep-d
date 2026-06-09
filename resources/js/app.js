@@ -16,11 +16,13 @@ import { deleteForm } from './alpine/deleteForm';
 import { effectEditor } from './alpine/effectEditor';
 import { confirmModal } from './alpine/confirmModal';
 import { simulationControls } from './alpine/simulationControls';
+import { dayNightCycleTimer } from './alpine/dayNightCycleTimer';
 
 // Core modules
 import { GridApi } from './api/GridApi';
 import { QolService } from './qol/QolService';
 import { GridController } from './grid/GridController';
+import { AccessRoadController } from './grid/AccessRoadController';
 import { HoverPopup } from './hover/HoverPopup';
 import { FunctionLibraryPreview } from './library/FunctionLibraryPreview';
 
@@ -39,6 +41,7 @@ Alpine.data('deleteForm', deleteForm);
 Alpine.data('effectEditor', effectEditor);
 Alpine.data('confirmModal', confirmModal);
 Alpine.data('simulationControls', simulationControls);
+Alpine.data('dayNightCycleTimer', dayNightCycleTimer);
 
 window.Alpine = Alpine;
 Alpine.start();
@@ -60,4 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('simulation:tick', () => {
         qolService.refresh();
     });
+
+    const accessRoadController = new AccessRoadController(api, qolService);
+    accessRoadController.init();
 });

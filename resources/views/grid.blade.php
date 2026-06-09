@@ -28,14 +28,14 @@
                         {{-- Total score: spans both columns on mobile so it stands alone --}}
                         <div class="col-span-2 sm:col-span-1 min-w-0">
                             <p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wide" aria-hidden="true">Total QoL</p>
-                            <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-4xl font-bold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-value" aria-live="polite" aria-atomic="true">—</p>
-                            <p tabindex="0" class="text-gray-600 dark:text-gray-300 text-sm font-semibold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-label" aria-live="polite" aria-atomic="true">—</p>
+                            <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-4xl font-bold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-value" aria-live="polite" aria-atomic="true" aria-label="Total quality of life score">—</p>
+                            <p tabindex="0" class="text-gray-600 dark:text-gray-300 text-sm font-semibold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-label">—</p>
                         </div>
 
                         @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
                             <div>
                                 <p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wide">{{ $label }}</p>
-                                <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-xl font-semibold mt-0.5 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-{{ $slug }}" aria-live="polite" aria-atomic="true">—</p>
+                                <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-xl font-semibold mt-0.5 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-{{ $slug }}">—</p>
                             </div>
                         @endforeach
 
@@ -43,17 +43,17 @@
                         <div class="hidden lg:block lg:col-span-6"></div>
                         <div class="hidden lg:block text-gray-700 dark:text-gray-200 font-medium">Bonus:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-green-600 dark:text-green-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-bonus-{{ $slug }}" aria-live="polite" aria-atomic="true">+0</div>
+                            <div tabindex="0" class="hidden lg:block text-green-600 dark:text-green-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-bonus-{{ $slug }}">+0</div>
                         @endforeach
 
                         <div class="hidden lg:block text-gray-700 dark:text-gray-200 font-medium">Penalty:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-red-600 dark:text-red-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-penalty-{{ $slug }}" aria-live="polite" aria-atomic="true">-0</div>
+                            <div tabindex="0" class="hidden lg:block text-red-600 dark:text-red-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-penalty-{{ $slug }}">-0</div>
                         @endforeach
 
                         <div class="hidden lg:block text-gray-700 dark:text-gray-200 font-medium">Events:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-gray-500 dark:text-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-event-{{ $slug }}" aria-live="polite" aria-atomic="true">0</div>
+                            <div tabindex="0" class="hidden lg:block text-gray-500 dark:text-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-event-{{ $slug }}">0</div>
                         @endforeach
                     </div>
                 </div>
@@ -69,15 +69,17 @@
                         <p class="text-gray-500 dark:text-gray-400 text-sm">No active events.</p>
                     </template>
 
-                    <ul class="space-y-2 overflow-y-auto h-48 pr-1" aria-live="polite" aria-atomic="true">
+                    <ul class="space-y-2 overflow-y-auto h-48 pr-1" aria-label="Active events">
                         <template x-for="event in events" :key="event.id">
-                            <li class="rounded-xl px-3 py-2 border"
+                            <li class="rounded-xl px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                tabindex="0"
                                 :class="event.is_active
                                     ? 'bg-green-100 dark:bg-green-900/40 border-green-200 dark:border-green-700'
-                                    : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700'">
+                                    : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700'"
+                                :aria-label="event.name + ', ' + formatStatus(event)">
                                 <p class="text-sm font-semibold break-words"
                                    :class="event.is_active ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'"
-                                   x-text="event.name"></p>
+                                   x-text="event.name"></p>     
                                 <p class="text-xs mt-0.5"
                                    :class="event.is_active ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'"
                                    x-text="formatStatus(event)"></p>
@@ -161,8 +163,24 @@
                                     aria-label="Adjust grid size">
                             </div>
                         </div>
-                        <div class="mb-4">
-                            <button id="undo-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm">Undo Last Action</button>
+                        <div class="mb-4 flex items-center gap-2">
+                            @if($userRole === 'Policy maker' || $userRole === 'Administrator')
+                                <button id="approve-all-button"
+                                        class="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm"
+                                        title="Approve the entire grid">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem">lock</span>
+                                    Approve All
+                                </button>
+                                <button id="revoke-all-button"
+                                        class="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm"
+                                        title="Disapprove the entire grid">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem">lock_open</span>
+                                    Disapprove All
+                                </button>
+                            @endif
+                            @if($userRole !== 'Policy maker')
+                                <button id="undo-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm">Undo Last Action</button>
+                            @endif
                         </div>
                     </div>
 
@@ -181,13 +199,12 @@
                                     {{-- Look up the matching city function by id so we can show its name and image --}}
                                     @php $fn = $cityFunctions->firstWhere('id', $cell->function_id); @endphp
 
-                                    {{-- "is-occupied" or "is-empty" is read by app.js to update the preview panel
-                                         draggable="true" allows occupied cells to be dragged off the grid (SIM.3 - Subtask 1) 
-                                         Empty cells have a dashed border for accessibility (visual distinction without color alone) --}}
+                                    {{-- Wrapper gives the approve toggle a positioning context outside the button --}}
+                                    <div class="relative">
                                     <button
                                         type="button"
                                         tabindex="0"
-                                        class="grid-cell border border-gray-200 dark:border-gray-700 aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-2 lg:p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }}"
+                                        class="grid-cell w-full relative border aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col items-center justify-center p-2 lg:p-4 cursor-pointer hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 {{ filled($cell->function_id) ? 'is-occupied' : 'is-empty' }} {{ ($cell->is_approved ?? false) ? 'is-approved border-green-600 dark:border-green-500' : 'border-gray-200 dark:border-gray-700' }}"
                                         :style="isDesktop ? `width: ${size}px; height: ${size}px; border-width: calc(var(--grid-size) / 48);` : 'border-width: calc(var(--grid-size) / 48);'"
                                         draggable="true"
                                         data-grid-cell
@@ -202,7 +219,8 @@
                                         data-environment-quality="{{ $fn?->{'Environment Quality'} ?? 0 }}"
                                         data-facilities="{{ $fn?->Facilities ?? 0 }}"
                                         data-mobility="{{ $fn?->Mobility ?? 0 }}"
-                                        aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_id) ? ', occupied by ' . ($fn?->name ?? 'a function') . ($fn?->category ? ', category ' . $fn->category : '') : ', available' }}"
+                                        data-approved="{{ ($cell->is_approved ?? false) ? 'true' : 'false' }}"
+                                        aria-label="Row {{ $cell->row_index }}, column {{ $cell->column_index }}{{ filled($cell->function_id) ? ', occupied by ' . ($fn?->name ?? 'a function') . ($fn?->category ? ', category ' . $fn->category : '') : ', available' }}{{ ($cell->is_approved ?? false) ? ', approved' : '' }}"
                                     >
                                         @if($fn?->image_path)
                                             {{-- Image scales with the zoom slider, fixed size on mobile --}}
@@ -221,16 +239,29 @@
                                         @endif
                                     </button>
 
+                                    {{-- Approve/revoke toggle sits OUTSIDE the button so its click never triggers the cell click --}}
+                                    @if($userRole === 'Policy maker' || $userRole === 'Administrator')
+                                        <span
+                                            class="approve-toggle material-symbols-outlined absolute top-1 right-1 z-10 cursor-pointer select-none transition-colors rounded border {{ ($cell->is_approved ?? false) ? 'text-green-600 hover:text-red-500 border-green-600' : 'text-gray-300 hover:text-green-600 border-gray-300' }}"
+                                            style="font-size: max(10px, calc(var(--grid-size) * 0.14))"
+                                            data-cell-id="{{ $cell->id ?? '' }}"
+                                            data-approved="{{ ($cell->is_approved ?? false) ? 'true' : 'false' }}"
+                                            title="{{ ($cell->is_approved ?? false) ? 'Revoke approval' : 'Approve this cell' }}"
+                                            role="button"
+                                            tabindex="0"
+                                            aria-label="{{ ($cell->is_approved ?? false) ? 'Revoke approval for row ' . $cell->row_index . ' column ' . $cell->column_index : 'Approve row ' . $cell->row_index . ' column ' . $cell->column_index }}"
+                                        >{{ ($cell->is_approved ?? false) ? 'lock' : 'lock_open' }}</span>
+                                    @endif
+                                    </div>
+
                                 @endforeach
                             @endforeach
                         </div>
                     </div>
                 </div>
 
-                {{-- FUNCTION REMOVAL ZONE (SIM.3 - Subtask 2) ------------------------------------------
-                     This is the "trash" or "remove" zone where users can drag functions
-                     to remove them from the grid. It has a distinctive red/danger color
-                     to indicate this is a destructive action. --}}
+                {{-- FUNCTION REMOVAL ZONE (SIM.3 - Subtask 2) — hidden for policy makers --}}
+                @if($userRole !== 'Policy maker')
                 <div class="w-full lg:w-auto bg-red-50 dark:bg-red-900/20 border-2 border-dashed border-red-300 dark:border-red-700 rounded-2xl p-6 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                      id="removal-zone"
                      role="button"
@@ -241,13 +272,34 @@
                         Drag here to remove
                     </p>
                 </div>
+                @endif
+
+                {{-- SIM.12 - Access Road Panel --}}
+                <div class="w-full lg:w-auto bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-2xl p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-amber-800 dark:text-amber-200 uppercase tracking-wide">Access Roads</h3>
+                        <div class="flex gap-2">
+                            <button id="access-road-toggle"
+                                    type="button"
+                                    class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                                Place Road
+                            </button>
+                            <button id="access-road-cancel"
+                                    type="button"
+                                    class="hidden bg-gray-500 hover:bg-gray-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                    <p id="access-road-status" class="text-xs text-amber-700 dark:text-amber-300 mb-3 min-h-[1rem]" aria-live="polite" aria-atomic="true"></p>
+                    <div id="access-road-list" class="space-y-1"></div>
+                </div>
 
                 {{-- Close the main grid section --}}
                 </section>
 
-                {{-- FUNCTION LIBRARY ------------------------------------------------
-                     Fills all the space the grid doesn't use.
-                     "active" holds the currently selected category filter. --}}
+                {{-- FUNCTION LIBRARY — hidden for policy makers --}}
+                @if($userRole !== 'Policy maker')
                 <section class="flex-1 min-w-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm"
                         x-data="functionLibrary(@js($cityFunctions->map(fn ($cityFunction) => [
                             'name' => $cityFunction->name,
@@ -328,10 +380,30 @@
                         </div>
                     @endif
                 </section>
+                @endif {{-- end policy maker check --}}
 
             </div>
         </div>
     </div>
+
+    {{-- SIM.12 - Access road visual styles --}}
+    <style>
+        .road-cell {
+            background-color: rgba(245, 158, 11, 0.18) !important;
+            border-color: rgb(245, 158, 11) !important;
+        }
+        .road-start-selected {
+            outline: 3px solid rgb(34, 197, 94) !important;
+            outline-offset: -3px;
+        }
+        .road-selection-mode [data-grid-cell] {
+            cursor: crosshair;
+        }
+        .road-selection-mode [data-grid-cell]:hover {
+            outline: 3px solid rgb(245, 158, 11);
+            outline-offset: -3px;
+        }
+    </style>
 
     {{-- QoL Toast Notification --}}
         <div id="grid-a11y-announcer" aria-live="polite" aria-atomic="true" role="status" class="sr-only"></div>

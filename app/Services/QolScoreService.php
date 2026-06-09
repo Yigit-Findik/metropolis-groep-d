@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\AccessRoad;
 use App\Models\CityEvent;
 use App\Models\CityGridCell;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class QolScoreService
 {
@@ -76,6 +78,13 @@ class QolScoreService
             ];
         }
 
+        // SIM.12 — each access road improves the mobility score by 5 points.
+        $roadCount = AccessRoad::where('is_active', true)->count();
+        $roadMobilityBonus = $roadCount * 5;
+        $totals['mobility']       += $roadMobilityBonus;
+        $bonusTotals['mobility']  += $roadMobilityBonus;
+        $totalScore               += $roadMobilityBonus;
+
         $totalBonus = array_sum($bonusTotals);
         $totalPenalty = array_sum($penaltyTotals);
         $totalEvent = array_sum($eventTotals);
@@ -105,13 +114,34 @@ class QolScoreService
             ->get();
 
         foreach ($activeEvents as $event) {
-            foreach ($event->cityFunctions as $fn) {
-                $map[$fn->id] ??= array_fill_keys(array_keys(self::CATEGORIES), 0);
-                $map[$fn->id]['safety']               += (int) ($fn->pivot->safety_modifier ?? 0);
-                $map[$fn->id]['recreation']           += (int) ($fn->pivot->recreation_modifier ?? 0);
-                $map[$fn->id]['environment_quality']  += (int) ($fn->pivot->environment_quality_modifier ?? 0);
-                $map[$fn->id]['facilities']           += (int) ($fn->pivot->facilities_modifier ?? 0);
-                $map[$fn->id]['mobility']             += (int) ($fn->pivot->mobility_modifier ?? 0);
+            if ($event->is_day_night_cycle) {
+                $phase = $event->current_phase;
+                if (! $phase) {
+                    continue;
+                }
+
+                $phaseFunctions = DB::table('city_event_day_night_functions')
+                    ->where('city_event_id', $event->id)
+                    ->where('phase', $phase)
+                    ->get();
+
+                foreach ($phaseFunctions as $fn) {
+                    $map[$fn->city_function_id] ??= array_fill_keys(array_keys(self::CATEGORIES), 0);
+                    $map[$fn->city_function_id]['safety']              += (int) ($fn->safety_modifier ?? 0);
+                    $map[$fn->city_function_id]['recreation']          += (int) ($fn->recreation_modifier ?? 0);
+                    $map[$fn->city_function_id]['environment_quality'] += (int) ($fn->environment_quality_modifier ?? 0);
+                    $map[$fn->city_function_id]['facilities']          += (int) ($fn->facilities_modifier ?? 0);
+                    $map[$fn->city_function_id]['mobility']            += (int) ($fn->mobility_modifier ?? 0);
+                }
+            } else {
+                foreach ($event->cityFunctions as $fn) {
+                    $map[$fn->id] ??= array_fill_keys(array_keys(self::CATEGORIES), 0);
+                    $map[$fn->id]['safety']               += (int) ($fn->pivot->safety_modifier ?? 0);
+                    $map[$fn->id]['recreation']           += (int) ($fn->pivot->recreation_modifier ?? 0);
+                    $map[$fn->id]['environment_quality']  += (int) ($fn->pivot->environment_quality_modifier ?? 0);
+                    $map[$fn->id]['facilities']           += (int) ($fn->pivot->facilities_modifier ?? 0);
+                    $map[$fn->id]['mobility']             += (int) ($fn->pivot->mobility_modifier ?? 0);
+                }
             }
         }
 

@@ -5,6 +5,7 @@ use App\Http\Controllers\CityFunctionController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CityGridCellController;
+use App\Http\Controllers\AccessRoadController;
 use App\Http\Controllers\EffectController;
 use App\Http\Controllers\PendingActionController;
 use App\Http\Controllers\AuditLogController;
@@ -39,12 +40,12 @@ Route::get('/', function () {
     ]);
 });
 
-Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects,Municipal policy maker'])->get('/dashboard', function () {
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects,Policy maker'])->get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
 
-// Read-only grid access — city planners, administrators, and municipal policy makers
-Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Municipal policy maker'])->group(function () {
+// Grid view — accessible to city planners, administrators, and policy makers
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Policy maker'])->group(function () {
     Route::get('/grid', [CityGridCellController::class, 'index'])->name('grid');
 
     // SIM.1.4 - QoL score calculation
@@ -69,6 +70,10 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::post('/events/{id}/activate', [CityEventController::class, 'activate'])->name('city_events.activate');
     Route::post('/events/{id}/deactivate', [CityEventController::class, 'deactivate'])->name('city_events.deactivate');
 
+    // Day/Night Cycle specific routes
+    Route::put('/events/{id}/day-night', [CityEventController::class, 'updateDayNight'])->name('city_events.update_day_night');
+    Route::post('/events/{id}/switch-phase', [CityEventController::class, 'switchPhase'])->name('city_events.switch_phase');
+
     // SIM.2 - Cell selection and function assignment
     Route::post('/grid/select/{id}', [CityGridCellController::class, 'select']);
     Route::post('/grid/{id}/assign', [CityGridCellController::class, 'assignFunction']);
@@ -76,12 +81,30 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     // Get valid/invalid cells for adjacency rules
     Route::get('/grid/valid-cells', [CityGridCellController::class, 'getValidCells']);
 
+
     // SIM.3 - Remove a function from a cell
     Route::delete('/grid/{id}/remove', [CityGridCellController::class, 'removeFunction']);
 
     // SIM.5 - Undo a function from a cell
     Route::post('/grid/undo', [CityGridCellController::class, 'undo']);
+
+    // SIM.12 - Main access road placement and removal
+    Route::get('/access-roads', [AccessRoadController::class, 'index']);
+    Route::post('/access-roads', [AccessRoadController::class, 'store']);
+    Route::delete('/access-roads/{id}', [AccessRoadController::class, 'destroy']);
+
+    // SIM.12.1 - Activate / deactivate an access road
+    Route::patch('/access-roads/{id}/toggle', [AccessRoadController::class, 'toggle']);
 });
+
+// BES.3 - Approval management — policy maker and administrator
+Route::middleware(['auth', 'verified', 'role:Policy maker,Administrator'])->group(function () {
+    Route::post('/grid/approve-all', [CityGridCellController::class, 'approveAllCells']);
+    Route::post('/grid/revoke-all', [CityGridCellController::class, 'revokeAllCells']);
+    Route::post('/grid/{id}/approve', [CityGridCellController::class, 'approveCell']);
+    Route::delete('/grid/{id}/revoke', [CityGridCellController::class, 'revokeCell']);
+});
+
 
 // EFF.1 - Effect management table — accessible to city planners, effects experts, and administrators
 Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects'])->group(function () {

@@ -7,11 +7,25 @@ use App\Models\CityGridCell;
 use App\Models\CityFunction;
 use App\Models\ActionHistory;
 use App\Services\QolScoreService;
+use App\Http\Controllers\AccessRoadController;
 use App\Models\CityEvent;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class CityGridCellController extends Controller
 {
+    private function ensurePolicyMaker()
+    {
+        $role = auth()->user()?->role?->name;
+
+        if (! in_array($role, ['Policy maker', 'Administrator'], true)) {
+            return response()->json([
+                'message' => 'Only a municipal policy maker or administrator can approve or revoke approved grid cells.',
+            ], 403);
+        }
+
+        return null;
+    }
+
     public function index()
     {
         // Create missing cells on demand so the view always receives a complete grid structure.
@@ -24,6 +38,7 @@ class CityGridCellController extends Controller
             'gridCells' => $cells,
             'cityFunctions' => $cityFunctions,
             'categories' => $categories,
+            'userRole' => auth()->user()?->role?->name,
         ]);
 
     }
@@ -58,12 +73,27 @@ class CityGridCellController extends Controller
         ]);
 
         $cell = CityGridCell::findOrFail($id);
+
+        if ($cell->is_approved) {
+            return response()->json(['message' => 'This cell is approved and its destination is protected — it cannot be modified.'], 422);
+        }
+
         $function = CityFunction::with('functionConditions')->findOrFail($request->function_id);
-        
+
         // Check adjacency conditions
         $error = $this->checkAdjacencyConditions($function, $cell);
         if ($error) {
             return response()->json(['message' => $error], 422);
+        }
+
+        // Safety functions cannot be placed on cells that are part of an active route.
+        if (strtolower(trim($function->category ?? '')) === 'safety') {
+            $onRoute = \App\Models\AccessRoad::where('is_active', true)
+                ->whereHas('cells', fn($q) => $q->where('city_grid_cells.id', $cell->id))
+                ->exists();
+            if ($onRoute) {
+                return response()->json(['message' => 'Safety functions cannot be placed on an active route.'], 422);
+            }
         }
 
         $oldFunctionId = $cell->function_id; // Saved so we can record it in ActionHistory before it is replaced
@@ -85,10 +115,14 @@ class CityGridCellController extends Controller
             ],
         ]);
 
-        return response()->json([
-            'message' => 'Function assigned',
-            'cell' => $cell
-        ]);
+        $response = ['message' => 'Function assigned', 'cell' => $cell];
+
+        // SIM.12.1 - A placed safety function may block existing road paths; recalculate all roads.
+        if (strtolower(trim($function->category ?? '')) === 'safety') {
+            $response['updated_roads'] = (new AccessRoadController)->recalculateAllRoads();
+        }
+
+        return response()->json($response);
     }
 
     /**
@@ -219,8 +253,12 @@ class CityGridCellController extends Controller
     // SIM.3 - Clears a function from the given cell and records the removal in ActionHistory.
     public function removeFunction($id)
     {
-        // Load the target cell once so we can validate and update the same record.
-        $cell = CityGridCell::findOrFail($id);
+        // Load the target cell with its function so we can check the category before clearing.
+        $cell = CityGridCell::with('cityFunction')->findOrFail($id);
+
+        if ($cell->is_approved) {
+            return response()->json(['message' => 'This cell is approved and its destination is protected — it cannot be modified.'], 422);
+        }
 
         // Skip the write when the cell is already empty; that keeps the API response explicit.
         if (! $cell->function_id) {
@@ -231,6 +269,8 @@ class CityGridCellController extends Controller
         }
 
         $oldFunctionId = $cell->function_id;
+        $wasSafety = $cell->cityFunction
+            && strtolower(trim($cell->cityFunction->category ?? '')) === 'safety';
 
         // Remove the function by setting function_id to null
         // This leaves all other cells completely untouched
@@ -250,46 +290,103 @@ class CityGridCellController extends Controller
             ],
         ]);
 
-        return response()->json([
+        $response = [
             'message' => 'Function removed successfully',
-            'cell' => $cell
-        ]);
+            'cell' => $cell,
+        ];
+
+        // SIM.12.1 - A removed safety function may unblock shorter routes; recalculate all roads.
+        if ($wasSafety) {
+            $response['updated_roads'] = (new AccessRoadController)->recalculateAllRoads();
+        }
+
+        return response()->json($response);
     }
 
     public function previewPdf()
     {
-        return view('pdf.grid-preview', $this->buildReportData());
+        $cells         = CityGridCell::ensureGridExists();
+        $cityFunctions = CityFunction::orderBy('name')->get();
+        $qol           = (new QolScoreService())->calculate();
+        $events        = CityEvent::with('cityFunctions')->orderBy('name')->get();
+
+        return view('pdf.grid-preview', [
+            'gridCells'     => $cells,
+            'cityFunctions' => $cityFunctions,
+            'qol'           => $qol,
+            'events'        => $events,
+            'exportedAt'    => now()->format('d M Y, H:i'),
+            'author'        => auth()->user()->name,
+            'placedCount'   => $cells->whereNotNull('function_id')->count(),
+            'totalCells'    => $cells->count(),
+        ]);
     }
 
     public function exportPdf()
     {
-        $data = $this->buildReportData();
-
-        $pdf = Pdf::loadView('pdf.grid-report', $data)->setPaper('a4', 'portrait');
-
-        return $pdf->download('city-grid-report-' . now()->format('d-m-Y') . '.pdf');
-    }
-
-    private function buildReportData(): array
-    {
         $cells         = CityGridCell::ensureGridExists();
         $cityFunctions = CityFunction::orderBy('name')->get();
         $qol           = (new QolScoreService())->calculate();
+        $events        = CityEvent::with('cityFunctions')->orderBy('name')->get();
 
         $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
-        $cssFile  = basename($manifest['resources/css/app.css']['file'] ?? 'app.css');
+        $cssFile  = $manifest['resources/css/app.css']['file'] ?? '';
 
-        return [
+        $pdf = Pdf::loadView('pdf.grid-report', [
             'gridCells'     => $cells,
             'cityFunctions' => $cityFunctions,
             'qol'           => $qol,
-            'events'        => CityEvent::with('cityFunctions')->orderBy('event_type')->orderBy('name')->get(),
-            'placedCount'   => $cells->filter(fn ($c) => $c->function_id)->count(),
-            'totalCells'    => $cells->count(),
+            'events'        => $events,
+            'exportedAt'    => now()->format('d M Y, H:i'),
             'author'        => auth()->user()->name,
-            'exportedAt'    => now()->format('d F Y, H:i'),
+            'placedCount'   => $cells->whereNotNull('function_id')->count(),
+            'totalCells'    => $cells->count(),
             'cssFile'       => $cssFile,
-        ];
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream('city-grid-report.pdf');
+    }
+
+    // BES.3 - Approve a single cell
+    public function approveCell($id)
+    {
+        if ($denied = $this->ensurePolicyMaker()) return $denied;
+
+        $cell = CityGridCell::findOrFail($id);
+        $cell->update(['is_approved' => true]);
+
+        return response()->json(['message' => 'Cell approved', 'cell' => $cell]);
+    }
+
+    // BES.3 - Revoke approval from a single cell
+    public function revokeCell($id)
+    {
+        if ($denied = $this->ensurePolicyMaker()) return $denied;
+
+        $cell = CityGridCell::findOrFail($id);
+        $cell->update(['is_approved' => false]);
+
+        return response()->json(['message' => 'Cell approval revoked', 'cell' => $cell]);
+    }
+
+    // BES.3 - Approve all cells at once
+    public function approveAllCells()
+    {
+        if ($denied = $this->ensurePolicyMaker()) return $denied;
+
+        CityGridCell::query()->update(['is_approved' => true]);
+
+        return response()->json(['message' => 'All cells approved']);
+    }
+
+    // BES.3 - Revoke approval from all cells at once
+    public function revokeAllCells()
+    {
+        if ($denied = $this->ensurePolicyMaker()) return $denied;
+
+        CityGridCell::query()->update(['is_approved' => false]);
+
+        return response()->json(['message' => 'All cells disapproved']);
     }
 
     public function undo(){
@@ -302,7 +399,11 @@ class CityGridCellController extends Controller
         }
 
         $cell = CityGridCell::findOrFail($lastAction->cell_id);
-        
+
+        if ($cell->is_approved) {
+            return response()->json(['message' => 'Cannot undo — the target cell is approved and its destination is protected.'], 422);
+        }
+
         // undo the latest function
         $cell->update(['function_id' => $lastAction->old_city_function_id]);
 
