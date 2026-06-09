@@ -86,6 +86,16 @@ class CityGridCellController extends Controller
             return response()->json(['message' => $error], 422);
         }
 
+        // Safety functions cannot be placed on cells that are part of an active route.
+        if (strtolower(trim($function->category ?? '')) === 'safety') {
+            $onRoute = \App\Models\AccessRoad::where('is_active', true)
+                ->whereHas('cells', fn($q) => $q->where('city_grid_cells.id', $cell->id))
+                ->exists();
+            if ($onRoute) {
+                return response()->json(['message' => 'Safety functions cannot be placed on an active route.'], 422);
+            }
+        }
+
         $oldFunctionId = $cell->function_id; // Saved so we can record it in ActionHistory before it is replaced
 
         $cell->update([
