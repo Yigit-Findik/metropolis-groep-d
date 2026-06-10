@@ -51,6 +51,149 @@ export class GridController {
         });
         this.#setupRemovalZone();
         this.#setupUndoButton();
+        this.#setupApprovalToggles(cells);
+        this.#setupApproveAllButton(cells);
+        this.#setupRevokeAllButton(cells);
+    }
+
+    // Returns true if the cell is approved; shows an error message if so
+    #isApproved(cell) {
+        if (cell.dataset.approved === 'true') {
+            const msg = 'This cell is approved and cannot be modified.';
+            notify(msg);
+            this.#announce(msg);
+            return true;
+        }
+        return false;
+    }
+
+    // Applies the approved visual state to a cell element
+    #applyApprovedState(cell) {
+        cell.dataset.approved = 'true';
+        cell.classList.add('is-approved', 'border-green-600', 'dark:border-green-500');
+        cell.classList.remove('border-gray-200', 'dark:border-gray-700');
+
+        // Update the approve toggle if present
+        const toggle = cell.parentElement?.querySelector('.approve-toggle');
+        if (toggle) {
+            toggle.textContent = 'lock';
+            toggle.dataset.approved = 'true';
+            toggle.title = 'Revoke approval';
+            toggle.setAttribute('aria-label', toggle.getAttribute('aria-label')?.replace('Approve', 'Revoke approval for') ?? 'Revoke approval');
+            toggle.classList.remove('text-gray-300', 'hover:text-green-600', 'border-gray-300');
+            toggle.classList.add('text-green-600', 'hover:text-red-500', 'border-green-600');
+        }
+
+        // Update aria-label on the cell button
+        const current = cell.getAttribute('aria-label') ?? '';
+        if (!current.includes(', approved')) {
+            cell.setAttribute('aria-label', current + ', approved');
+        }
+    }
+
+    // Removes the approved visual state from a cell element
+    #removeApprovedState(cell) {
+        cell.dataset.approved = 'false';
+        cell.classList.remove('is-approved', 'border-green-600', 'dark:border-green-500');
+        cell.classList.add('border-gray-200', 'dark:border-gray-700');
+
+        // Update the approve toggle if present
+        const toggle = cell.parentElement?.querySelector('.approve-toggle');
+        if (toggle) {
+            toggle.textContent = 'lock_open';
+            toggle.dataset.approved = 'false';
+            toggle.title = 'Approve this cell';
+            toggle.classList.remove('text-green-600', 'hover:text-red-500', 'border-green-600');
+            toggle.classList.add('text-gray-300', 'hover:text-green-600', 'border-gray-300');
+        }
+
+        // Remove ', approved' from aria-label
+        const current = cell.getAttribute('aria-label') ?? '';
+        cell.setAttribute('aria-label', current.replace(', approved', ''));
+    }
+
+    // Wires up the approve/revoke toggle spans inside each cell
+    #setupApprovalToggles(cells) {
+        cells.forEach((cell) => {
+            const toggle = cell.parentElement?.querySelector('.approve-toggle');
+            if (!toggle) return;
+
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation(); // Don't trigger the parent cell click
+                const cellId = toggle.dataset.cellId;
+                const isApproved = toggle.dataset.approved === 'true';
+
+                if (isApproved) {
+                    this.#api.revoke(cellId)
+                        .then(() => {
+                            this.#removeApprovedState(cell);
+                            const msg = 'Approval revoked.';
+                            notify(msg);
+                            this.#announce(msg);
+                        })
+                        .catch((err) => {
+                            const msg = err.message || 'Failed to revoke approval.';
+                            notify(msg);
+                            this.#announce(msg);
+                        });
+                } else {
+                    this.#api.approve(cellId)
+                        .then(() => {
+                            this.#applyApprovedState(cell);
+                            const msg = 'Cell approved.';
+                            notify(msg);
+                            this.#announce(msg);
+                        })
+                        .catch((err) => {
+                            const msg = err.message || 'Failed to approve cell.';
+                            notify(msg);
+                            this.#announce(msg);
+                        });
+                }
+            });
+        });
+    }
+
+    // Wires up the "Approve All" button
+    #setupApproveAllButton(cells) {
+        const btn = document.getElementById('approve-all-button');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            this.#api.approveAll()
+                .then(() => {
+                    cells.forEach((cell) => this.#applyApprovedState(cell));
+                    const msg = 'All cells approved.';
+                    notify(msg);
+                    this.#announce(msg);
+                })
+                .catch((err) => {
+                    const msg = err.message || 'Failed to approve all cells.';
+                    notify(msg);
+                    this.#announce(msg);
+                });
+        });
+    }
+
+    // Wires up the "Disapprove All" button
+    #setupRevokeAllButton(cells) {
+        const btn = document.getElementById('revoke-all-button');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            this.#api.revokeAll()
+                .then(() => {
+                    cells.forEach((cell) => this.#removeApprovedState(cell));
+                    const msg = 'All cells disapproved.';
+                    notify(msg);
+                    this.#announce(msg);
+                })
+                .catch((err) => {
+                    const msg = err.message || 'Failed to disapprove all cells.';
+                    notify(msg);
+                    this.#announce(msg);
+                });
+        });
     }
 
     // Makes every library card draggable and stores its data in the drag transfer
@@ -59,17 +202,24 @@ export class GridController {
 
         cards.forEach((card) => {
             const selectCard = () => {
+                if (this.#selectedFunctionCard === card) {
+                    this.#selectedFunctionCard = null;
+                    this.#selectedFunctionData = null;
+                    card.classList.remove('ring-2', 'ring-blue-500');
+                    card.blur();
+                    this.#announce(`${card.dataset.function || 'Function'} deselected`);
+                    return;
+                }
+
                 this.#selectedFunctionCard = card;
                 this.#selectedFunctionData = this.#buildFunctionDataFromCard(card);
+                this.#announce(`${this.#selectedFunctionData.functionName} selected`);
 
                 cards.forEach((otherCard) => {
-                    otherCard.setAttribute('aria-pressed', otherCard === card ? 'true' : 'false');
                     otherCard.classList.toggle('ring-2', otherCard === card);
                     otherCard.classList.toggle('ring-blue-500', otherCard === card);
                 });
             };
-
-            card.setAttribute('aria-pressed', 'false');
 
             card.addEventListener('click', () => {
                 selectCard();
@@ -211,6 +361,9 @@ export class GridController {
         // Drags that started from an occupied cell are only allowed in the removal zone, not on other cells
         if (e.dataTransfer.getData('fromCell') === 'true') return;
 
+        // Approved cells cannot be modified
+        if (this.#isApproved(cell)) return;
+
         // Occupied cells cannot be replaced — the user must remove the function first
         if (cell.dataset.function && cell.dataset.function !== '') {
             const msg = 'This grid slot already has a city-function';
@@ -232,13 +385,20 @@ export class GridController {
         const cellId = cell.dataset.cellId;
 
         this.#api.assign(cellId, functionId)
-            .then(() => {
+            .then((data) => {
                 this.#renderFunctionInCell(cell, {
                     functionName, functionId, category, image,
                     safety, recreation, environmentQuality, facilities, mobility,
                 });
-                this.#qolService.refresh();
+                this.#qolService.refresh(true);
                 this.#qolService.showToast(functionName, qolScore);
+                document.dispatchEvent(new CustomEvent('grid-updated'));
+                if (data.updated_roads) {
+                    document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
+                }
+                if (data.updated_event_routes) {
+                    document.dispatchEvent(new CustomEvent('event-routes-updated', { detail: { routes: data.updated_event_routes } }));
+                }
             })
             .catch((error) => {
                 const msg = error.message || 'Failed to save — please refresh and try again.';
@@ -284,20 +444,28 @@ export class GridController {
                 return;
             }
 
+            if (this.#isApproved(cellElement)) return;
+
             // SIM.3 - Subtask 5: Send removal request to backend
             this.#api.remove(cellId)
-                .then(() => {
+                .then((data) => {
                     const functionName = cellElement.dataset.function ?? 'Function';
                     const oldQolScore = parseInt(cellElement.dataset.qolScore ?? '0', 10);
 
                     this.#clearCell(cellElement);
-                    this.#qolService.refresh();
+                    this.#qolService.refresh(true);
                     // Show the negative impact of the removal
                     this.#qolService.showToast(functionName, -oldQolScore);
+                    document.dispatchEvent(new CustomEvent('grid-updated'));
+
+                    if (data.updated_roads) {
+                        document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
+                    }
                 })
                 .catch((error) => {
-                    console.error('Error removing function:', error);
-                    notify('Failed to remove function — please try again.');
+                    const msg = error.message || 'Failed to remove function — please try again.';
+                    notify(msg);
+                    this.#announce(msg);
                 });
         });
 
@@ -348,8 +516,9 @@ export class GridController {
                         });
                     }
 
-                    this.#qolService.refresh();
+                    this.#qolService.refresh(true);
                     this.#qolService.showToast('Action undone', 0);
+                    document.dispatchEvent(new CustomEvent('grid-updated'));
                 })
                 .catch(() => notify('Nothing to undo'));
         });
@@ -364,14 +533,17 @@ export class GridController {
             const img = document.createElement('img');
             img.src = image;
             img.alt = functionName;
-            img.classList.add('mb-1');
+            img.classList.add('object-contain', 'mb-1', 'flex-shrink-0');
+            img.style.width = 'calc(var(--grid-size) * 0.42)';
+            img.style.height = 'calc(var(--grid-size) * 0.42)';
             img.draggable = false;
             cell.appendChild(img);
         }
 
         const label = document.createElement('span');
         label.textContent = functionName;
-        label.classList.add('text-xs', 'font-semibold', 'text-center', 'text-black');
+        label.classList.add('font-semibold', 'text-center', 'text-black', 'w-full', 'leading-tight');
+        label.style.fontSize = 'max(6px, calc(var(--grid-size) * 0.07))';
         cell.appendChild(label);
 
         // Make occupied cells keyboard-focusable for accessibility
@@ -392,21 +564,22 @@ export class GridController {
         cell.dataset.environmentQuality = environmentQuality;
         cell.dataset.facilities = facilities;
         cell.dataset.mobility = mobility;
+
     }
 
     // Resets a cell to its empty state, clearing all content and attributes
     #clearCell(cell) {
         cell.innerHTML = '';
         cell.classList.remove('is-occupied');
-        cell.classList.add('is-empty', 'border-2', 'border-dashed', 'border-gray-300', 'dark:border-gray-600');
-        
+        cell.classList.add('is-empty');
+
         // Add visual indicator for empty cell
         const indicator = document.createElement('span');
         indicator.textContent = '+';
         indicator.setAttribute('aria-hidden', 'true');
         indicator.className = 'text-gray-400 dark:text-gray-600 text-2xl font-light';
         cell.appendChild(indicator);
-        
+
         cell.dataset.function = '';
         cell.dataset.functionId = '';
         cell.dataset.category = '';
@@ -428,8 +601,10 @@ export class GridController {
             return;
         }
 
+        if (this.#isApproved(cellElement)) return;
+
         this.#api.remove(cellElement.dataset.cellId)
-            .then(() => {
+            .then((data) => {
                 const functionName = cellElement.dataset.function ?? 'Function';
                 const oldQolScore = parseInt(cellElement.dataset.qolScore ?? '0', 10);
 
@@ -437,9 +612,17 @@ export class GridController {
                 if (this.#pickedUpCell === cellElement) this.#pickedUpCell = null;
 
                 this.#clearCell(cellElement);
-                        try { cellElement.focus(); } catch (e) {}
-                this.#qolService.refresh();
+                cellElement.blur();
+                this.#qolService.refresh(true);
                 this.#qolService.showToast(functionName, -oldQolScore);
+                document.dispatchEvent(new CustomEvent('grid-updated'));
+
+                if (data.updated_roads) {
+                    document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
+                }
+                if (data.updated_event_routes) {
+                    document.dispatchEvent(new CustomEvent('event-routes-updated', { detail: { routes: data.updated_event_routes } }));
+                }
             })
             .catch((error) => {
                 console.error('Error removing function:', error);
@@ -449,6 +632,7 @@ export class GridController {
 
     #pickUpCell(cell) {
         if (!cell || !cell.dataset.functionId) return;
+        if (this.#isApproved(cell)) return;
         // Mark visually as picked
         this.#pickedUpCell = cell;
         cell.classList.add('is-picked');
@@ -486,6 +670,9 @@ export class GridController {
             return;
         }
 
+        // cannot place onto an approved cell
+        if (this.#isApproved(targetCell)) return;
+
         // cannot place onto an occupied cell
         if (targetCell.dataset.function && targetCell.dataset.function !== '') {
             const msg = 'Cannot place here — target cell is occupied.';
@@ -508,7 +695,7 @@ export class GridController {
             const functionName = source.dataset.function ?? '';
             const qolScore = parseInt(source.dataset.qolScore ?? '0', 10);
 
-            await this.#api.assign(targetCell.dataset.cellId, functionId);
+            const assignData = await this.#api.assign(targetCell.dataset.cellId, functionId);
 
             // Determine image src: prefer an <img> inside the source cell, fall back to dataset
             const imgEl = source.querySelector('img');
@@ -527,16 +714,24 @@ export class GridController {
                 mobility: source.dataset.mobility ?? 0,
             });
 
+            if (assignData && assignData.updated_roads) {
+                document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: assignData.updated_roads } }));
+            }
+
             // Now remove the original
-            await this.#api.remove(source.dataset.cellId);
+            const removeData = await this.#api.remove(source.dataset.cellId);
             this.#clearCell(source);
+            if (removeData && removeData.updated_roads) {
+                document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: removeData.updated_roads } }));
+            }
 
             // Clean up pickup state
             source.classList.remove('is-picked');
             this.#pickedUpCell = null;
 
-            this.#qolService.refresh();
+            this.#qolService.refresh(true);
             this.#qolService.showToast(functionName, qolScore);
+            document.dispatchEvent(new CustomEvent('grid-updated'));
             const msg = `Moved ${functionName} to the selected cell.`;
             notify(msg);
             this.#announce(msg);
@@ -544,6 +739,11 @@ export class GridController {
             const msg = (err && err.message) ? err.message : 'Failed to move function.';
             notify(msg);
             this.#announce(msg);
+            // Always exit pickup mode on failure to prevent further duplication
+            if (this.#pickedUpCell) {
+                this.#pickedUpCell.classList.remove('is-picked');
+                this.#pickedUpCell = null;
+            }
         }
     }
 
@@ -553,6 +753,8 @@ export class GridController {
             notify('Select a function first, then place it on a grid cell.');
             return;
         }
+
+        if (this.#isApproved(cell)) return;
 
         if (cell.dataset.function && cell.dataset.function !== '') {
             const msg = 'This grid slot already has a city-function';
@@ -567,7 +769,7 @@ export class GridController {
         }
 
         this.#api.assign(cell.dataset.cellId, selected.functionId)
-            .then(() => {
+            .then((data) => {
                 this.#renderFunctionInCell(cell, {
                     functionName: selected.functionName,
                     functionId: selected.functionId,
@@ -579,8 +781,15 @@ export class GridController {
                     facilities: selected.facilities,
                     mobility: selected.mobility,
                 });
-                this.#qolService.refresh();
+                this.#qolService.refresh(true);
                 this.#qolService.showToast(selected.functionName, selected.qolScore);
+                document.dispatchEvent(new CustomEvent('grid-updated'));
+                if (data.updated_roads) {
+                    document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
+                }
+                if (data.updated_event_routes) {
+                    document.dispatchEvent(new CustomEvent('event-routes-updated', { detail: { routes: data.updated_event_routes } }));
+                }
             })
             .catch((error) => {
                 const msg = error.message || 'Failed to save — please refresh and try again.';
