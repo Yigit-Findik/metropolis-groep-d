@@ -346,9 +346,6 @@ class CityGridCellController extends Controller
         $qol           = (new QolScoreService())->calculate();
         $events        = CityEvent::with('cityFunctions')->orderBy('name')->get();
 
-        $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
-        $cssFile  = $manifest['resources/css/app.css']['file'] ?? '';
-
         $pdf = Pdf::loadView('pdf.grid-report', [
             'gridCells'     => $cells,
             'cityFunctions' => $cityFunctions,
@@ -358,7 +355,6 @@ class CityGridCellController extends Controller
             'author'        => auth()->user()->name,
             'placedCount'   => $cells->whereNotNull('function_id')->count(),
             'totalCells'    => $cells->count(),
-            'cssFile'       => $cssFile,
         ])->setPaper('a4', 'portrait');
 
         return $pdf->stream('city-grid-report.pdf');
