@@ -1,9 +1,10 @@
 <article tabindex="0"
-         aria-label="Event {{ $event->name }}, {{ $event->type_label }}{{ $event->description ? ', description: ' . $event->description : '' }}, {{ $event->schedule_summary }}{{ $event->isCurrentlyActive() ? ', currently active' : '' }}"
-         class="rounded-2xl border p-5 shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 transition
-                {{ $event->isCurrentlyActive()
-                    ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-900/20'
-                    : 'border-slate-200 bg-slate-50 dark:border-gray-700 dark:bg-gray-900/50' }}">
+         x-data="eventCard({{ $event->id }}, {{ $event->is_active ? 'true' : 'false' }})"
+         aria-label="Event {{ $event->name }}, {{ $event->type_label }}{{ $event->description ? ', description: ' . $event->description : '' }}, {{ $event->schedule_summary }}"
+         class="rounded-2xl border p-5 shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+         :class="isActive
+             ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-900/20'
+             : 'border-amber-200 bg-amber-50 dark:border-amber-700/50 dark:bg-amber-900/10'">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">
@@ -29,19 +30,19 @@
                 @endif
 
                 {{-- Active status badge --}}
-                @if($event->isCurrentlyActive())
-                    @if($event->is_day_night_cycle && $event->current_phase)
-                        <span class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide
-                                     {{ $event->current_phase === 'day'
-                                         ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300'
-                                         : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/10 dark:text-indigo-300' }}">
-                            {{ ucfirst($event->current_phase) }}
-                        </span>
-                    @else
-                        <span class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
-                            Active
-                        </span>
-                    @endif
+                @if($event->is_day_night_cycle)
+                    <span x-show="isActive"
+                          class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide
+                                 {{ $event->current_phase === 'day'
+                                     ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300'
+                                     : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/10 dark:text-indigo-300' }}">
+                        {{ $event->current_phase ? ucfirst($event->current_phase) : 'Active' }}
+                    </span>
+                @else
+                    <span x-show="isActive"
+                          class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
+                        Active
+                    </span>
                 @endif
             </div>
 
@@ -55,6 +56,11 @@
             @if($event->is_day_night_cycle && $event->is_active && $event->current_phase && $event->phase_started_at)
                 <p class="mt-1 text-xs"
                    x-data="dayNightCycleTimer({{ $event->dayDurationSeconds() }}, {{ $event->nightDurationSeconds() }}, {{ $event->id }}, @js($event->current_phase), {{ $event->phase_started_at->timestamp }})"
+                   :class="colorClass"
+                   x-text="label"></p>
+            @elseif($event->event_type === 'recurring' && $event->hasTimeSlot())
+                <p class="mt-1 text-xs"
+                   x-data="timeSlotEventTimer(@js($event->timeSlotsForJs()), {{ $event->id }}, {{ $event->is_active ? 'true' : 'false' }}, @js($event->recurring_frequency_unit))"
                    :class="colorClass"
                    x-text="label"></p>
             @elseif($event->event_type === 'recurring' && $event->activated_at)
@@ -92,25 +98,22 @@
         <div class="flex shrink-0 flex-wrap items-center gap-2">
 
             {{-- Activate / Deactivate --}}
-            @if($event->isCurrentlyActive())
-                <form method="POST" action="{{ route('city_events.deactivate', $event->id) }}">
-                    @csrf
-                    <button type="submit"
-                            aria-label="Deactivate event {{ $event->name }}"
-                            class="rounded-xl bg-emerald-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-600">
-                        Deactivate
-                    </button>
-                </form>
-            @else
-                <form method="POST" action="{{ route('city_events.activate', $event->id) }}">
-                    @csrf
-                    <button type="submit"
-                            aria-label="Activate event {{ $event->name }}"
-                            class="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-500">
-                        Activate
-                    </button>
-                </form>
-            @endif
+            <form x-show="isActive" method="POST" action="{{ route('city_events.deactivate', $event->id) }}">
+                @csrf
+                <button type="submit"
+                        aria-label="Deactivate event {{ $event->name }}"
+                        class="rounded-xl bg-emerald-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-600">
+                    Deactivate
+                </button>
+            </form>
+            <form x-show="!isActive" method="POST" action="{{ route('city_events.activate', $event->id) }}">
+                @csrf
+                <button type="submit"
+                        aria-label="Activate event {{ $event->name }}"
+                        class="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-500">
+                    Activate
+                </button>
+            </form>
 
             @if($event->is_day_night_cycle)
                 {{-- Day/Night specific edit button --}}
@@ -153,8 +156,7 @@
                             event_type: @js($event->event_type),
                             recurring_frequency_value: @js($event->recurring_frequency_value),
                             recurring_frequency_unit: @js($event->recurring_frequency_unit),
-                            recurring_active_duration_value: @js($event->recurring_active_duration_value),
-                            recurring_active_duration_unit: @js($event->recurring_active_duration_unit),
+                            recurring_time_slots: @js($event->recurring_time_slots ?? []),
                             one_off_duration_value: @js($event->one_off_duration_value),
                             one_off_duration_unit: @js($event->one_off_duration_unit),
                             linkedFunctions: @js($event->cityFunctions->map(fn($f) => [

@@ -1,5 +1,11 @@
+const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+const simPost   = (url) => fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' } });
+
 export const activeEvents = () => ({
     events: [],
+    _pendingDeactivations: new Set(),
+    _pendingReactivations: new Set(),
+    _pendingSlotChanges: new Set(),
 
     async init() {
         await this.fetchEvents();
@@ -8,14 +14,17 @@ export const activeEvents = () => ({
             if (localStorage.getItem('sim_paused') === 'false') {
                 const tick = Number(localStorage.getItem('sim_speed') || 1) * 1_000;
                 this.events = this.events.map(e => {
-                    const updated      = { ...e };
-                    const prevRemaining = updated._remainingMs;
+                    const updated        = { ...e };
+                    const prevRemaining  = updated._remainingMs;
+                    const prevReactivate = updated._reactivateMs;
 
-                    if (updated._remainingMs  != null) updated._remainingMs  = Math.max(0, updated._remainingMs  - tick);
-                    if (updated._reactivateMs != null) updated._reactivateMs = Math.max(0, updated._reactivateMs - tick);
+                    if (!updated._hasTimeSlot) {
+                        if (updated._remainingMs  != null) updated._remainingMs  = Math.max(0, updated._remainingMs  - tick);
+                        if (updated._reactivateMs != null) updated._reactivateMs = Math.max(0, updated._reactivateMs - tick);
+                    }
                     this._save(updated);
 
-                    // Trigger phase switch when day/night timer transitions to 0
+                    // Day/night: trigger phase switch when timer crosses zero
                     if (updated.event_type === 'day-night' && updated.is_active &&
                         prevRemaining != null && prevRemaining > 0 && updated._remainingMs === 0 &&
                         !updated._phaseSwitchTriggered) {
@@ -25,12 +34,60 @@ export const activeEvents = () => ({
                         fetch('/events/' + updated.id + '/switch-phase', {
                             method:  'POST',
                             headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                                'X-CSRF-TOKEN': csrfToken(),
                                 'Accept':       'application/json',
                                 'Content-Type': 'application/json',
                             },
                             body: JSON.stringify({ from_phase: fromPhase }),
                         }).then(() => this.fetchEvents());
+                    }
+
+                    // Recurring: deactivate when active duration crosses zero
+                    if (updated.event_type === 'recurring' && !updated._hasTimeSlot &&
+                        updated.is_active &&
+                        updated._remainingMs != null &&
+                        prevRemaining > 0 && updated._remainingMs <= 0 &&
+                        !this._pendingDeactivations.has(updated.id)) {
+                        this._pendingDeactivations.add(updated.id);
+                        simPost('/events/' + updated.id + '/deactivate')
+                            .then(() => {
+                                this._pendingDeactivations.delete(updated.id);
+                                this.fetchEvents();
+                                window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: false } }));
+                            });
+                    }
+
+                    // Recurring: reactivate when the cooldown cycle ends
+                    if (updated.event_type === 'recurring' && !updated._hasTimeSlot &&
+                        !updated.is_active &&
+                        prevReactivate != null && prevReactivate > 0 && updated._reactivateMs <= 0 &&
+                        !this._pendingReactivations.has(updated.id)) {
+                        this._pendingReactivations.add(updated.id);
+                        simPost('/events/' + updated.id + '/activate')
+                            .then(() => {
+                                this._pendingReactivations.delete(updated.id);
+                                this.fetchEvents();
+                                window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: true } }));
+                            });
+                    }
+
+                    // Time-slot events: activate/deactivate based on current sim time and day
+                    if (updated._hasTimeSlot) {
+                        const inSlot = this._isInSlot(updated);
+
+                        if (inSlot && !updated.is_active && !this._pendingSlotChanges.has(updated.id)) {
+                            this._pendingSlotChanges.add(updated.id);
+                            simPost('/events/' + updated.id + '/activate').then(() => {
+                                window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: true } }));
+                                this.fetchEvents().then(() => this._pendingSlotChanges.delete(updated.id));
+                            });
+                        } else if (!inSlot && updated.is_active && !this._pendingSlotChanges.has(updated.id)) {
+                            this._pendingSlotChanges.add(updated.id);
+                            simPost('/events/' + updated.id + '/deactivate').then(() => {
+                                window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: false } }));
+                                this.fetchEvents().then(() => this._pendingSlotChanges.delete(updated.id));
+                            });
+                        }
                     }
 
                     return updated;
@@ -47,14 +104,12 @@ export const activeEvents = () => ({
                 remaining:      e._remainingMs,
             }));
         } else if (e.event_type === 'recurring') {
-            // Same key/format as recurringEventTimer on Events page
             localStorage.setItem('sim_evt_' + e.id, JSON.stringify({
                 activatedAt:  e._activatedAt,
                 expires:      e._remainingMs,
                 reactivates:  e._reactivateMs,
             }));
         } else {
-            // Same key/format as expiryCountdown on Events page
             localStorage.setItem('sim_evt_' + e.id + '_exp', JSON.stringify({
                 activatedAt: e._activatedAt,
                 remaining:   e._remainingMs,
@@ -71,7 +126,7 @@ export const activeEvents = () => ({
 
             this.events = raw.map(e => {
                 if (e.event_type === 'day-night') {
-                    const phase         = e.current_phase;
+                    const phase          = e.current_phase;
                     const phaseStartedAt = e.phase_started_at_timestamp;
                     const phaseDuration  = phase === 'day' ? e.day_duration_seconds : e.night_duration_seconds;
                     const fullPhaseMs    = phaseDuration != null ? phaseDuration * 1000 : null;
@@ -90,11 +145,12 @@ export const activeEvents = () => ({
 
                     return {
                         ...e,
-                        _activatedAt:   phaseStartedAt,
-                        _phaseStartedAt: phaseStartedAt,
-                        _currentPhase:  phase,
-                        _remainingMs:   remainingMs,
-                        _reactivateMs:  null,
+                        _activatedAt:        phaseStartedAt,
+                        _phaseStartedAt:     phaseStartedAt,
+                        _currentPhase:       phase,
+                        _remainingMs:        remainingMs,
+                        _reactivateMs:       null,
+                        _phaseSwitchTriggered: false,
                     };
                 }
 
@@ -105,13 +161,13 @@ export const activeEvents = () => ({
                 let remainingMs  = fullRemainingMs;
                 let reactivateMs = fullCycleMs;
 
-                if (!playing && activatedAt != null) {
+                if (activatedAt != null) {
                     if (e.event_type === 'recurring') {
                         const s = JSON.parse(localStorage.getItem('sim_evt_' + e.id) || 'null');
                         if (s && s.activatedAt === activatedAt) {
                             if (s.expires     != null) remainingMs  = s.expires;
                             if (s.reactivates != null) reactivateMs = s.reactivates;
-                        } else {
+                        } else if (!playing) {
                             localStorage.setItem('sim_evt_' + e.id, JSON.stringify({
                                 activatedAt, expires: remainingMs, reactivates: reactivateMs,
                             }));
@@ -120,7 +176,7 @@ export const activeEvents = () => ({
                         const s = JSON.parse(localStorage.getItem('sim_evt_' + e.id + '_exp') || 'null');
                         if (s && s.activatedAt === activatedAt) {
                             if (s.remaining != null) remainingMs = s.remaining;
-                        } else {
+                        } else if (!playing) {
                             localStorage.setItem('sim_evt_' + e.id + '_exp', JSON.stringify({
                                 activatedAt, remaining: remainingMs,
                             }));
@@ -128,17 +184,111 @@ export const activeEvents = () => ({
                     }
                 }
 
+                const hasTimeSlot = Array.isArray(e.time_slots) && e.time_slots.length > 0;
+
+                // If the timer is already at zero but the server still says active,
+                // trigger deactivation immediately (handles page-reload after expiry)
+                if (e.event_type === 'recurring' && !hasTimeSlot &&
+                    remainingMs != null && remainingMs <= 0 && e.is_active &&
+                    !this._pendingDeactivations.has(e.id)) {
+                    this._pendingDeactivations.add(e.id);
+                    simPost('/events/' + e.id + '/deactivate')
+                        .then(() => {
+                            this.fetchEvents();
+                            window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: e.id, isActive: false } }));
+                        });
+                }
+
                 return {
                     ...e,
                     _activatedAt:  activatedAt,
                     _remainingMs:  remainingMs,
                     _reactivateMs: reactivateMs,
+                    _hasTimeSlot:  hasTimeSlot,
                 };
             });
         } catch {}
     },
 
+    _t2s(s) {
+        return String(Math.floor(s / 3600)).padStart(2, '0') + ':' + String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+    },
+
+    _slotStatus(slots, nowSec, periodSec, startOf, endOf, labelOf) {
+        const active = slots.find(s => nowSec >= startOf(s) && nowSec < endOf(s));
+        if (active) {
+            const remaining = endOf(active) - nowSec;
+            return `Active — ends ${this._t2s(active.end_seconds)} (${this.formatTime(remaining * 1_000)})`;
+        }
+        const next = slots
+            .map(s => ({ s, wait: startOf(s) > nowSec ? startOf(s) - nowSec : periodSec - nowSec + startOf(s) }))
+            .sort((a, b) => a.wait - b.wait)[0];
+        if (!next) return '—';
+        return `Next: ${labelOf(next.s)}${this._t2s(next.s.start_seconds)} (${this.formatTime(next.wait * 1_000)})`;
+    },
+
+    _isInSlot(event) {
+        const slots      = event.time_slots;
+        const unit       = event.recurring_frequency_unit;
+        const clockMs    = Number(localStorage.getItem('sim_clock_ms') || 0);
+        const currentSec = Math.floor(clockMs / 1_000);
+
+        if (unit === 'week') {
+            const weekDay        = Number(localStorage.getItem('sim_week_day') || 1);
+            const currentWeekSec = (weekDay - 1) * 86400 + currentSec;
+            return slots.some(s => s.week_day &&
+                currentWeekSec >= (s.week_day - 1) * 86400 + s.start_seconds &&
+                currentWeekSec <  (s.week_day - 1) * 86400 + s.end_seconds);
+        }
+        if (unit === 'month') {
+            const monthDate       = Number(localStorage.getItem('sim_month_date') || 1);
+            const currentMonthSec = (monthDate - 1) * 86400 + currentSec;
+            return slots.some(s => s.month_date &&
+                currentMonthSec >= (s.month_date - 1) * 86400 + s.start_seconds &&
+                currentMonthSec <  (s.month_date - 1) * 86400 + s.end_seconds);
+        }
+        return slots.some(s => currentSec >= s.start_seconds && currentSec < s.end_seconds);
+    },
+
     formatStatus(event) {
+        if (event._hasTimeSlot) {
+            const clockMs    = Number(localStorage.getItem('sim_clock_ms') || 0);
+            const currentSec = Math.floor(clockMs / 1_000);
+            const slots      = event.time_slots;
+            const unit       = event.recurring_frequency_unit;
+
+            if (unit === 'week') {
+                const weekDay   = Number(localStorage.getItem('sim_week_day') || 1);
+                const nowSec    = (weekDay - 1) * 86400 + currentSec;
+                const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                return this._slotStatus(
+                    slots.filter(s => s.week_day), nowSec, 7 * 86400,
+                    s => (s.week_day - 1) * 86400 + s.start_seconds,
+                    s => (s.week_day - 1) * 86400 + s.end_seconds,
+                    s => DAY_NAMES[s.week_day - 1] + ' ',
+                );
+            }
+
+            if (unit === 'month') {
+                const monthDate = Number(localStorage.getItem('sim_month_date') || 1);
+                const nowSec    = (monthDate - 1) * 86400 + currentSec;
+                const ordinal   = n => { const v = n % 100; return n + (['th','st','nd','rd'][(v - 20) % 10] || ['th','st','nd','rd'][v] || 'th'); };
+                return this._slotStatus(
+                    slots.filter(s => s.month_date), nowSec, 31 * 86400,
+                    s => (s.month_date - 1) * 86400 + s.start_seconds,
+                    s => (s.month_date - 1) * 86400 + s.end_seconds,
+                    s => ordinal(s.month_date) + ' ',
+                );
+            }
+
+            return this._slotStatus(
+                slots, currentSec, 24 * 3600,
+                s => s.start_seconds,
+                s => s.end_seconds,
+                () => '',
+            );
+        }
+
         if (event.event_type === 'day-night') {
             const phase = event._currentPhase;
             if (!phase) return 'Inactive';

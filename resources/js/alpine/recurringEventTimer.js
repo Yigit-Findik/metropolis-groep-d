@@ -42,14 +42,24 @@ export const recurringEventTimer = (activeDurationSeconds, cycleDurationSeconds,
             // Sim cycle ended — deactivate in DB
             if (this._expires <= 0 && !this._deactivateTriggered) {
                 this._deactivateTriggered = true;
-                simPost('/events/' + eventId + '/deactivate');
+                simPost('/events/' + eventId + '/deactivate').then(() => {
+                    window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: eventId, isActive: false } }));
+                });
             }
 
-            // Sim cycle fully elapsed — reactivate and reload
+            // Sim cycle fully elapsed — reactivate in DB and restart this timer in-place
             if (this._reactivates <= 0 && !this._reactivateTriggered) {
                 this._reactivateTriggered = true;
                 localStorage.removeItem(key);
-                simPost('/events/' + eventId + '/activate').finally(() => window.location.reload());
+                simPost('/events/' + eventId + '/activate').then(() => {
+                    this._expires             = fullExpiresMs;
+                    this._reactivates         = fullCycleMs;
+                    this._deactivateTriggered = false;
+                    this._reactivateTriggered = false;
+                    this._save(key);
+                    this.update();
+                    window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: eventId, isActive: true } }));
+                });
             }
         }, 1_000);
     },

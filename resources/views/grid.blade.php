@@ -74,14 +74,14 @@
                             <li class="rounded-xl px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 tabindex="0"
                                 :class="event.is_active
-                                    ? 'bg-green-100 dark:bg-green-900/40 border-green-200 dark:border-green-700'
+                                    ? 'bg-purple-100 dark:bg-purple-900/40 border-purple-200 dark:border-purple-700'
                                     : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700'"
                                 :aria-label="event.name + ', ' + formatStatus(event)">
                                 <p class="text-sm font-semibold break-words"
-                                   :class="event.is_active ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'"
-                                   x-text="event.name"></p>     
+                                   :class="event.is_active ? 'text-purple-800 dark:text-purple-200' : 'text-yellow-800 dark:text-yellow-200'"
+                                   x-text="event.name"></p>
                                 <p class="text-xs mt-0.5"
-                                   :class="event.is_active ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'"
+                                   :class="event.is_active ? 'text-purple-600 dark:text-purple-400' : 'text-yellow-600 dark:text-yellow-400'"
                                    x-text="formatStatus(event)"></p>
                             </li>
                         </template>
@@ -108,31 +108,57 @@
                         <span x-text="paused ? 'Play' : 'Pause'">Play</span>
                     </button>
 
-                    {{-- Speed buttons: 1x, 2x, 5x --}}
-                    <div class="flex items-center gap-2" role="radiogroup" aria-label="Simulation speed">
+                    {{-- Speed multiplier: 1x, 2x, 5x --}}
+                    <div class="flex items-center gap-2" role="radiogroup" aria-label="Simulation speed multiplier">
                         @foreach([1, 2, 5] as $spd)
-                            <button @click="setSpeed({{ $spd }})"
+                            <button @click="setMultiplier({{ $spd }})"
                                     role="radio"
-                                    :aria-label="speed === {{ $spd }} ? '{{ $spd }}x, selected' : '{{ $spd }}x'"
-                                    data-speed="{{ $spd }}"
+                                    :aria-checked="multiplier === {{ $spd }}"
+                                    :aria-label="multiplier === {{ $spd }} ? 'Change simulation speed to {{ $spd }}x, selected' : 'Change simulation speed to {{ $spd }}x'"
                                     class="px-3 py-1.5 rounded-lg text-sm font-semibold transition"
-                                    :class="speed === {{ $spd }} ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'">
+                                    :class="multiplier === {{ $spd }} ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'">
                                 <span aria-hidden="true">{{ $spd }}x</span>
                             </button>
                         @endforeach
                     </div>
 
+                    <div class="border-l border-gray-600 h-6" aria-hidden="true"></div>
+
+                    {{-- Time unit: 1 real second = 1 sim Sec / Min / Hr / Day --}}
+                    <div class="flex items-center gap-2" role="radiogroup" aria-label="Simulation time unit">
+                        @foreach(['Sec' => 1, 'Min' => 60, 'Hr' => 3600, 'Day' => 86400] as $label => $secs)
+                            <button @click="setUnit({{ $secs }})"
+                                    role="radio"
+                                    :aria-checked="unitSeconds === {{ $secs }}"
+                                    :aria-label="unitSeconds === {{ $secs }} ? '1 second equals 1 simulation {{ $label === 'Sec' ? 'second' : ($label === 'Min' ? 'minute' : ($label === 'Hr' ? 'hour' : 'day')) }}, selected' : '1 second equals 1 simulation {{ $label === 'Sec' ? 'second' : ($label === 'Min' ? 'minute' : ($label === 'Hr' ? 'hour' : 'day')) }}'"
+                                    class="px-3 py-1.5 rounded-lg text-sm font-semibold transition"
+                                    :class="unitSeconds === {{ $secs }} ? 'bg-violet-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'">
+                                <span aria-hidden="true">{{ $label }}</span>
+                            </button>
+                        @endforeach
+                    </div>
+
                     {{-- Current speed display --}}
-                    <div class="ml-auto flex items-center gap-2 text-sm">
-                        <span class="text-gray-400">Speed:</span>
-                        <span id="simulation-current-speed"
-                              class="text-white font-bold"
-                              aria-live="polite"
-                              x-text="speed + 'x'">1x</span>
-                        <span id="simulation-status"
-                              class="text-gray-400"
-                              aria-live="polite"
-                              x-text="paused ? '(paused)' : '(running)'">(paused)</span>
+                    <div class="ml-auto flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-400">Speed:</span>
+                            <span id="simulation-current-speed"
+                                  class="text-white font-bold"
+                                  aria-live="polite"
+                                  x-text="speed + 'x'">1x</span>
+                            <span id="simulation-status"
+                                  class="text-gray-400"
+                                  aria-live="polite"
+                                  x-text="paused ? '(paused)' : '(running)'">(paused)</span>
+                        </div>
+                        <div class="border-l border-gray-600 pl-4"
+                             tabindex="0"
+                             role="status"
+                             :aria-label="'Simulation time: ' + simTime">
+                            <span class="text-gray-300 text-xs font-mono font-semibold tabular-nums"
+                                  aria-hidden="true"
+                                  x-text="simTime">00:00</span>
+                        </div>
                     </div>
 
                 </div>
