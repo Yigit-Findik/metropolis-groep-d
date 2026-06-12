@@ -439,25 +439,8 @@ export class HoverPopup {
     #formatActiveEvents(events) {
         if (!events || events.length === 0) return '';
 
-        const STAT_LABELS = [
-            ['safety',             'Saf'],
-            ['recreation',         'Rec'],
-            ['environmentQuality', 'EnQ'],
-            ['facilities',         'Fac'],
-            ['mobility',           'Mob'],
-        ];
-
-        return events.map(ev => {
-            const parts = STAT_LABELS
-                .filter(([key]) => ev[key] !== 0)
-                .map(([key, label]) => {
-                    const v = ev[key];
-                    const color = v > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400';
-                    return `<span class="${color}">${v > 0 ? '+' : ''}${v} ${label}</span>`;
-                });
-
-            const mods = parts.length ? `: ${parts.join(', ')}` : '';
-            return `<div class="text-gray-700 dark:text-gray-300 font-semibold">• ${ev.name}${mods}</div>`;
-        }).join('');
+        const count = events.length;
+        const label = count === 1 ? 'active event' : 'active events';
+        return `<div class="text-gray-700 dark:text-gray-300 font-semibold">${count} ${label}</div>`;
     }
 }
