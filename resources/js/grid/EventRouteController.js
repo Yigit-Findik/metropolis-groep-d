@@ -104,7 +104,7 @@ export class EventRouteController {
         }
     }
 
-    async #refreshEventCells() {
+    async refreshEventCells() {
         try {
             this.#eventCells = await this.#api.getEventCells();
             this.#syncEventCellIds();

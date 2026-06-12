@@ -68,9 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
         qolService.refresh();
     });
 
-    // Refresh QoL immediately whenever any event timer activates or deactivates an event
+    // Refresh QoL and event cell highlights whenever any event timer activates or deactivates an event
     window.addEventListener('simulation:event-changed', () => {
         qolService.refresh(true);
+        eventRouteController.refreshEventCells();
     });
 
     const accessRoadController = new AccessRoadController(api, qolService);
