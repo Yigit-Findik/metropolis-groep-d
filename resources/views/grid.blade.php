@@ -76,11 +76,12 @@
                                 :class="event.is_active
                                     ? 'bg-purple-100 dark:bg-purple-900/40 border-purple-200 dark:border-purple-700'
                                     : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700'"
-                                :aria-label="event.name + ', ' + formatStatus(event)">
+                                :aria-label="event.name + ', ' + (event.is_active ? 'active' : 'inactive')">
                                 <p class="text-sm font-semibold break-words"
                                    :class="event.is_active ? 'text-purple-800 dark:text-purple-200' : 'text-yellow-800 dark:text-yellow-200'"
                                    x-text="event.name"></p>
                                 <p class="text-xs mt-0.5"
+                                   aria-hidden="true"
                                    :class="event.is_active ? 'text-purple-600 dark:text-purple-400' : 'text-yellow-600 dark:text-yellow-400'"
                                    x-text="formatStatus(event)"></p>
                             </li>
@@ -153,7 +154,6 @@
                         </div>
                         <div class="border-l border-gray-600 pl-4"
                              tabindex="0"
-                             role="status"
                              :aria-label="'Simulation time: ' + simTime">
                             <span class="text-gray-300 text-xs font-mono font-semibold tabular-nums"
                                   aria-hidden="true"
