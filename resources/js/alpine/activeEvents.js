@@ -355,6 +355,78 @@ export const activeEvents = () => ({
         return '—';
     },
 
+    progressPercent(event) {
+        if (event._hasTimeSlot) {
+            const clockMs    = Number(localStorage.getItem('sim_clock_ms') || 0);
+            const currentSec = Math.floor(clockMs / 1_000);
+            const slots      = event.time_slots;
+            const unit       = event.recurring_frequency_unit;
+
+            let nowSec, startOf, endOf, periodSec;
+            if (unit === 'week') {
+                const weekDay = Number(localStorage.getItem('sim_week_day') || 1);
+                nowSec    = (weekDay - 1) * 86400 + currentSec;
+                startOf   = s => (s.week_day   - 1) * 86400 + s.start_seconds;
+                endOf     = s => (s.week_day   - 1) * 86400 + s.end_seconds;
+                periodSec = 7 * 86400;
+            } else if (unit === 'month') {
+                const monthDate = Number(localStorage.getItem('sim_month_date') || 1);
+                nowSec    = (monthDate - 1) * 86400 + currentSec;
+                startOf   = s => (s.month_date - 1) * 86400 + s.start_seconds;
+                endOf     = s => (s.month_date - 1) * 86400 + s.end_seconds;
+                periodSec = 31 * 86400;
+            } else {
+                nowSec    = currentSec;
+                startOf   = s => s.start_seconds;
+                endOf     = s => s.end_seconds;
+                periodSec = 24 * 3600;
+            }
+
+            if (event.is_active) {
+                const active = slots.find(s => nowSec >= startOf(s) && nowSec < endOf(s));
+                if (!active) return null;
+                const duration = endOf(active) - startOf(active);
+                if (duration <= 0) return null;
+                return Math.min(100, Math.max(0, ((nowSec - startOf(active)) / duration) * 100));
+            }
+
+            // Inactive: progress through the gap between last slot end and next slot start
+            const nextSlot = slots
+                .map(s => ({ s, wait: startOf(s) > nowSec ? startOf(s) - nowSec : periodSec - nowSec + startOf(s) }))
+                .sort((a, b) => a.wait - b.wait)[0];
+            if (!nextSlot) return null;
+
+            const prevEnd = slots
+                .map(s => ({ elapsed: endOf(s) <= nowSec ? nowSec - endOf(s) : nowSec + periodSec - endOf(s) }))
+                .sort((a, b) => a.elapsed - b.elapsed)[0];
+            if (!prevEnd) return null;
+
+            const gapSec = prevEnd.elapsed + nextSlot.wait;
+            if (gapSec <= 0) return null;
+            return Math.min(100, Math.max(0, (prevEnd.elapsed / gapSec) * 100));
+        }
+
+        if (event.event_type === 'day-night') {
+            const phaseDuration = event._currentPhase === 'day'
+                ? event.day_duration_seconds
+                : event.night_duration_seconds;
+            if (!phaseDuration || event._remainingMs == null) return null;
+            return Math.min(100, Math.max(0, (1 - event._remainingMs / (phaseDuration * 1000)) * 100));
+        }
+
+        if (event.is_active && event._remainingMs != null && event.active_duration_seconds) {
+            return Math.min(100, Math.max(0, (1 - event._remainingMs / (event.active_duration_seconds * 1000)) * 100));
+        }
+
+        if (!event.is_active && event._reactivateMs != null && event.cycle_duration_seconds && event.active_duration_seconds) {
+            const cooldownMs = (event.cycle_duration_seconds - event.active_duration_seconds) * 1000;
+            if (cooldownMs <= 0) return null;
+            return Math.min(100, Math.max(0, (1 - event._reactivateMs / cooldownMs) * 100));
+        }
+
+        return null;
+    },
+
     formatTime(ms) {
         const sec  = Math.floor(ms / 1_000);
         const min  = Math.floor(sec / 60);
