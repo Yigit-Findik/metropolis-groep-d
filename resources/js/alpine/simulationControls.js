@@ -69,6 +69,10 @@ export const simulationControls = () => ({
             clearInterval(this.timer);
             this.startTimer();
         }
+        // Restart clock so interval matches new speed
+        clearInterval(this._clockInterval);
+        this._clockInterval = null;
+        this._startClock();
     },
 
     startTimer() {
@@ -80,9 +84,11 @@ export const simulationControls = () => ({
 
     _startClock() {
         if (this._clockInterval) return;
+        // Multiplier controls frequency (2x → every 500ms), unit controls step size (hours → 3600s per tick)
+        const intervalMs = Math.round(1_000 / this.multiplier);
         this._clockInterval = setInterval(() => {
             if (localStorage.getItem('sim_paused') === 'false') {
-                const tick    = Number(localStorage.getItem('sim_speed') || 1) * 1_000;
+                const tick    = this.unitSeconds * 1_000;
                 const DAY_MS  = 24 * 3600 * 1_000;
                 const prevMs  = Number(localStorage.getItem('sim_clock_ms') || 0);
                 const clockMs = (prevMs + tick) % DAY_MS;
@@ -97,7 +103,7 @@ export const simulationControls = () => ({
                     localStorage.setItem('sim_month_date', String(((md - 1 + daysElapsed) % 31) + 1));
                 }
             }
-        }, 1_000);
+        }, intervalMs);
     },
 
     _formatClock(ms) {

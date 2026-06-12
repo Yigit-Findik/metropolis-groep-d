@@ -7,6 +7,7 @@ export const dayNightCycleTimer = (dayDurationSeconds, nightDurationSeconds, eve
     _switchTriggered: false,
     _phase: initialPhase,
     _phaseStartedAt: initialPhaseStartedAt,
+    _interval: null,
 
     init() {
         const key          = 'sim_dnc_' + eventId;
@@ -22,43 +23,50 @@ export const dayNightCycleTimer = (dayDurationSeconds, nightDurationSeconds, eve
 
         this.update();
 
-        setInterval(() => {
-            if (localStorage.getItem('sim_paused') === 'false') {
-                const tick       = Number(localStorage.getItem('sim_speed') || 1) * 1_000;
-                this._remaining -= tick;
-                this._save(key);
-                this.update();
-            }
-
-            if (this._remaining <= 0 && !this._switchTriggered) {
-                this._switchTriggered = true;
-                localStorage.removeItem(key);
-                fetch('/events/' + eventId + '/switch-phase', {
-                    method:  'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken(),
-                        'Accept':       'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ from_phase: this._phase }),
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.skipped) {
-                        this._switchTriggered = false;
-                        return;
-                    }
-                    const newPhase    = data.phase;
-                    const newDuration = (newPhase === 'day' ? dayDurationSeconds : nightDurationSeconds) * 1_000;
-                    this._phase          = newPhase;
-                    this._phaseStartedAt = Math.floor(Date.now() / 1_000);
-                    this._remaining      = newDuration;
-                    this._switchTriggered = false;
+        const startInterval = () => {
+            if (this._interval) clearInterval(this._interval);
+            const multiplier  = Number(localStorage.getItem('sim_multiplier')   || 1);
+            const unitSeconds = Number(localStorage.getItem('sim_unit_seconds') || 1);
+            this._interval = setInterval(() => {
+                if (localStorage.getItem('sim_paused') === 'false') {
+                    this._remaining -= unitSeconds * 1_000;
                     this._save(key);
                     this.update();
-                });
-            }
-        }, 1_000);
+                }
+
+                if (this._remaining <= 0 && !this._switchTriggered) {
+                    this._switchTriggered = true;
+                    localStorage.removeItem(key);
+                    fetch('/events/' + eventId + '/switch-phase', {
+                        method:  'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken(),
+                            'Accept':       'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ from_phase: this._phase }),
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.skipped) {
+                            this._switchTriggered = false;
+                            return;
+                        }
+                        const newPhase    = data.phase;
+                        const newDuration = (newPhase === 'day' ? dayDurationSeconds : nightDurationSeconds) * 1_000;
+                        this._phase          = newPhase;
+                        this._phaseStartedAt = Math.floor(Date.now() / 1_000);
+                        this._remaining      = newDuration;
+                        this._switchTriggered = false;
+                        this._save(key);
+                        this.update();
+                    });
+                }
+            }, Math.round(1_000 / multiplier));
+        };
+
+        startInterval();
+        window.addEventListener('simulation:speedchange', startInterval);
     },
 
     _save(key) {
