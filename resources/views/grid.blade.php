@@ -95,7 +95,7 @@
             <div class="w-full bg-gray-800 rounded-2xl shadow-sm px-6 py-4 mb-6"
                  x-data="simulationControls">
 
-                <div class="flex flex-wrap items-center gap-4">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
 
                     {{-- Section label --}}
                     <span class="text-gray-400 text-xs font-semibold uppercase tracking-wide">Simulation</span>
@@ -140,7 +140,7 @@
                     </div>
 
                     {{-- Current speed display --}}
-                    <div class="ml-auto flex items-center gap-4 text-sm">
+                    <div class="flex items-center gap-4 text-sm sm:ml-auto">
                         <div class="flex items-center gap-2">
                             <span class="text-gray-400">Speed:</span>
                             <span id="simulation-current-speed"
@@ -168,7 +168,7 @@
             <div class="flex flex-col lg:flex-row gap-6 lg:items-start" x-data="gridZoom" :style="`--grid-size: ${effectiveGridSize}px`">
 
                 {{-- MAIN GRID SECTION: Contains the city grid and the removal zone below it --}}
-                 <section class="flex flex-col gap-4" aria-labelledby="city-grid-heading">
+                 <section class="flex flex-col gap-4 w-full min-w-0 lg:w-auto" aria-labelledby="city-grid-heading">
 
                  {{-- CITY GRID --------------------------------------------------------------
                      "size" controls how many pixels wide each cell is on desktop.
@@ -176,7 +176,7 @@
                  <div class="shrink-0 bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-sm">
 
                     {{-- Sticky so the title and zoom slider stay visible when scrolling down --}}
-                    <div class="flex justify-between items-center w-full">
+                    <div class="flex flex-wrap justify-between items-center gap-y-2 w-full">
                         <div class="flex items-center gap-4 mb-4 sticky top-0 z-10 bg-blue-50 dark:bg-gray-700 py-2">
                             <h2 id="city-grid-heading" class="text-lg font-bold text-gray-800 dark:text-gray-100">City Grid</h2>
 
@@ -192,26 +192,29 @@
                         <div class="mb-4 flex items-center gap-2">
                             @if($userRole === 'Policy maker' || $userRole === 'Administrator')
                                 <button id="approve-all-button"
-                                        class="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm"
+                                        class="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-2 py-2 sm:px-4 rounded-lg font-semibold shadow-sm text-sm"
                                         title="Approve the entire grid">
                                     <span class="material-symbols-outlined" style="font-size:1.1rem">lock</span>
-                                    Approve All
+                                    <span class="hidden sm:inline">Approve All</span>
                                 </button>
                                 <button id="revoke-all-button"
-                                        class="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm"
+                                        class="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-2 py-2 sm:px-4 rounded-lg font-semibold shadow-sm text-sm"
                                         title="Disapprove the entire grid">
                                     <span class="material-symbols-outlined" style="font-size:1.1rem">lock_open</span>
-                                    Disapprove All
+                                    <span class="hidden sm:inline">Disapprove All</span>
                                 </button>
                             @endif
                             @if($userRole !== 'Policy maker')
-                                <button id="undo-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm">Undo Last Action</button>
+                                <button id="undo-button" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 sm:px-4 rounded-lg font-semibold shadow-sm text-sm">
+                                    <span class="sm:hidden">Undo</span>
+                                    <span class="hidden sm:inline">Undo Last Action</span>
+                                </button>
                             @endif
                         </div>
                     </div>
 
-                    {{-- Scrollable on desktop so the grid can be zoomed without breaking the layout --}}
-                    <div class="lg:overflow-auto lg:p-1">
+                    {{-- Scrollable so the grid can be zoomed/scrolled on any viewport --}}
+                    <div class="overflow-auto p-1">
 
                         {{-- Always 4 columns. On mobile the columns shrink to fit the screen.
                              On desktop each column is a fixed number of pixels set by the zoom slider. --}}

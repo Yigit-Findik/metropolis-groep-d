@@ -199,6 +199,7 @@ class CityEventController extends Controller
                 $q->where('is_active', true)
                   ->orWhere('event_type', 'recurring');
             })
+            ->with(['cityFunctions', 'dayFunctions', 'nightFunctions'])
             ->get([
                 'id', 'name', 'event_type', 'is_active', 'is_day_night_cycle',
                 'expires_at', 'activated_at',
@@ -212,6 +213,20 @@ class CityEventController extends Controller
             ])
             ->map(function ($event) {
                 if ($event->is_day_night_cycle) {
+                    $phaseFns = $event->current_phase === 'day'
+                        ? $event->dayFunctions
+                        : $event->nightFunctions;
+                    $linked = $event->is_active
+                        ? $phaseFns->map(fn ($fn) => [
+                            'function_id'                  => $fn->id,
+                            'safety_modifier'              => (int) ($fn->pivot->safety_modifier ?? 0),
+                            'recreation_modifier'          => (int) ($fn->pivot->recreation_modifier ?? 0),
+                            'environment_quality_modifier' => (int) ($fn->pivot->environment_quality_modifier ?? 0),
+                            'facilities_modifier'          => (int) ($fn->pivot->facilities_modifier ?? 0),
+                            'mobility_modifier'            => (int) ($fn->pivot->mobility_modifier ?? 0),
+                        ])->values()->all()
+                        : [];
+
                     return [
                         'id'                         => $event->id,
                         'name'                       => $event->name,
@@ -225,8 +240,20 @@ class CityEventController extends Controller
                         'night_duration_seconds'     => $event->nightDurationSeconds(),
                         'active_duration_seconds'    => null,
                         'cycle_duration_seconds'     => null,
+                        'linked_functions'           => $linked,
                     ];
                 }
+
+                $linked = $event->is_active
+                    ? $event->cityFunctions->map(fn ($fn) => [
+                        'function_id'                  => $fn->id,
+                        'safety_modifier'              => (int) ($fn->pivot->safety_modifier ?? 0),
+                        'recreation_modifier'          => (int) ($fn->pivot->recreation_modifier ?? 0),
+                        'environment_quality_modifier' => (int) ($fn->pivot->environment_quality_modifier ?? 0),
+                        'facilities_modifier'          => (int) ($fn->pivot->facilities_modifier ?? 0),
+                        'mobility_modifier'            => (int) ($fn->pivot->mobility_modifier ?? 0),
+                    ])->values()->all()
+                    : [];
 
                 return [
                     'id'                      => $event->id,
@@ -247,6 +274,7 @@ class CityEventController extends Controller
                     'phase_started_at_timestamp' => null,
                     'day_duration_seconds'       => null,
                     'night_duration_seconds'     => null,
+                    'linked_functions'           => $linked,
                 ];
             });
 

@@ -1,6 +1,51 @@
 const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 const simPost   = (url) => fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' } });
 
+// Maps function ID -> net modifiers summed from all currently active events
+const _modifiersByFunction = new Map();
+let _activeEventsCache = [];
+
+function _rebuildModifiers(events) {
+    _modifiersByFunction.clear();
+    _activeEventsCache = events;
+    for (const event of events) {
+        if (!event.is_active) continue;
+        for (const fn of (event.linked_functions ?? [])) {
+            const id = Number(fn.function_id);
+            const cur = _modifiersByFunction.get(id) ?? { safety: 0, recreation: 0, environmentQuality: 0, facilities: 0, mobility: 0 };
+            cur.safety             += fn.safety_modifier              ?? 0;
+            cur.recreation         += fn.recreation_modifier          ?? 0;
+            cur.environmentQuality += fn.environment_quality_modifier ?? 0;
+            cur.facilities         += fn.facilities_modifier          ?? 0;
+            cur.mobility           += fn.mobility_modifier            ?? 0;
+            _modifiersByFunction.set(id, cur);
+        }
+    }
+}
+
+/** Returns the net event modifiers for a given function ID, or null if none. */
+export function getEventModifiersForFunction(functionId) {
+    return _modifiersByFunction.get(Number(functionId)) ?? null;
+}
+
+/** Returns all currently active events that affect a given function ID, with their per-stat modifiers. */
+export function getActiveEventsForFunction(functionId) {
+    const id = Number(functionId);
+    return _activeEventsCache
+        .filter(e => e.is_active && (e.linked_functions ?? []).some(fn => Number(fn.function_id) === id))
+        .map(e => {
+            const fn = e.linked_functions.find(fn => Number(fn.function_id) === id);
+            return {
+                name:                e.name,
+                safety:              fn.safety_modifier              ?? 0,
+                recreation:          fn.recreation_modifier          ?? 0,
+                environmentQuality:  fn.environment_quality_modifier ?? 0,
+                facilities:          fn.facilities_modifier          ?? 0,
+                mobility:            fn.mobility_modifier            ?? 0,
+            };
+        });
+}
+
 export const activeEvents = () => ({
     events: [],
     _pendingDeactivations: new Set(),
@@ -207,6 +252,8 @@ export const activeEvents = () => ({
                     _hasTimeSlot:  hasTimeSlot,
                 };
             });
+
+            _rebuildModifiers(this.events);
         } catch {}
     },
 
