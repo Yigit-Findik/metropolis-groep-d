@@ -408,7 +408,7 @@ export class HoverPopup {
     // Returns an amber pill span for an event modifier value.
     #formatEventBadge(mod) {
         const sign = mod > 0 ? `+${mod}` : `${mod}`;
-        return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] bg-amber-400 text-white">${sign}</span>`;
+        return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] bg-violet-500 text-white">${sign}</span>`;
     }
 
     // Builds the HTML shown inside the popup for a given cell
