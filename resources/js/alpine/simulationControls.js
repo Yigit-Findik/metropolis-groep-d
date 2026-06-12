@@ -89,11 +89,12 @@ export const simulationControls = () => ({
                 localStorage.setItem('sim_clock_ms', String(clockMs));
                 this.simTime = this._formatClock(clockMs);
 
-                if (prevMs + tick >= DAY_MS) {
+                const daysElapsed = Math.floor((prevMs + tick) / DAY_MS);
+                if (daysElapsed > 0) {
                     const wd = Number(localStorage.getItem('sim_week_day') || 1);
-                    localStorage.setItem('sim_week_day', String((wd % 7) + 1));
+                    localStorage.setItem('sim_week_day', String(((wd - 1 + daysElapsed) % 7) + 1));
                     const md = Number(localStorage.getItem('sim_month_date') || 1);
-                    localStorage.setItem('sim_month_date', String((md % 31) + 1));
+                    localStorage.setItem('sim_month_date', String(((md - 1 + daysElapsed) % 31) + 1));
                 }
             }
         }, 1_000);
