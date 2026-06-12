@@ -71,7 +71,7 @@
 
                     <ul class="space-y-2 overflow-y-auto h-48 pr-1" aria-label="Active events">
                         <template x-for="event in events" :key="event.id">
-                            <li class="rounded-xl px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            <li class="rounded-xl px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-400 group cursor-default"
                                 tabindex="0"
                                 :class="event.is_active
                                     ? 'bg-purple-100 dark:bg-purple-900/40 border-purple-200 dark:border-purple-700'
@@ -80,7 +80,15 @@
                                 <p class="text-sm font-semibold break-words"
                                    :class="event.is_active ? 'text-purple-800 dark:text-purple-200' : 'text-yellow-800 dark:text-yellow-200'"
                                    x-text="event.name"></p>
-                                <p class="text-xs mt-0.5"
+                                <template x-if="progressPercent(event) !== null">
+                                    <div class="mt-1.5 h-1.5 rounded-full overflow-hidden"
+                                         :class="event.is_active ? 'bg-purple-200 dark:bg-purple-800' : 'bg-yellow-200 dark:bg-yellow-800'">
+                                        <div class="h-full rounded-full transition-all duration-1000"
+                                             :class="event.is_active ? 'bg-purple-500 dark:bg-purple-400' : 'bg-yellow-400 dark:bg-yellow-500'"
+                                             :style="'width: ' + progressPercent(event) + '%'"></div>
+                                    </div>
+                                </template>
+                                <p class="text-xs mt-0.5 transition-opacity duration-150 opacity-0 group-hover:opacity-100"
                                    aria-hidden="true"
                                    :class="event.is_active ? 'text-purple-600 dark:text-purple-400' : 'text-yellow-600 dark:text-yellow-400'"
                                    x-text="formatStatus(event)"></p>
