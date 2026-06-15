@@ -18,7 +18,11 @@ export const expiryCountdown = (durationSeconds, mode, eventId, activatedAt) => 
             localStorage.setItem(key, JSON.stringify({ remaining: fullMs, activatedAt }));
         }
 
-        if (this._remaining <= 0) this._deactivateTriggered = true;
+        if (this._remaining <= 0 && !this._deactivateTriggered) {
+            this._deactivateTriggered = true;
+            localStorage.removeItem(key);
+            simPost('/events/' + eventId + '/deactivate');
+        }
 
         this.update();
 

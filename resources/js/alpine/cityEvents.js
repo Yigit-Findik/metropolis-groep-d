@@ -1,6 +1,12 @@
-export const eventCard = (id, serverIsActive) => ({
+export const eventCard = (id, serverIsActive, isRecurring, serverIsInSimulation) => ({
     id,
     isActive: serverIsActive,
+    isRecurring,
+    isInSimulation: serverIsInSimulation,
+
+    get showDeactivate() {
+        return this.isRecurring ? this.isInSimulation : this.isActive;
+    },
 
     init() {
         window.addEventListener('simulation:event-changed', (e) => {

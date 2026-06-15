@@ -23,6 +23,7 @@ class CityEvent extends Model
         'one_off_duration_value',
         'one_off_duration_unit',
         'is_active',
+        'is_in_simulation',
         'activated_at',
         'expires_at',
         'is_day_night_cycle',
@@ -36,6 +37,7 @@ class CityEvent extends Model
 
     protected $casts = [
         'is_active'             => 'boolean',
+        'is_in_simulation'      => 'boolean',
         'is_day_night_cycle'    => 'boolean',
         'activated_at'          => 'datetime',
         'expires_at'            => 'datetime',

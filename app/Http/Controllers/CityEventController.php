@@ -127,9 +127,10 @@ class CityEventController extends Controller
         $event = CityEvent::findOrFail($id);
 
         $update = [
-            'is_active'    => true,
-            'activated_at' => now(),
-            'expires_at'   => null,
+            'is_active'        => true,
+            'is_in_simulation' => true,
+            'activated_at'     => now(),
+            'expires_at'       => null,
         ];
 
         if ($event->is_day_night_cycle) {
@@ -148,7 +149,10 @@ class CityEventController extends Controller
     {
         $event = CityEvent::findOrFail($id);
 
-        $update = ['is_active' => false];
+        $update = [
+            'is_active'        => false,
+            'is_in_simulation' => false,
+        ];
 
         if ($event->is_day_night_cycle) {
             $update['current_phase']    = null;
@@ -164,6 +168,15 @@ class CityEventController extends Controller
         $this->recordAuditLog('deactivate', $event, null, ['is_active' => false]);
 
         return redirect()->route('city_events.index')->with('success', "{$event->name} has been deactivated.");
+    }
+
+    public function simDeactivate($id)
+    {
+        $event = CityEvent::findOrFail($id);
+
+        $event->update(['is_active' => false]);
+
+        return response()->json(['success' => true]);
     }
 
     public function switchPhase(Request $request, $id)
@@ -197,7 +210,7 @@ class CityEventController extends Controller
 
         $events = CityEvent::where(function ($q) {
                 $q->where('is_active', true)
-                  ->orWhere('event_type', 'recurring');
+                  ->orWhere('is_in_simulation', true);
             })
             ->with(['cityFunctions', 'dayFunctions', 'nightFunctions'])
             ->get([
@@ -299,9 +312,10 @@ class CityEventController extends Controller
             ->where('expires_at', '<=', $now)
             ->update(['is_active' => false]);
 
-        // Only auto-reactivate events that have a real expires_at (not simulation-managed ones)
+        // Only auto-reactivate events that are still in the simulation
         CityEvent::where('is_active', false)
             ->where('event_type', 'recurring')
+            ->where('is_in_simulation', true)
             ->whereNotNull('activated_at')
             ->whereNotNull('expires_at')
             ->get()
@@ -388,8 +402,8 @@ class CityEventController extends Controller
             'recurring_active_duration_value'    => ['nullable', 'integer', 'min:1'],
             'recurring_active_duration_unit'     => ['nullable', 'in:minute,hour,day,week'],
             'recurring_time_slots'                    => ['nullable', 'array'],
-            'recurring_time_slots.*.start'            => ['required_with:recurring_time_slots', 'regex:/^\d{2}:\d{2}$/'],
-            'recurring_time_slots.*.end'              => ['required_with:recurring_time_slots', 'regex:/^\d{2}:\d{2}$/'],
+            'recurring_time_slots.*.start'            => ['nullable', 'required_if:event_type,recurring', 'regex:/^\d{2}:\d{2}$/'],
+            'recurring_time_slots.*.end'              => ['nullable', 'required_if:event_type,recurring', 'regex:/^\d{2}:\d{2}$/'],
             'recurring_time_slots.*.week_day'         => ['nullable', 'integer', 'between:1,7'],
             'recurring_time_slots.*.month_date'       => ['nullable', 'integer', 'between:1,31'],
             'one_off_duration_value'             => ['nullable', 'integer', 'min:1', 'required_if:event_type,one-off'],

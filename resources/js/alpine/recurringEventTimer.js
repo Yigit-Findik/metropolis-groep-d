@@ -39,10 +39,10 @@ export const recurringEventTimer = (activeDurationSeconds, cycleDurationSeconds,
                 this.update();
             }
 
-            // Sim cycle ended — deactivate in DB
+            // Sim cycle ended — deactivate in DB (sim-deactivate keeps the event in the simulation for reactivation)
             if (this._expires <= 0 && !this._deactivateTriggered) {
                 this._deactivateTriggered = true;
-                simPost('/events/' + eventId + '/deactivate').then(() => {
+                simPost('/events/' + eventId + '/sim-deactivate').then(() => {
                     window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: eventId, isActive: false } }));
                 });
             }

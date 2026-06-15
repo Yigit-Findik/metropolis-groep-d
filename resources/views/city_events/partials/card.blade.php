@@ -1,8 +1,8 @@
 <article tabindex="0"
-         x-data="eventCard({{ $event->id }}, {{ $event->is_active ? 'true' : 'false' }})"
+         x-data="eventCard({{ $event->id }}, {{ $event->is_active ? 'true' : 'false' }}, {{ $event->event_type === 'recurring' ? 'true' : 'false' }}, {{ $event->is_in_simulation ? 'true' : 'false' }})"
          aria-label="Event {{ $event->name }}, {{ $event->type_label }}{{ $event->description ? ', description: ' . $event->description : '' }}, {{ $event->schedule_summary }}"
          class="rounded-2xl border p-5 shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
-         :class="isActive
+         :class="showDeactivate
              ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-900/20'
              : 'border-amber-200 bg-amber-50 dark:border-amber-700/50 dark:bg-amber-900/10'">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -37,6 +37,15 @@
                                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300'
                                      : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/10 dark:text-indigo-300' }}">
                         {{ $event->current_phase ? ucfirst($event->current_phase) : 'Active' }}
+                    </span>
+                @elseif($event->event_type === 'recurring')
+                    <span x-show="isActive"
+                          class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
+                        Active
+                    </span>
+                    <span x-show="isInSimulation && !isActive"
+                          class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-cyan-100 text-cyan-800 dark:bg-cyan-500/10 dark:text-cyan-300">
+                        In Simulation
                     </span>
                 @else
                     <span x-show="isActive"
@@ -98,7 +107,7 @@
         <div class="flex shrink-0 flex-wrap items-center gap-2">
 
             {{-- Activate / Deactivate --}}
-            <form x-show="isActive" method="POST" action="{{ route('city_events.deactivate', $event->id) }}">
+            <form x-show="showDeactivate" method="POST" action="{{ route('city_events.deactivate', $event->id) }}">
                 @csrf
                 <button type="submit"
                         aria-label="Deactivate event {{ $event->name }}"
@@ -106,7 +115,7 @@
                     Deactivate
                 </button>
             </form>
-            <form x-show="!isActive" method="POST" action="{{ route('city_events.activate', $event->id) }}">
+            <form x-show="!showDeactivate" method="POST" action="{{ route('city_events.activate', $event->id) }}">
                 @csrf
                 <button type="submit"
                         aria-label="Activate event {{ $event->name }}"
