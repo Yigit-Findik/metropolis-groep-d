@@ -19,7 +19,7 @@
         <div class="px-4 sm:px-6 lg:px-8">
 
             {{-- Top bar: QoL Score Banner + Active Events panel --}}
-            <div class="flex flex-col xl:flex-row gap-4 mb-6">
+            <div class="flex flex-col lg:flex-row gap-4 mb-6">
 
                 {{-- QoL Score Banner --}}
                 <div class="flex-1 min-w-0 bg-gray-200 dark:bg-gray-800 rounded-2xl shadow-sm px-4 sm:px-8 py-6" role="group" aria-label="Quality of life summary">
@@ -59,7 +59,7 @@
                 </div>
 
                 {{-- Active Events Panel --}}
-                <div class="w-full xl:w-80 shrink-0 self-start bg-gray-200 dark:bg-gray-800 rounded-2xl shadow-sm px-6 py-6"
+                <div class="w-full lg:w-80 shrink-0 self-start bg-gray-200 dark:bg-gray-800 rounded-2xl shadow-sm px-6 py-6"
                      x-data="activeEvents"
                      role="region"
                      aria-label="Currently active events">
@@ -408,7 +408,8 @@
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
                                              alt="{{ $cityFunction->name }}"
-                                             class="w-16 h-16 object-contain mb-2">
+                                             class="w-16 h-16 object-contain mb-2"
+                                             draggable="false">
                                     @endif
                                     <span class="text-xs font-semibold text-center text-gray-700 dark:text-white break-words w-full leading-tight line-clamp-2">{{ $cityFunction->name }}</span>
                                 </button>
@@ -480,7 +481,10 @@
         <div id="grid-a11y-announcer" aria-live="polite" aria-atomic="true" role="status" class="sr-only"></div>
 
         <div id="qol-toast"
-         class="fixed bottom-6 right-6 z-50 hidden px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all duration-300">
-    </div>
+             role="status"
+             aria-live="assertive"
+             aria-atomic="true"
+             class="fixed bottom-6 right-6 z-50 hidden px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all duration-300">
+        </div>
 
 </x-app-layout>
