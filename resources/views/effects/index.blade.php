@@ -166,9 +166,12 @@
         </div>
     </div>
 
-    {{-- Effect Toast Notification --}}
+    {{-- Effect Toast Notification — aria-live must be in static HTML so screen readers register the live region at page load --}}
     <div id="effect-toast"
-            class="fixed bottom-6 right-6 z-50 hidden rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300">
+         role="status"
+         aria-live="polite"
+         aria-atomic="true"
+         class="fixed bottom-6 right-6 z-50 hidden rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300">
     </div>
 
 </x-app-layout>

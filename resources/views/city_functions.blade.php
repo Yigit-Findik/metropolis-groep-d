@@ -152,7 +152,7 @@
                         <input type="file" id="create-image" name="image" accept="image/*"
                                class="w-full text-sm text-gray-700 dark:text-white bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2
                                       file:mr-3 file:py-1 file:px-3 file:rounded file:border-0
-                                      file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                                      file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer">
                     </div>
 
                     {{-- Required: function name --}}
@@ -254,7 +254,7 @@
                         <input type="file" id="edit-image" name="image" accept="image/*"
                                class="w-full text-sm text-gray-700 dark:text-white bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2
                                       file:mr-3 file:py-1 file:px-3 file:rounded file:border-0
-                                      file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                                      file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer">
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave empty to keep the current image.</p>
                     </div>
 

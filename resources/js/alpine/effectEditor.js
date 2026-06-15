@@ -15,6 +15,7 @@ export const effectEditor = (initialValue, updateUrl, csrfToken, functionName, c
     error: '',
     functionNameArg: functionName,
     categoryArg: category,
+    _toastTimer: null,
 
     isValid() {
         return this.value >= -10 && this.value <= 10;
@@ -84,7 +85,8 @@ export const effectEditor = (initialValue, updateUrl, csrfToken, functionName, c
             if (toast) {
                 toast.textContent = `${functionName} effect updated!`;
                 toast.className = 'fixed bottom-6 right-6 z-50 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 bg-green-500';
-                setTimeout(() => { toast.className += ' hidden'; }, 3000);
+                clearTimeout(this._toastTimer);
+                this._toastTimer = setTimeout(() => { toast.classList.add('hidden'); }, 3000);
             }
         } catch {
             this.error = 'An error occurred';

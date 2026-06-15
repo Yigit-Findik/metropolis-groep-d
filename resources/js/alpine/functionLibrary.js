@@ -99,14 +99,15 @@ export const functionLibrary = (functions = []) => ({
                     // Check if forbidden function is in neighbors
                     if (neighbors.includes(condition.target_function_id)) {
                         shouldHighlight = true;
-                        highlightClass = 'bg-red-400 dark:bg-red-500';
+                        // !important prefix overrides .grid-cell.is-empty { background } which is unlayered
+                        highlightClass = '!bg-red-400 dark:!bg-red-500';
                         break;
                     }
                 } else if (condition.type === 'required') {
                     // Check if required function is NOT in neighbors
                     if (!neighbors.includes(condition.target_function_id)) {
                         shouldHighlight = true;
-                        highlightClass = 'bg-yellow-400 dark:bg-yellow-500';
+                        highlightClass = '!bg-yellow-400 dark:!bg-yellow-500';
                     }
                 }
             }
@@ -136,7 +137,7 @@ export const functionLibrary = (functions = []) => ({
 
     clearHighlights() {
         this.highlightedCells.forEach(cell => {
-            cell.classList.remove('bg-red-400', 'dark:bg-red-500', 'bg-yellow-400', 'dark:bg-yellow-500');
+            cell.classList.remove('!bg-red-400', 'dark:!bg-red-500', '!bg-yellow-400', 'dark:!bg-yellow-500');
         });
         this.highlightedCells = [];
     },
