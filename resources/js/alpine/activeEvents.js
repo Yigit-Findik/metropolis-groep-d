@@ -113,7 +113,7 @@ export const activeEvents = () => ({
                         prevReactivate != null && prevReactivate > 0 && updated._reactivateMs <= 0 &&
                         !this._pendingReactivations.has(updated.id)) {
                         this._pendingReactivations.add(updated.id);
-                        simPost('/events/' + updated.id + '/activate')
+                        simPost('/events/' + updated.id + '/sim-reactivate')
                             .then(() => {
                                 this._pendingReactivations.delete(updated.id);
                                 this.fetchEvents();
@@ -142,7 +142,7 @@ export const activeEvents = () => ({
 
                         if (inSlot && !updated.is_active && !this._pendingSlotChanges.has(updated.id)) {
                             this._pendingSlotChanges.add(updated.id);
-                            simPost('/events/' + updated.id + '/activate').then(() => {
+                            simPost('/events/' + updated.id + '/sim-reactivate').then(() => {
                                 window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: true } }));
                                 this.fetchEvents().then(() => this._pendingSlotChanges.delete(updated.id));
                             });

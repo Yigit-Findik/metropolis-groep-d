@@ -179,6 +179,19 @@ class CityEventController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function simReactivate($id)
+    {
+        $event = CityEvent::findOrFail($id);
+
+        $event->update([
+            'is_active'    => true,
+            'activated_at' => now(),
+            'expires_at'   => null,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
     public function switchPhase(Request $request, $id)
     {
         $event = CityEvent::findOrFail($id);
