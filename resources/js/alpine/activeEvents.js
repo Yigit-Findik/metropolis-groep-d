@@ -51,13 +51,18 @@ export const activeEvents = () => ({
     _pendingDeactivations: new Set(),
     _pendingReactivations: new Set(),
     _pendingSlotChanges: new Set(),
+    _interval: null,
 
     async init() {
         await this.fetchEvents();
 
-        setInterval(() => {
+        const startInterval = () => {
+            if (this._interval) clearInterval(this._interval);
+            const multiplier  = Number(localStorage.getItem('sim_multiplier')   || 1);
+            const unitSeconds = Number(localStorage.getItem('sim_unit_seconds') || 1);
+            const tick        = unitSeconds * 1_000;
+            this._interval = setInterval(() => {
             if (localStorage.getItem('sim_paused') === 'false') {
-                const tick = Number(localStorage.getItem('sim_speed') || 1) * 1_000;
                 this.events = this.events.map(e => {
                     const updated        = { ...e };
                     const prevRemaining  = updated._remainingMs;
@@ -153,7 +158,11 @@ export const activeEvents = () => ({
                     return updated;
                 });
             }
-        }, 1_000);
+        }, Math.round(1_000 / multiplier));
+        };
+
+        startInterval();
+        window.addEventListener('simulation:speedchange', startInterval);
     },
 
     _save(e) {

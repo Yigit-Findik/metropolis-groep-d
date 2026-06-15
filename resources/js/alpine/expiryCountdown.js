@@ -5,6 +5,7 @@ export const expiryCountdown = (durationSeconds, mode, eventId, activatedAt) => 
     label: '',
     _remaining: 0,
     _deactivateTriggered: false,
+    _interval: null,
 
     init() {
         const fullMs = durationSeconds * 1000;
@@ -26,20 +27,28 @@ export const expiryCountdown = (durationSeconds, mode, eventId, activatedAt) => 
 
         this.update();
 
-        setInterval(() => {
-            if (localStorage.getItem('sim_paused') === 'false') {
-                this._remaining -= Number(localStorage.getItem('sim_speed') || 1) * 1_000;
-                localStorage.setItem(key, JSON.stringify({ remaining: this._remaining, activatedAt }));
-                this.update();
-            }
+        const startInterval = () => {
+            if (this._interval) clearInterval(this._interval);
+            const multiplier  = Number(localStorage.getItem('sim_multiplier')   || 1);
+            const unitSeconds = Number(localStorage.getItem('sim_unit_seconds') || 1);
+            this._interval = setInterval(() => {
+                if (localStorage.getItem('sim_paused') === 'false') {
+                    this._remaining -= unitSeconds * 1_000;
+                    localStorage.setItem(key, JSON.stringify({ remaining: this._remaining, activatedAt }));
+                    this.update();
+                }
 
-            // One-off event expired in sim time — deactivate in DB
-            if (this._remaining <= 0 && !this._deactivateTriggered) {
-                this._deactivateTriggered = true;
-                localStorage.removeItem(key);
-                simPost('/events/' + eventId + '/deactivate');
-            }
-        }, 1_000);
+                // One-off event expired in sim time — deactivate in DB
+                if (this._remaining <= 0 && !this._deactivateTriggered) {
+                    this._deactivateTriggered = true;
+                    localStorage.removeItem(key);
+                    simPost('/events/' + eventId + '/deactivate');
+                }
+            }, Math.round(1_000 / multiplier));
+        };
+
+        startInterval();
+        window.addEventListener('simulation:speedchange', startInterval);
     },
 
     update() {
