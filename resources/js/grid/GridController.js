@@ -247,11 +247,25 @@ export class GridController {
                 e.dataTransfer.setData('facilities', functionData.facilities);
                 e.dataTransfer.setData('mobility', functionData.mobility);
 
-                // Use the card image as the drag ghost
+                // Use the card image as the drag ghost.
+                // Safari requires the element to be off-screen in document.body —
+                // using a visible in-DOM element produces no ghost or a broken one.
                 const img = card.querySelector('img');
                 if (img) {
-                    e.dataTransfer.setDragImage(img, 25, 25);
-                    img.classList.add('grid-drag-image');
+                    // Firefox ignores both inline styles and HTML width/height attributes
+                    // on <img> elements for drag ghosts and uses the image's natural pixel
+                    // size instead. A <canvas> always renders at its defined pixel dimensions
+                    // in every browser, so we draw the image onto a 50×50 canvas instead.
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 80;
+                    canvas.height = 80;
+                    canvas.getContext('2d').drawImage(img, 0, 0, 80, 80);
+                    canvas.style.position = 'fixed';
+                    canvas.style.top = '-9999px';
+                    canvas.style.left = '-9999px';
+                    document.body.appendChild(canvas);
+                    e.dataTransfer.setDragImage(canvas, 40, 40);
+                    requestAnimationFrame(() => canvas.remove());
                 }
 
                 // Fetch which cells are forbidden so dragover can colour them red
@@ -349,7 +363,18 @@ export class GridController {
                 e.dataTransfer.setData('fromCell', 'true'); // Distinguishes from library drags
 
                 const img = cell.querySelector('img');
-                if (img) e.dataTransfer.setDragImage(img, 25, 25);
+                if (img) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 80;
+                    canvas.height = 80;
+                    canvas.getContext('2d').drawImage(img, 0, 0, 80, 80);
+                    canvas.style.position = 'fixed';
+                    canvas.style.top = '-9999px';
+                    canvas.style.left = '-9999px';
+                    document.body.appendChild(canvas);
+                    e.dataTransfer.setDragImage(canvas, 40, 40);
+                    requestAnimationFrame(() => canvas.remove());
+                }
             });
         });
     }

@@ -10,7 +10,7 @@
     </head>
     <body class="m-0 font-sans text-slate-900 bg-gradient-to-b from-slate-50 to-slate-200">
         <div class="min-h-screen flex items-center justify-center p-6">
-            <div class="w-full max-w-md rounded-3xl border border-slate-400/30 bg-white/95 p-8 text-center shadow-[0_24px_60px_rgba(15,23,42,0.12)] backdrop-blur">
+            <div class="w-full max-w-md rounded-3xl border border-slate-400/30 bg-white p-8 text-center shadow-[0_24px_60px_rgba(15,23,42,0.12)] supports-[backdrop-filter]:bg-white/95 supports-[backdrop-filter]:backdrop-blur">
                 <p class="mb-4 text-7xl font-bold leading-none text-red-600">403</p>
 
                 <h1 class="mb-2 text-2xl leading-tight">Access Denied</h1>

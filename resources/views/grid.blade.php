@@ -408,7 +408,8 @@
                                     @if($cityFunction->image_path)
                                         <img src="{{ asset($cityFunction->image_path) }}"
                                              alt="{{ $cityFunction->name }}"
-                                             class="w-16 h-16 object-contain mb-2">
+                                             class="w-16 h-16 object-contain mb-2"
+                                             draggable="false">
                                     @endif
                                     <span class="text-xs font-semibold text-center text-gray-700 dark:text-white break-words w-full leading-tight line-clamp-2">{{ $cityFunction->name }}</span>
                                 </button>
@@ -480,7 +481,10 @@
         <div id="grid-a11y-announcer" aria-live="polite" aria-atomic="true" role="status" class="sr-only"></div>
 
         <div id="qol-toast"
-         class="fixed bottom-6 right-6 z-50 hidden px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all duration-300">
-    </div>
+             role="status"
+             aria-live="assertive"
+             aria-atomic="true"
+             class="fixed bottom-6 right-6 z-50 hidden px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all duration-300">
+        </div>
 
 </x-app-layout>
