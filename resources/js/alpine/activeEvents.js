@@ -87,14 +87,14 @@ export const activeEvents = () => ({
                         }).then(() => this.fetchEvents());
                     }
 
-                    // Recurring: deactivate when active duration crosses zero
+                    // Recurring: deactivate when active duration crosses zero (sim-deactivate keeps it in the simulation for reactivation)
                     if (updated.event_type === 'recurring' && !updated._hasTimeSlot &&
                         updated.is_active &&
                         updated._remainingMs != null &&
                         prevRemaining > 0 && updated._remainingMs <= 0 &&
                         !this._pendingDeactivations.has(updated.id)) {
                         this._pendingDeactivations.add(updated.id);
-                        simPost('/events/' + updated.id + '/deactivate')
+                        simPost('/events/' + updated.id + '/sim-deactivate')
                             .then(() => {
                                 this._pendingDeactivations.delete(updated.id);
                                 this.fetchEvents();
@@ -116,6 +116,21 @@ export const activeEvents = () => ({
                             });
                     }
 
+                    // One-off: deactivate when active duration crosses zero
+                    if (updated.event_type === 'one-off' &&
+                        updated.is_active &&
+                        updated._remainingMs != null &&
+                        prevRemaining > 0 && updated._remainingMs <= 0 &&
+                        !this._pendingDeactivations.has(updated.id)) {
+                        this._pendingDeactivations.add(updated.id);
+                        simPost('/events/' + updated.id + '/deactivate')
+                            .then(() => {
+                                this._pendingDeactivations.delete(updated.id);
+                                this.fetchEvents();
+                                window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: false } }));
+                            });
+                    }
+
                     // Time-slot events: activate/deactivate based on current sim time and day
                     if (updated._hasTimeSlot) {
                         const inSlot = this._isInSlot(updated);
@@ -128,7 +143,7 @@ export const activeEvents = () => ({
                             });
                         } else if (!inSlot && updated.is_active && !this._pendingSlotChanges.has(updated.id)) {
                             this._pendingSlotChanges.add(updated.id);
-                            simPost('/events/' + updated.id + '/deactivate').then(() => {
+                            simPost('/events/' + updated.id + '/sim-deactivate').then(() => {
                                 window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: false } }));
                                 this.fetchEvents().then(() => this._pendingSlotChanges.delete(updated.id));
                             });
@@ -234,6 +249,17 @@ export const activeEvents = () => ({
                 // If the timer is already at zero but the server still says active,
                 // trigger deactivation immediately (handles page-reload after expiry)
                 if (e.event_type === 'recurring' && !hasTimeSlot &&
+                    remainingMs != null && remainingMs <= 0 && e.is_active &&
+                    !this._pendingDeactivations.has(e.id)) {
+                    this._pendingDeactivations.add(e.id);
+                    simPost('/events/' + e.id + '/sim-deactivate')
+                        .then(() => {
+                            this.fetchEvents();
+                            window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: e.id, isActive: false } }));
+                        });
+                }
+
+                if (e.event_type === 'one-off' &&
                     remainingMs != null && remainingMs <= 0 && e.is_active &&
                     !this._pendingDeactivations.has(e.id)) {
                     this._pendingDeactivations.add(e.id);

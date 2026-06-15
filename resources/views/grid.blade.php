@@ -75,22 +75,21 @@
                                 tabindex="0"
                                 :class="event.is_active
                                     ? 'bg-purple-100 dark:bg-purple-900/40 border-purple-200 dark:border-purple-700'
-                                    : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700'"
+                                    : 'bg-gray-100 dark:bg-gray-900/60 border-gray-400 dark:border-gray-600'"
                                 :aria-label="event.name + ', ' + (event.is_active ? 'active' : 'inactive')">
                                 <p class="text-sm font-semibold break-words"
-                                   :class="event.is_active ? 'text-purple-800 dark:text-purple-200' : 'text-yellow-800 dark:text-yellow-200'"
+                                   :class="event.is_active ? 'text-purple-800 dark:text-purple-200' : 'text-gray-700 dark:text-gray-300'"
                                    x-text="event.name"></p>
                                 <template x-if="progressPercent(event) !== null">
                                     <div class="mt-1.5 h-1.5 rounded-full overflow-hidden"
-                                         :class="event.is_active ? 'bg-purple-200 dark:bg-purple-800' : 'bg-yellow-200 dark:bg-yellow-800'">
+                                         :class="event.is_active ? 'bg-purple-200 dark:bg-purple-800' : 'bg-gray-300 dark:bg-gray-700'">
                                         <div class="h-full rounded-full transition-all duration-1000"
-                                             :class="event.is_active ? 'bg-purple-500 dark:bg-purple-400' : 'bg-yellow-400 dark:bg-yellow-500'"
+                                             :class="event.is_active ? 'bg-purple-500 dark:bg-purple-400' : 'bg-gray-500 dark:bg-gray-400'"
                                              :style="'width: ' + progressPercent(event) + '%'"></div>
                                     </div>
                                 </template>
-                                <p class="text-xs mt-0.5 transition-opacity duration-150 opacity-0 group-hover:opacity-100"
-                                   aria-hidden="true"
-                                   :class="event.is_active ? 'text-purple-600 dark:text-purple-400' : 'text-yellow-600 dark:text-yellow-400'"
+                                <p class="text-xs mt-0.5"
+                                   :class="event.is_active ? 'text-purple-600 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'"
                                    x-text="formatStatus(event)"></p>
                             </li>
                         </template>

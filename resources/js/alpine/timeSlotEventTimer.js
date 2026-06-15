@@ -147,7 +147,7 @@ export const timeSlotEventTimer = (slots, eventId, initialIsActive, frequencyUni
                 this._deactivateTriggered = true;
                 this._activateTriggered   = false;
                 this._isActive = false;
-                simPost('/events/' + eventId + '/deactivate').then(() => {
+                simPost('/events/' + eventId + '/sim-deactivate').then(() => {
                     window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: eventId, isActive: false } }));
                 });
             }

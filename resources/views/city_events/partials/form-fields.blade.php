@@ -143,8 +143,8 @@
                 </table>
             </div>
             <x-input-error :messages="$errors->get('recurring_time_slots')" class="mt-2" />
-            <x-input-error :messages="$errors->get('recurring_time_slots.*.start')" class="mt-1" />
-            <x-input-error :messages="$errors->get('recurring_time_slots.*.end')" class="mt-1" />
+            <x-input-error :messages="\Illuminate\Support\Arr::flatten($errors->get('recurring_time_slots.*.start'))" class="mt-1" />
+            <x-input-error :messages="\Illuminate\Support\Arr::flatten($errors->get('recurring_time_slots.*.end'))" class="mt-1" />
         </div>
     </div>
 
