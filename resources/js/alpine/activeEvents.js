@@ -263,6 +263,7 @@ export const activeEvents = () => ({
                     this._pendingDeactivations.add(e.id);
                     simPost('/events/' + e.id + '/sim-deactivate')
                         .then(() => {
+                            this._pendingDeactivations.delete(e.id);
                             this.fetchEvents();
                             window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: e.id, isActive: false } }));
                         });
@@ -274,6 +275,7 @@ export const activeEvents = () => ({
                     this._pendingDeactivations.add(e.id);
                     simPost('/events/' + e.id + '/deactivate')
                         .then(() => {
+                            this._pendingDeactivations.delete(e.id);
                             this.fetchEvents();
                             window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: e.id, isActive: false } }));
                         });
