@@ -122,18 +122,24 @@ html.high-contrast .grid-cell.is-occupied span {
     color: #fde047 !important;
 }
 
-/* Access road / event route overlay states — added by AccessRoadController / EventRouteController */
-html.high-contrast .road-cell {
-    background-color: rgba(253, 224, 71, 0.25) !important;
+/* Access road / event route overlay states — added by AccessRoadController / EventRouteController.
+   Specificity must match html.high-contrast .grid-cell.is-empty (0-3-1) so source order wins. */
+html.high-contrast .grid-cell.road-cell {
+    background-color: rgba(253, 224, 71, 0.55) !important;
     border-color: #fde047 !important;
 }
-html.high-contrast .event-location-cell {
-    background-color: rgba(216, 180, 254, 0.2) !important;
+html.high-contrast .grid-cell.event-location-cell {
+    background-color: rgba(216, 180, 254, 0.45) !important;
     border-color: #d8b4fe !important;
 }
-html.high-contrast .event-route-cell {
-    background-color: rgba(216, 180, 254, 0.35) !important;
+html.high-contrast .grid-cell.event-route-cell {
+    background-color: rgba(216, 180, 254, 0.6) !important;
     border-color: #d8b4fe !important;
+}
+
+/* Recurring schedule card — shiny blue border in high contrast */
+html.high-contrast .recurring-schedule-card {
+    border: 2px solid #60a5fa !important;
 }
 
 /* QoL toast — shown/hidden by QolService, background set dynamically via JS */
