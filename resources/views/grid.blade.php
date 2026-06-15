@@ -420,6 +420,86 @@
                 @endif {{-- end policy maker check --}}
 
             </div>
+
+        {{-- REV.2.1 - Simulation Comments --}}
+        <section class="mt-6" x-data="simulationComments" aria-labelledby="comments-heading">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm px-6 py-6">
+
+                <h2 id="comments-heading" class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-5">Comments</h2>
+
+                {{-- Add comment form — only visible to policy makers and administrators --}}
+                @if($userRole === 'Policy maker' || $userRole === 'Administrator')
+                <form @submit.prevent="submit" class="mb-6" novalidate>
+                    <label for="comment-body" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Add a comment
+                    </label>
+                    <textarea
+                        id="comment-body"
+                        x-model="newBody"
+                        rows="3"
+                        maxlength="1000"
+                        placeholder="Leave feedback for the city planner…"
+                        class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                        aria-describedby="comment-error"
+                    ></textarea>
+
+                    <div class="flex items-center justify-between mt-2 gap-4">
+                        <p id="comment-error"
+                           x-show="error"
+                           x-text="error"
+                           class="text-sm text-red-600 dark:text-red-400"
+                           aria-live="polite"></p>
+                        <button
+                            type="submit"
+                            :disabled="submitting || !newBody.trim()"
+                            class="ml-auto bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        >
+                            <span x-text="submitting ? 'Posting…' : 'Post Comment'">Post Comment</span>
+                        </button>
+                    </div>
+                </form>
+                @endif
+
+                {{-- Loading state --}}
+                <template x-if="loading">
+                    <p class="text-gray-400 dark:text-gray-500 text-sm" aria-live="polite">Loading comments…</p>
+                </template>
+
+                {{-- Empty state --}}
+                <template x-if="!loading && comments.length === 0">
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">No comments yet.</p>
+                </template>
+
+                {{-- Comment list --}}
+                <ul class="space-y-4" aria-label="Simulation comments">
+                    <template x-for="comment in comments" :key="comment.id">
+                        <li class="border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-baseline gap-2 flex-wrap">
+                                        <span class="text-sm font-semibold text-gray-800 dark:text-gray-100"
+                                              x-text="comment.author"></span>
+                                        <span class="text-xs text-gray-400 dark:text-gray-500"
+                                              x-text="comment.created_at"></span>
+                                    </div>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300 mt-1.5 whitespace-pre-wrap break-words"
+                                       x-text="comment.body"></p>
+                                </div>
+                                <template x-if="comment.is_mine">
+                                    <button
+                                        @click="remove(comment.id)"
+                                        class="shrink-0 text-xs font-semibold text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 rounded px-2 py-1 transition"
+                                        :aria-label="'Delete comment by ' + comment.author"
+                                    >Delete</button>
+                                </template>
+                            </div>
+                        </li>
+                    </template>
+                </ul>
+
+            </div>
+        </section>
+
         </div>
     </div>
 
