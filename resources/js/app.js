@@ -17,6 +17,7 @@ import { effectEditor } from './alpine/effectEditor';
 import { confirmModal } from './alpine/confirmModal';
 import { simulationControls } from './alpine/simulationControls';
 import { dayNightCycleTimer } from './alpine/dayNightCycleTimer';
+import { contrastToggle } from './alpine/contrastToggle';
 
 // Core modules
 import { GridApi } from './api/GridApi';
@@ -43,6 +44,7 @@ Alpine.data('effectEditor', effectEditor);
 Alpine.data('confirmModal', confirmModal);
 Alpine.data('simulationControls', simulationControls);
 Alpine.data('dayNightCycleTimer', dayNightCycleTimer);
+Alpine.data('contrastToggle', contrastToggle);
 
 window.Alpine = Alpine;
 Alpine.start();

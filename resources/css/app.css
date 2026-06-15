@@ -70,3 +70,75 @@
 .grid-drag-image {
     pointer-events: none;
 }
+
+/* ════════════════════════════════════════════════════════════════
+   HIGH CONTRAST MODE — CSS-only overrides
+   Applied when html.high-contrast is set by the contrastToggle component.
+   These rules cover states controlled by JS/Alpine at runtime and therefore
+   cannot be expressed as static Tailwind hc: utility classes in templates.
+   All static template elements use hc: Tailwind classes instead.
+   ════════════════════════════════════════════════════════════════ */
+
+/* Body baseline (applied before JS loads to avoid FOUC) */
+html.high-contrast body {
+    background-color: #000;
+    color: #fff;
+}
+html.high-contrast .min-h-screen {
+    background-color: #000;
+}
+
+/* Focus rings — global override for every interactive element */
+html.high-contrast :focus-visible {
+    outline: 3px solid #fde047 !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+}
+
+/* Grid cell states — class names set dynamically by GridController */
+html.high-contrast .grid-cell.is-empty {
+    background: #000 !important;
+    border: 3px solid #fff !important;
+}
+html.high-contrast .grid-cell.is-empty::before {
+    background: #fff !important;
+}
+html.high-contrast .grid-cell.is-occupied {
+    background: #1a1500 !important;
+    border: 3px solid #fde047 !important;
+}
+html.high-contrast .grid-cell.is-occupied::before {
+    background: #fde047 !important;
+}
+html.high-contrast .grid-cell.is-approved {
+    border: 4px solid #4ade80 !important;
+    outline: 2px solid #4ade80;
+    outline-offset: -4px;
+}
+html.high-contrast .grid-cell span {
+    color: #fff !important;
+}
+html.high-contrast .grid-cell.is-occupied span {
+    color: #fde047 !important;
+}
+
+/* Access road / event route overlay states — added by AccessRoadController / EventRouteController */
+html.high-contrast .road-cell {
+    background-color: rgba(253, 224, 71, 0.25) !important;
+    border-color: #fde047 !important;
+}
+html.high-contrast .event-location-cell {
+    background-color: rgba(216, 180, 254, 0.2) !important;
+    border-color: #d8b4fe !important;
+}
+html.high-contrast .event-route-cell {
+    background-color: rgba(216, 180, 254, 0.35) !important;
+    border-color: #d8b4fe !important;
+}
+
+/* QoL toast — shown/hidden by QolService, background set dynamically via JS */
+html.high-contrast #qol-toast {
+    background-color: #fde047 !important;
+    color: #000 !important;
+    border: 2px solid #000 !important;
+}

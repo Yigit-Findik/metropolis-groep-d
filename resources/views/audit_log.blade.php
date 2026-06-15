@@ -1,25 +1,25 @@
-﻿<x-app-layout>
+<x-app-layout>
     <x-slot name="header">
-        <h1 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h1 class="font-semibold text-xl text-gray-800 hc:text-white dark:text-gray-200 leading-tight">
             {{ __('Audit Log') }}
         </h1>
     </x-slot>
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <div class="bg-white hc:bg-black hc:border hc:border-white dark:bg-gray-800 overflow-hidden shadow-sm hc:shadow-none sm:rounded-lg p-6">
                 <form id="filters" method="GET" class="mb-4 flex flex-wrap gap-3 items-end" aria-label="Filter audit log entries">
                     <div class="flex-1 min-w-[140px]">
-                        <label for="date_from" class="block text-sm text-gray-700 dark:text-gray-200">From</label>
-                        <input id="date_from" type="date" name="date_from" value="{{ request('date_from') }}" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label="Filter from date" />
+                        <label for="date_from" class="block text-sm text-gray-700 hc:text-white dark:text-gray-200">From</label>
+                        <input id="date_from" type="date" name="date_from" value="{{ request('date_from') }}" class="w-full border rounded px-3 py-2 hc:bg-black hc:text-white hc:border-white dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label="Filter from date" />
                     </div>
                     <div class="flex-1 min-w-[140px]">
-                        <label for="date_to" class="block text-sm text-gray-700 dark:text-gray-200">To</label>
-                        <input id="date_to" type="date" name="date_to" value="{{ request('date_to') }}" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label="Filter to date" />
+                        <label for="date_to" class="block text-sm text-gray-700 hc:text-white dark:text-gray-200">To</label>
+                        <input id="date_to" type="date" name="date_to" value="{{ request('date_to') }}" class="w-full border rounded px-3 py-2 hc:bg-black hc:text-white hc:border-white dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label="Filter to date" />
                     </div>
                     <div class="flex-1 min-w-[120px]">
-                        <label for="action_filter" class="block text-sm text-gray-700 dark:text-gray-200">Action</label>
-                        <select id="action_filter" name="action" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label="Filter by action type">
+                        <label for="action_filter" class="block text-sm text-gray-700 hc:text-white dark:text-gray-200">Action</label>
+                        <select id="action_filter" name="action" class="w-full border rounded px-3 py-2 hc:bg-black hc:text-white hc:border-white dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label="Filter by action type">
                             <option value="">Any</option>
                             <option value="create" @if(request('action')=='create') selected @endif>create</option>
                             <option value="update" @if(request('action')=='update') selected @endif>update</option>
@@ -27,14 +27,14 @@
                         </select>
                     </div>
                     <div class="shrink-0">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800" aria-label="Apply audit log filters">Filter</button>
+                        <button type="submit" class="bg-blue-600 hc:bg-yellow-300 hc:text-black text-white px-4 py-2 rounded hover:bg-blue-700 hc:hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-blue-500 hc:focus:ring-yellow-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800" aria-label="Apply audit log filters">Filter</button>
                     </div>
                 </form>
 
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" role="grid" aria-label="System audit log showing user actions on functions and events">
+                    <table class="min-w-full divide-y divide-gray-200 hc:divide-white dark:divide-gray-700" role="grid" aria-label="System audit log showing user actions on functions and events">
                         <thead>
-                            <tr class="text-left text-sm text-gray-500">
+                            <tr class="text-left text-sm text-gray-500 hc:text-white">
                                 <th class="px-3 py-2" scope="col">Timestamp</th>
                                 <th class="px-3 py-2" scope="col">User</th>
                                 <th class="px-3 py-2" scope="col">Action</th>
@@ -42,7 +42,7 @@
                                 <th class="px-3 py-2" scope="col">Details</th>
                             </tr>
                         </thead>
-                        <tbody id="audit-rows" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody id="audit-rows" class="bg-white hc:bg-black dark:bg-gray-800 divide-y divide-gray-200 hc:divide-white dark:divide-gray-700">
                             @foreach($entries as $entry)
                                 @php
                                     $details = is_array($entry->details) ? $entry->details : [];
@@ -127,10 +127,10 @@
                                         ? ($details['name'] ?? 'Not available')
                                         : ($entry->newCityFunction?->name ?? $entry->oldCityFunction?->name ?? 'Not available');
                                     $actionBadgeClasses = [
-                                        'create' => 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200',
-                                        'update' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200',
-                                        'delete' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
-                                    ][$actionLabel] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+                                        'create' => 'bg-green-100 hc:bg-black hc:border hc:border-green-400 text-green-800 hc:text-green-400 dark:bg-green-900/40 dark:text-green-200',
+                                        'update' => 'bg-yellow-100 hc:bg-black hc:border hc:border-yellow-300 text-yellow-800 hc:text-yellow-300 dark:bg-yellow-900/40 dark:text-yellow-200',
+                                        'delete' => 'bg-red-100 hc:bg-black hc:border hc:border-red-400 text-red-800 hc:text-red-400 dark:bg-red-900/40 dark:text-red-200',
+                                    ][$actionLabel] ?? 'bg-gray-100 hc:bg-black hc:border hc:border-white text-gray-800 hc:text-white dark:bg-gray-700 dark:text-gray-200';
                                     $isSnapshotAction = in_array($actionLabel, ['create', 'delete'], true);
                                     $snapshotTitle = $actionLabel === 'create'
                                         ? ($isCityEvent ? 'Created city event' : 'Created city function')
@@ -165,13 +165,13 @@
 
                                     $rowLabel = $actionText . ' ' . $entityLabel . ' ' . $functionLabel . '. User ' . $userLabel . '. Timestamp ' . $timestampLabel . '. Details ' . $fullDetailsLabelForAria;
                                 @endphp
-                                <tr class="text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset" role="row" tabindex="0" aria-label="{{ $rowLabel }}">
+                                <tr class="text-sm text-gray-700 hc:text-white dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 hc:focus:ring-yellow-400 focus:ring-inset" role="row" tabindex="0" aria-label="{{ $rowLabel }}">
                                     <td class="px-3 py-2" role="gridcell"><time datetime="{{ $entry->created_at->toIso8601String() }}">{{ $timestampLabel }}</time></td>
                                     <td class="px-3 py-2" role="gridcell">{{ $userLabel }}</td>
                                     <td class="px-3 py-2" role="gridcell"><span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold capitalize {{ $actionBadgeClasses }}" aria-label="Action: {{ $actionLabel }}">{{ $actionLabel }}</span></td>
                                     <td class="px-3 py-2" role="gridcell">
                                         <div class="inline-flex items-center gap-2">
-                                            <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                                            <span class="inline-flex items-center rounded-full bg-gray-100 hc:bg-black hc:border hc:border-white px-2.5 py-1 text-xs font-semibold text-gray-700 hc:text-white dark:bg-gray-700 dark:text-gray-200">
                                                 {{ $entityLabel }}
                                             </span>
                                             <span>{{ $functionLabel }}</span>
@@ -179,18 +179,18 @@
                                     </td>
                                     <td class="px-3 py-2 align-top" role="gridcell">
                                         @if(count($renderedRows) > 0)
-                                            <div lang="en" class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/30">
+                                            <div lang="en" class="rounded-lg border border-gray-200 hc:border-white bg-gray-50 hc:bg-neutral-900 p-3 dark:border-gray-700 dark:bg-gray-900/30">
                                                 @if($isSnapshotAction)
                                                     <div class="sr-only">{{ $snapshotTitle }}</div>
                                                 @endif
                                                 <div class="mt-0 flex flex-wrap gap-2">
                                                     @foreach($renderedRows as $row)
                                                         @continue($row['label'] === 'name')
-                                                        <div lang="en" class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
-                                                            <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $row['label'] }}</span>
+                                                        <div lang="en" class="inline-flex items-center gap-2 rounded-full border border-gray-200 hc:border-white bg-white hc:bg-black px-3 py-1 text-xs text-gray-700 hc:text-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
+                                                            <span class="font-semibold text-gray-900 hc:text-white dark:text-gray-100">{{ $row['label'] }}</span>
                                                             @if(array_key_exists('new', $row))
                                                                 <span>{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}</span>
-                                                                <span class="text-xs text-gray-400 mx-2">-></span>
+                                                                <span class="text-xs text-gray-400 hc:text-white mx-2">-></span>
                                                                 <span>{{ is_array($row['new']) ? json_encode($row['new']) : (($row['new'] === null) ? 'empty' : ($row['new'] ?? 'empty')) }}</span>
                                                             @else
                                                                 <span>{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}</span>
@@ -200,7 +200,7 @@
                                                 </div>
                                             </div>
                                         @else
-                                            <span class="text-xs text-gray-500 dark:text-gray-400 italic" aria-label="No additional details recorded">No additional details recorded</span>
+                                            <span class="text-xs text-gray-500 hc:text-white dark:text-gray-400 italic" aria-label="No additional details recorded">No additional details recorded</span>
                                         @endif
                                     </td>
                                 </tr>
