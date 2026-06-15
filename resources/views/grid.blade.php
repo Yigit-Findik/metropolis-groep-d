@@ -28,7 +28,7 @@
                         {{-- Total score: spans both columns on mobile so it stands alone --}}
                         <div class="col-span-2 sm:col-span-1 min-w-0">
                             <p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wide" aria-hidden="true">Total QoL</p>
-                            <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-4xl font-bold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-value" aria-live="polite" aria-atomic="true" aria-label="Total quality of life score">—</p>
+                            <p tabindex="0" class="text-gray-800 dark:text-gray-100 text-4xl font-bold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-value" aria-label="Total quality of life score">—</p>
                             <p tabindex="0" class="text-gray-600 dark:text-gray-300 text-sm font-semibold mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded" id="qol-score-label">—</p>
                         </div>
 
@@ -361,9 +361,7 @@
                     </div>
 
                     <p id="event-route-status"
-                       class="text-xs text-violet-700 dark:text-violet-300 mb-3 min-h-[1rem]"
-                       aria-live="polite"
-                       aria-atomic="true"></p>
+                       class="text-xs text-violet-700 dark:text-violet-300 mb-3 min-h-[1rem]"></p>
 
                     <div id="event-route-list" class="space-y-1"></div>
                 </div>
