@@ -27,6 +27,7 @@ export const timeSlotEventTimer = (slots, eventId, initialIsActive, frequencyUni
                 this.update();
             }
         }, 1_000);
+        window.addEventListener('simulation:skip', () => this.update());
     },
 
     update() {

@@ -70,6 +70,12 @@ export const recurringEventTimer = (activeDurationSeconds, cycleDurationSeconds,
 
         startInterval();
         window.addEventListener('simulation:speedchange', startInterval);
+        window.addEventListener('simulation:skip', (e) => {
+            this._expires     -= e.detail.addMs;
+            this._reactivates -= e.detail.addMs;
+            this._save(key);
+            this.update();
+        });
     },
 
     _save(key) {

@@ -67,6 +67,11 @@ export const dayNightCycleTimer = (dayDurationSeconds, nightDurationSeconds, eve
 
         startInterval();
         window.addEventListener('simulation:speedchange', startInterval);
+        window.addEventListener('simulation:skip', (e) => {
+            this._remaining -= e.detail.addMs;
+            this._save(key);
+            this.update();
+        });
     },
 
     _save(key) {

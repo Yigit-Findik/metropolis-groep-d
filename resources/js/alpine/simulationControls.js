@@ -6,6 +6,8 @@ export const simulationControls = () => ({
     timer: null,
     simTime: '00:00',
     _clockInterval: null,
+    skipAmount: 1,
+    skipUnit: 60,
 
     init() {
         // Remove all old keys from previous implementations
@@ -104,6 +106,29 @@ export const simulationControls = () => ({
                 }
             }
         }, intervalMs);
+    },
+
+    skip() {
+        const addMs  = this.skipAmount * this.skipUnit * 1_000;
+        const DAY_MS = 24 * 3600 * 1_000;
+        const prevMs = Number(localStorage.getItem('sim_clock_ms') || 0);
+        const newRawMs = prevMs + addMs;
+        const clockMs  = newRawMs % DAY_MS;
+        localStorage.setItem('sim_clock_ms', String(clockMs));
+        this.simTime = this._formatClock(clockMs);
+
+        const daysElapsed = Math.floor(newRawMs / DAY_MS);
+        if (daysElapsed > 0) {
+            const wd = Number(localStorage.getItem('sim_week_day') || 1);
+            localStorage.setItem('sim_week_day', String(((wd - 1 + daysElapsed) % 7) + 1));
+            const md = Number(localStorage.getItem('sim_month_date') || 1);
+            localStorage.setItem('sim_month_date', String(((md - 1 + daysElapsed) % 31) + 1));
+        }
+
+        window.dispatchEvent(new CustomEvent('simulation:skip', { detail: { addMs } }));
+
+        const announcer = document.getElementById('grid-a11y-announcer');
+        if (announcer) announcer.textContent = `Simulation time skipped to ${this.simTime}`;
     },
 
     _formatClock(ms) {

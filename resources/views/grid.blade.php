@@ -146,6 +146,30 @@
                         @endforeach
                     </div>
 
+                    <div class="border-l border-gray-600 h-6" aria-hidden="true"></div>
+
+                    {{-- Skip forward --}}
+                    <div class="flex items-center gap-2" role="group" aria-label="Skip simulation time forward">
+                        <span class="text-gray-400 text-xs font-semibold uppercase tracking-wide" aria-hidden="true">Skip</span>
+                        <input type="number"
+                               x-model.number="skipAmount"
+                               min="1"
+                               class="w-14 px-3 py-1.5 text-sm font-semibold rounded-lg bg-gray-700 text-gray-100 border-0 ring-1 ring-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                               aria-label="Skip amount">
+                        <select x-model.number="skipUnit"
+                                class="px-3 py-1.5 text-sm font-semibold rounded-lg bg-gray-700 text-gray-300 border-0 ring-1 ring-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer"
+                                aria-label="Skip unit">
+                            <option value="1" aria-label="Seconds">Sec</option>
+                            <option value="60" aria-label="Minutes">Min</option>
+                            <option value="3600" aria-label="Hours">Hr</option>
+                            <option value="86400" aria-label="Days">Day</option>
+                        </select>
+                        <button @click="skip()"
+                                class="px-3 py-1.5 rounded-lg text-sm font-semibold transition bg-blue-600 hover:bg-blue-500 text-white">
+                            Skip
+                        </button>
+                    </div>
+
                     {{-- Current speed display --}}
                     <div class="flex items-center gap-4 text-sm sm:ml-auto">
                         <div class="flex items-center gap-2">
@@ -477,9 +501,8 @@
             outline-offset: -3px;
         }
 
-        /* Event location cells — violet outline + light background */
+        /* Event location cells — violet outline*/
         .event-location-cell {
-            background-color: rgba(139, 92, 246, 0.12) !important;
             border-color: rgb(139, 92, 246) !important;
             border-style: dashed !important;
         }
@@ -488,6 +511,9 @@
         .event-route-cell {
             background-color: rgba(109, 40, 217, 0.22) !important;
             border-color: rgb(109, 40, 217) !important;
+        }
+        .event-route-cell span {
+            color: white !important;
         }
 
         /* When a cell is both a road and a route, route takes visual precedence */

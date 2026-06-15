@@ -62,107 +62,95 @@ export const activeEvents = () => ({
             const unitSeconds = Number(localStorage.getItem('sim_unit_seconds') || 1);
             const tick        = unitSeconds * 1_000;
             this._interval = setInterval(() => {
-            if (localStorage.getItem('sim_paused') === 'false') {
-                this.events = this.events.map(e => {
-                    const updated        = { ...e };
-                    const prevRemaining  = updated._remainingMs;
-                    const prevReactivate = updated._reactivateMs;
-
-                    if (!updated._hasTimeSlot) {
-                        if (updated._remainingMs  != null) updated._remainingMs  = Math.max(0, updated._remainingMs  - tick);
-                        if (updated._reactivateMs != null) updated._reactivateMs = Math.max(0, updated._reactivateMs - tick);
-                    }
-                    this._save(updated);
-
-                    // Day/night: trigger phase switch when timer crosses zero
-                    if (updated.event_type === 'day-night' && updated.is_active &&
-                        prevRemaining != null && prevRemaining > 0 && updated._remainingMs === 0 &&
-                        !updated._phaseSwitchTriggered) {
-                        updated._phaseSwitchTriggered = true;
-                        const fromPhase = updated._currentPhase;
-                        localStorage.removeItem('sim_dnc_' + updated.id);
-                        fetch('/events/' + updated.id + '/switch-phase', {
-                            method:  'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': csrfToken(),
-                                'Accept':       'application/json',
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ from_phase: fromPhase }),
-                        }).then(() => this.fetchEvents());
-                    }
-
-                    // Recurring: deactivate when active duration crosses zero (sim-deactivate keeps it in the simulation for reactivation)
-                    if (updated.event_type === 'recurring' && !updated._hasTimeSlot &&
-                        updated.is_active &&
-                        updated._remainingMs != null &&
-                        prevRemaining > 0 && updated._remainingMs <= 0 &&
-                        !this._pendingDeactivations.has(updated.id)) {
-                        this._pendingDeactivations.add(updated.id);
-                        simPost('/events/' + updated.id + '/sim-deactivate')
-                            .then(() => {
-                                this._pendingDeactivations.delete(updated.id);
-                                this.fetchEvents();
-                                window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: false } }));
-                            });
-                    }
-
-                    // Recurring: reactivate when the cooldown cycle ends
-                    if (updated.event_type === 'recurring' && !updated._hasTimeSlot &&
-                        !updated.is_active &&
-                        prevReactivate != null && prevReactivate > 0 && updated._reactivateMs <= 0 &&
-                        !this._pendingReactivations.has(updated.id)) {
-                        this._pendingReactivations.add(updated.id);
-                        simPost('/events/' + updated.id + '/sim-reactivate')
-                            .then(() => {
-                                this._pendingReactivations.delete(updated.id);
-                                this.fetchEvents();
-                                window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: true } }));
-                            });
-                    }
-
-                    // One-off: deactivate when active duration crosses zero
-                    if (updated.event_type === 'one-off' &&
-                        updated.is_active &&
-                        updated._remainingMs != null &&
-                        prevRemaining > 0 && updated._remainingMs <= 0 &&
-                        !this._pendingDeactivations.has(updated.id)) {
-                        this._pendingDeactivations.add(updated.id);
-                        simPost('/events/' + updated.id + '/deactivate')
-                            .then(() => {
-                                this._pendingDeactivations.delete(updated.id);
-                                this.fetchEvents();
-                                window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: false } }));
-                            });
-                    }
-
-                    // Time-slot events: activate/deactivate based on current sim time and day
-                    if (updated._hasTimeSlot) {
-                        const inSlot = this._isInSlot(updated);
-
-                        if (inSlot && !updated.is_active && !this._pendingSlotChanges.has(updated.id)) {
-                            this._pendingSlotChanges.add(updated.id);
-                            simPost('/events/' + updated.id + '/sim-reactivate').then(() => {
-                                window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: true } }));
-                                this.fetchEvents().then(() => this._pendingSlotChanges.delete(updated.id));
-                            });
-                        } else if (!inSlot && updated.is_active && !this._pendingSlotChanges.has(updated.id)) {
-                            this._pendingSlotChanges.add(updated.id);
-                            simPost('/events/' + updated.id + '/sim-deactivate').then(() => {
-                                window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: false } }));
-                                this.fetchEvents().then(() => this._pendingSlotChanges.delete(updated.id));
-                            });
-                        }
-                    }
-
-                    return updated;
-                });
-            }
-        }, Math.round(1_000 / multiplier));
+                if (localStorage.getItem('sim_paused') === 'false') {
+                    this._tick(tick);
+                }
+            }, Math.round(1_000 / multiplier));
         };
 
         startInterval();
         window.addEventListener('simulation:speedchange', startInterval);
+        window.addEventListener('simulation:skip', (e) => this._tick(e.detail.addMs));
+    },
+
+    _tick(tickMs) {
+        this.events = this.events.map(e => {
+            const updated        = { ...e };
+            const prevRemaining  = updated._remainingMs;
+            const prevReactivate = updated._reactivateMs;
+
+            if (!updated._hasTimeSlot) {
+                if (updated._remainingMs  != null) updated._remainingMs  = Math.max(0, updated._remainingMs  - tickMs);
+                if (updated._reactivateMs != null) updated._reactivateMs = Math.max(0, updated._reactivateMs - tickMs);
+            }
+            this._save(updated);
+
+            if (updated.event_type === 'day-night' && updated.is_active &&
+                prevRemaining != null && prevRemaining > 0 && updated._remainingMs === 0 &&
+                !updated._phaseSwitchTriggered) {
+                updated._phaseSwitchTriggered = true;
+                const fromPhase = updated._currentPhase;
+                localStorage.removeItem('sim_dnc_' + updated.id);
+                fetch('/events/' + updated.id + '/switch-phase', {
+                    method:  'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ from_phase: fromPhase }),
+                }).then(() => this.fetchEvents());
+            }
+
+            if (updated.event_type === 'recurring' && !updated._hasTimeSlot &&
+                updated.is_active && updated._remainingMs != null &&
+                prevRemaining > 0 && updated._remainingMs <= 0 &&
+                !this._pendingDeactivations.has(updated.id)) {
+                this._pendingDeactivations.add(updated.id);
+                simPost('/events/' + updated.id + '/sim-deactivate').then(() => {
+                    this._pendingDeactivations.delete(updated.id);
+                    this.fetchEvents();
+                    window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: false } }));
+                });
+            }
+
+            if (updated.event_type === 'recurring' && !updated._hasTimeSlot &&
+                !updated.is_active && prevReactivate != null && prevReactivate > 0 &&
+                updated._reactivateMs <= 0 && !this._pendingReactivations.has(updated.id)) {
+                this._pendingReactivations.add(updated.id);
+                simPost('/events/' + updated.id + '/sim-reactivate').then(() => {
+                    this._pendingReactivations.delete(updated.id);
+                    this.fetchEvents();
+                    window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: true } }));
+                });
+            }
+
+            if (updated.event_type === 'one-off' && updated.is_active &&
+                updated._remainingMs != null && prevRemaining > 0 && updated._remainingMs <= 0 &&
+                !this._pendingDeactivations.has(updated.id)) {
+                this._pendingDeactivations.add(updated.id);
+                simPost('/events/' + updated.id + '/deactivate').then(() => {
+                    this._pendingDeactivations.delete(updated.id);
+                    this.fetchEvents();
+                    window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: false } }));
+                });
+            }
+
+            if (updated._hasTimeSlot) {
+                const inSlot = this._isInSlot(updated);
+                if (inSlot && !updated.is_active && !this._pendingSlotChanges.has(updated.id)) {
+                    this._pendingSlotChanges.add(updated.id);
+                    simPost('/events/' + updated.id + '/sim-reactivate').then(() => {
+                        window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: true } }));
+                        this.fetchEvents().then(() => this._pendingSlotChanges.delete(updated.id));
+                    });
+                } else if (!inSlot && updated.is_active && !this._pendingSlotChanges.has(updated.id)) {
+                    this._pendingSlotChanges.add(updated.id);
+                    simPost('/events/' + updated.id + '/sim-deactivate').then(() => {
+                        window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: false } }));
+                        this.fetchEvents().then(() => this._pendingSlotChanges.delete(updated.id));
+                    });
+                }
+            }
+
+            return updated;
+        });
     },
 
     _save(e) {
