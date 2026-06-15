@@ -19,7 +19,7 @@
         <div class="px-4 sm:px-6 lg:px-8">
 
             {{-- Top bar: QoL Score Banner + Active Events panel --}}
-            <div class="flex flex-col xl:flex-row gap-4 mb-6">
+            <div class="flex flex-col lg:flex-row gap-4 mb-6">
 
                 {{-- QoL Score Banner --}}
                 <div class="flex-1 min-w-0 bg-gray-200 dark:bg-gray-800 rounded-2xl shadow-sm px-4 sm:px-8 py-6" role="group" aria-label="Quality of life summary">
@@ -59,7 +59,7 @@
                 </div>
 
                 {{-- Active Events Panel --}}
-                <div class="w-full xl:w-80 shrink-0 self-start bg-gray-200 dark:bg-gray-800 rounded-2xl shadow-sm px-6 py-6"
+                <div class="w-full lg:w-80 shrink-0 self-start bg-gray-200 dark:bg-gray-800 rounded-2xl shadow-sm px-6 py-6"
                      x-data="activeEvents"
                      role="region"
                      aria-label="Currently active events">
