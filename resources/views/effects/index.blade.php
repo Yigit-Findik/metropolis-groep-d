@@ -12,7 +12,7 @@
             <div id="effect-live" class="sr-only" aria-live="polite"></div>
 
             @if($selectedFunctionId)
-                <div class="mb-6 rounded-2xl border border-blue-200 hc:border-white bg-blue-50 hc:bg-black px-4 py-3 text-sm text-blue-900 hc:text-white dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-100">
+                <div class="mb-6 rounded-2xl border border-blue-400 hc:border-white bg-blue-100 hc:bg-black px-4 py-3 text-sm text-blue-900 hc:text-white dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-100">
                     Direct link active for function ID {{ $selectedFunctionId }}.
                 </div>
             @endif
@@ -23,7 +23,7 @@
                 {{-- Table Header --}}
                 <div class="overflow-x-auto">
                     <table class="w-full">
-                        <thead class="border-b border-gray-200 hc:border-white bg-blue-50 hc:bg-neutral-900 dark:border-gray-600 dark:bg-gray-700">
+                        <thead class="border-b border-gray-200 hc:border-white bg-blue-100 hc:bg-neutral-900 dark:border-gray-600 dark:bg-gray-700">
                                 <tr>
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800 hc:text-white dark:text-gray-100">
                                     Function
@@ -39,7 +39,7 @@
                         {{-- Table Body --}}
                         <tbody class="divide-y divide-gray-200 hc:divide-white dark:divide-gray-700">
                             @forelse($functions as $function)
-                                <tr class="transition hover:bg-gray-50 hc:hover:bg-neutral-900 dark:hover:bg-gray-700/50">
+                                <tr class="transition hover:bg-blue-50 hc:hover:bg-neutral-900 dark:hover:bg-gray-700/50">
                                     {{-- Function Name Cell --}}
                                     <td id="function-{{ $function->id }}" tabindex="0" aria-label="Function {{ $function->name }}" class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 hc:text-white dark:text-gray-100 @if($selectedFunctionId === $function->id) ring-2 ring-inset ring-blue-400 hc:ring-yellow-300 @endif @if($function->trashed()) opacity-70 @endif">
                                         <div class="flex items-center gap-3">
@@ -78,10 +78,10 @@
                                                         <template x-if="!editing">
                                                         <button
                                                             @click="startEditing($event)"
-                                                            :class="'cursor-pointer rounded px-3 py-1 text-sm font-semibold transition hover:bg-gray-100 dark:hover:bg-gray-700 hc:hover:bg-neutral-900 ' + getColor()"
+                                                            :class="'cursor-pointer rounded px-3 py-1 text-sm font-semibold transition ' + getColor()"
                                                             title="Click to edit">
                                                             <span x-text="(value > 0 ? '+' : '') + value"></span>
-                                                            <svg aria-hidden="true" class="inline ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <svg aria-hidden="true" class="inline ml-1 h-3 w-3 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                             </svg>
                                                         </button>
@@ -145,7 +145,7 @@
             </div>
 
             {{-- Legend --}}
-            <div class="mt-6 rounded-2xl bg-blue-50 hc:bg-black hc:border hc:border-white p-6 dark:bg-gray-700/50">
+            <div class="mt-6 rounded-2xl bg-blue-100 hc:bg-black hc:border hc:border-white p-6 dark:bg-gray-700/50">
                 <h3 class="mb-3 text-sm font-semibold text-gray-800 hc:text-white dark:text-gray-100">Legend</h3>
                 <div class="flex flex-wrap gap-6">
                     <div class="flex items-center gap-2">

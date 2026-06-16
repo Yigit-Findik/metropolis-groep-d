@@ -36,7 +36,7 @@
         <x-input-error :messages="$errors->get('event_type')" class="mt-2" />
     </div>
 
-    <div @if($model === 'creating') x-show="creating.event_type === 'recurring'" @else x-show="editing.event_type === 'recurring'" @endif class="recurring-schedule-card rounded-2xl border border-cyan-200 bg-cyan-50/70 hc:bg-neutral-900 p-4 dark:border-cyan-500/20 dark:bg-cyan-500/10">
+    <div @if($model === 'creating') x-show="creating.event_type === 'recurring'" @else x-show="editing.event_type === 'recurring'" @endif class="recurring-schedule-card rounded-2xl border border-cyan-200 hc:border-white bg-cyan-50/70 hc:bg-neutral-900 p-4 dark:border-cyan-500/20 dark:bg-cyan-500/10">
         <p class="mb-3 text-sm font-semibold text-cyan-900 hc:text-white dark:text-cyan-100">Recurring schedule</p>
         <p class="mb-3 text-xs text-slate-500 hc:text-white dark:text-gray-400">
             Set how long the event is <strong>active per cycle</strong>, and how often each cycle repeats.

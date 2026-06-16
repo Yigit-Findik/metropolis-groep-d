@@ -397,14 +397,14 @@
 
         {{-- REV.2.1 - Simulation Comments --}}
         <section class="mt-6" x-data="simulationComments" aria-labelledby="comments-heading">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm px-6 py-6">
+            <div class="bg-white hc:bg-black hc:border hc:border-white dark:bg-gray-800 rounded-2xl shadow-sm hc:shadow-none px-6 py-6">
 
-                <h2 id="comments-heading" class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-5">Comments</h2>
+                <h2 id="comments-heading" class="text-lg font-bold text-gray-800 hc:text-white dark:text-gray-100 mb-5">Comments</h2>
 
                 {{-- Add comment form — only visible to policy makers and administrators --}}
                 @if($userRole === 'Policy maker' || $userRole === 'Administrator')
                 <form @submit.prevent="submit" class="mb-6" novalidate>
-                    <label for="comment-body" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label for="comment-body" class="block text-sm font-medium text-gray-700 hc:text-white dark:text-gray-300 mb-1">
                         Add a comment
                     </label>
                     <textarea
@@ -413,7 +413,7 @@
                         rows="3"
                         maxlength="1000"
                         placeholder="Leave feedback for the city planner…"
-                        class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                        class="w-full rounded-xl border border-gray-300 hc:border-white dark:border-gray-600 bg-white hc:bg-black dark:bg-gray-700 text-gray-800 hc:text-white dark:text-gray-100 text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 hc:focus:ring-yellow-400 resize-none"
                         aria-describedby="comment-error"
                     ></textarea>
 
@@ -421,12 +421,12 @@
                         <p id="comment-error"
                            x-show="error"
                            x-text="error"
-                           class="text-sm text-red-600 dark:text-red-400"
+                           class="text-sm text-red-600 hc:text-red-400 dark:text-red-400"
                            aria-live="polite"></p>
                         <button
                             type="submit"
                             :disabled="submitting || !newBody.trim()"
-                            class="ml-auto bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            class="ml-auto bg-blue-600 hc:bg-yellow-300 hc:text-black hover:bg-blue-700 hc:hover:bg-yellow-200 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400"
                         >
                             <span x-text="submitting ? 'Posting…' : 'Post Comment'">Post Comment</span>
                         </button>
@@ -436,33 +436,33 @@
 
                 {{-- Loading state --}}
                 <template x-if="loading">
-                    <p class="text-gray-400 dark:text-gray-500 text-sm" aria-live="polite">Loading comments…</p>
+                    <p class="text-gray-400 hc:text-white dark:text-gray-500 text-sm" aria-live="polite">Loading comments…</p>
                 </template>
 
                 {{-- Empty state --}}
                 <template x-if="!loading && comments.length === 0">
-                    <p class="text-gray-500 dark:text-gray-400 text-sm">No comments yet.</p>
+                    <p class="text-gray-500 hc:text-white dark:text-gray-400 text-sm">No comments yet.</p>
                 </template>
 
                 {{-- Comment list --}}
                 <ul class="space-y-4" aria-label="Simulation comments">
                     <template x-for="comment in comments" :key="comment.id">
-                        <li class="border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3">
+                        <li class="border border-gray-200 hc:border-white dark:border-gray-700 rounded-xl px-4 py-3">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-baseline gap-2 flex-wrap">
-                                        <span class="text-sm font-semibold text-gray-800 dark:text-gray-100"
+                                        <span class="text-sm font-semibold text-gray-800 hc:text-white dark:text-gray-100"
                                               x-text="comment.author"></span>
-                                        <span class="text-xs text-gray-400 dark:text-gray-500"
+                                        <span class="text-xs text-gray-400 hc:text-white dark:text-gray-500"
                                               x-text="comment.created_at"></span>
                                     </div>
-                                    <p class="text-sm text-gray-700 dark:text-gray-300 mt-1.5 whitespace-pre-wrap break-words"
+                                    <p class="text-sm text-gray-700 hc:text-white dark:text-gray-300 mt-1.5 whitespace-pre-wrap break-words"
                                        x-text="comment.body"></p>
                                 </div>
                                 <template x-if="comment.is_mine">
                                     <button
                                         @click="remove(comment.id)"
-                                        class="shrink-0 text-xs font-semibold text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 rounded px-2 py-1 transition"
+                                        class="shrink-0 text-xs font-semibold text-red-500 hc:text-red-400 hover:text-red-700 hc:hover:text-red-300 focus:outline-none focus:ring-2 focus:ring-red-400 hc:focus:ring-yellow-400 rounded px-2 py-1 transition"
                                         :aria-label="'Delete comment by ' + comment.author"
                                     >Delete</button>
                                 </template>
@@ -476,49 +476,6 @@
 
         </div>
     </div>
-
-    {{-- Access road / event route visual styles — still needed for JS-controlled overlays --}}
-    <style>
-        .road-cell {
-            background-color: rgba(245, 158, 11, 0.18) !important;
-            border-color: rgb(245, 158, 11) !important;
-        }
-        .road-start-selected {
-            outline: 3px solid rgb(34, 197, 94) !important;
-            outline-offset: -3px;
-        }
-        .road-selection-mode [data-grid-cell] {
-            cursor: crosshair;
-        }
-        .road-selection-mode [data-grid-cell]:hover {
-            outline: 3px solid rgb(245, 158, 11);
-            outline-offset: -3px;
-        }
-        .event-location-cell {
-            background-color: rgba(139, 92, 246, 0.12) !important;
-            border-color: rgb(139, 92, 246) !important;
-            border-style: dashed !important;
-        }
-        .event-route-cell {
-            background-color: rgba(109, 40, 217, 0.22) !important;
-            border-color: rgb(109, 40, 217) !important;
-        }
-        .event-route-cell.road-cell {
-            background-color: rgba(109, 40, 217, 0.30) !important;
-            border-color: rgb(109, 40, 217) !important;
-        }
-        .event-route-selection-mode [data-grid-cell] {
-            cursor: default;
-        }
-        .event-route-selection-mode [data-grid-cell].event-location-cell {
-            cursor: pointer;
-        }
-        .event-route-selection-mode [data-grid-cell].event-location-cell:hover,
-        .event-route-selection-mode [data-grid-cell].event-location-cell:focus {
-            outline: 3px solid rgb(139, 92, 246);
-            outline-offset: -3px;
-        }
-    </style>
 
     <div id="grid-a11y-announcer" aria-live="polite" aria-atomic="true" role="status" class="sr-only"></div>
 

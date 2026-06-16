@@ -127,10 +127,10 @@
                                         ? ($details['name'] ?? 'Not available')
                                         : ($entry->newCityFunction?->name ?? $entry->oldCityFunction?->name ?? 'Not available');
                                     $actionBadgeClasses = [
-                                        'create' => 'bg-green-100 hc:bg-black hc:border hc:border-green-400 text-green-800 hc:text-green-400 dark:bg-green-900/40 dark:text-green-200',
-                                        'update' => 'bg-yellow-100 hc:bg-black hc:border hc:border-yellow-300 text-yellow-800 hc:text-yellow-300 dark:bg-yellow-900/40 dark:text-yellow-200',
-                                        'delete' => 'bg-red-100 hc:bg-black hc:border hc:border-red-400 text-red-800 hc:text-red-400 dark:bg-red-900/40 dark:text-red-200',
-                                    ][$actionLabel] ?? 'bg-gray-100 hc:bg-black hc:border hc:border-white text-gray-800 hc:text-white dark:bg-gray-700 dark:text-gray-200';
+                                        'create' => 'bg-green-100 hc:bg-green-400 text-green-800 hc:text-black dark:bg-green-900/40 dark:text-green-200',
+                                        'update' => 'bg-yellow-100 hc:bg-yellow-300 text-yellow-800 hc:text-black dark:bg-yellow-900/40 dark:text-yellow-200',
+                                        'delete' => 'bg-red-100 hc:bg-red-400 text-red-800 hc:text-black dark:bg-red-900/40 dark:text-red-200',
+                                    ][$actionLabel] ?? 'bg-gray-100 hc:bg-white text-gray-800 hc:text-black dark:bg-gray-700 dark:text-gray-200';
                                     $isSnapshotAction = in_array($actionLabel, ['create', 'delete'], true);
                                     $snapshotTitle = $actionLabel === 'create'
                                         ? ($isCityEvent ? 'Created city event' : 'Created city function')

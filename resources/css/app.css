@@ -82,6 +82,47 @@
     object-fit: contain;
 }
 
+/* Access road / event route overlay states — toggled by JS controllers */
+.road-cell {
+    background-color: rgba(245, 158, 11, 0.18) !important;
+    border-color: rgb(245, 158, 11) !important;
+}
+.road-start-selected {
+    outline: 3px solid rgb(34, 197, 94) !important;
+    outline-offset: -3px;
+}
+.road-selection-mode [data-grid-cell] {
+    cursor: crosshair;
+}
+.road-selection-mode [data-grid-cell]:hover {
+    outline: 3px solid rgb(245, 158, 11);
+    outline-offset: -3px;
+}
+.event-location-cell {
+    background-color: rgba(139, 92, 246, 0.12) !important;
+    border-color: rgb(139, 92, 246) !important;
+    border-style: dashed !important;
+}
+.event-route-cell {
+    background-color: rgba(109, 40, 217, 0.22) !important;
+    border-color: rgb(109, 40, 217) !important;
+}
+.event-route-cell.road-cell {
+    background-color: rgba(109, 40, 217, 0.30) !important;
+    border-color: rgb(109, 40, 217) !important;
+}
+.event-route-selection-mode [data-grid-cell] {
+    cursor: default;
+}
+.event-route-selection-mode [data-grid-cell].event-location-cell {
+    cursor: pointer;
+}
+.event-route-selection-mode [data-grid-cell].event-location-cell:hover,
+.event-route-selection-mode [data-grid-cell].event-location-cell:focus {
+    outline: 3px solid rgb(139, 92, 246);
+    outline-offset: -3px;
+}
+
 /* ── Cross-browser visual normalization ──────────────────────────────────────
    @tailwindcss/forms normalises most form controls, but a few differences
    remain across Chrome, Firefox, and Safari that need explicit fixes.        */
