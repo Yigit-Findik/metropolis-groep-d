@@ -245,7 +245,7 @@ export class AccessRoadController {
 
         if (this.#roads.length === 0) {
             const empty = document.createElement('p');
-            empty.className = 'text-gray-500 dark:text-gray-400 text-sm';
+            empty.className = 'text-gray-500 hc:text-white dark:text-gray-400 text-sm';
             empty.textContent = 'No access roads placed.';
             this.#roadListEl.appendChild(empty);
             return;
@@ -260,8 +260,8 @@ export class AccessRoadController {
 
             const span = document.createElement('span');
             span.className = active
-                ? 'text-sm text-gray-700 dark:text-gray-200'
-                : 'text-sm text-gray-400 dark:text-gray-500 line-through';
+                ? 'text-sm text-gray-700 hc:text-white dark:text-gray-200'
+                : 'text-sm text-gray-400 hc:text-white dark:text-gray-500 line-through';
             span.textContent = label;
 
             const actions = document.createElement('div');
@@ -269,7 +269,7 @@ export class AccessRoadController {
 
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
-            removeBtn.className = 'text-xs text-red-600 dark:text-red-400 hover:underline focus:outline-none focus:ring-1 focus:ring-red-500 rounded px-1';
+            removeBtn.className = 'text-xs text-red-600 hc:text-red-400 dark:text-red-400 hover:underline focus:outline-none focus:ring-1 focus:ring-red-500 hc:focus:ring-yellow-400 rounded px-1';
             removeBtn.textContent = 'Remove';
             removeBtn.setAttribute('aria-label', `Remove ${label}`);
             removeBtn.addEventListener('click', () => this.#removeRoad(road.id, label));
