@@ -54,6 +54,9 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Policy m
     // SIM.1.4 - QoL score calculation
     Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);
 
+    // REV.2.2 - Live cell list for the improvement suggestions dropdown
+    Route::get('/grid/cells', [CityGridCellController::class, 'getCells']);
+
     // REV.1 - Preview the PDF report in the browser before downloading
     Route::get('/grid/export-pdf', [CityGridCellController::class, 'previewPdf'])->name('grid.export-pdf');
 

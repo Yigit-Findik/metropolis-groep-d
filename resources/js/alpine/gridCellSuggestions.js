@@ -2,6 +2,7 @@ const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content ??
 
 export const gridCellSuggestions = (userRole) => ({
     suggestions: [],
+    cells: [],
     loading: true,
     submitting: false,
     error: null,
@@ -13,7 +14,20 @@ export const gridCellSuggestions = (userRole) => ({
     userRole,
 
     async init() {
-        await this.load();
+        await Promise.all([this.load(), this.loadCells()]);
+        document.addEventListener('grid-updated', () => this.loadCells());
+    },
+
+    async loadCells() {
+        try {
+            const res = await fetch('/grid/cells', { headers: { Accept: 'application/json' } });
+            if (res.ok) this.cells = await res.json();
+        } catch {}
+    },
+
+    cellLabel(cell) {
+        const base = `Row ${cell.row_index}, Column ${cell.column_index}`;
+        return cell.function_name ? `${base} — ${cell.function_name}` : `${base} — empty`;
     },
 
     async load() {
