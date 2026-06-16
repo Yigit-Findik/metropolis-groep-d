@@ -216,6 +216,21 @@ class CityGridCellController extends Controller
         return response()->json($result);
     }
 
+    public function getCells()
+    {
+        $cells = CityGridCell::with('cityFunction')
+            ->orderBy('row_index')
+            ->orderBy('column_index')
+            ->get();
+
+        return response()->json($cells->map(fn($cell) => [
+            'id'            => $cell->id,
+            'row_index'     => $cell->row_index,
+            'column_index'  => $cell->column_index,
+            'function_name' => $cell->cityFunction?->name,
+        ]));
+    }
+
     /**
      * Get valid and invalid cells for placing a function based on adjacency rules.
      * Returns cell IDs that are valid (green) and invalid (red) for placement.
