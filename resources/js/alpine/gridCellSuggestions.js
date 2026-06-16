@@ -140,9 +140,9 @@ export const gridCellSuggestions = (userRole) => ({
 
     statusClass(status) {
         return {
-            pending:  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
-            accepted: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
-            rejected: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
+            pending:  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 hc:bg-black hc:text-yellow-300 hc:border hc:border-yellow-300',
+            accepted: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 hc:bg-black hc:text-green-400 hc:border hc:border-green-400',
+            rejected: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 hc:bg-black hc:text-red-400 hc:border hc:border-red-400',
         }[status] ?? '';
     },
 

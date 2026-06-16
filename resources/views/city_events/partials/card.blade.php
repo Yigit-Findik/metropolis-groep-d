@@ -1,30 +1,30 @@
 <article tabindex="0"
          x-data="eventCard({{ $event->id }}, {{ $event->is_active ? 'true' : 'false' }}, {{ $event->event_type === 'recurring' ? 'true' : 'false' }}, {{ $event->is_in_simulation ? 'true' : 'false' }})"
-         aria-label="Event {{ $event->name }}, {{ $event->type_label }}{{ $event->description ? ', description: ' . $event->description : '' }}, {{ $event->schedule_summary }}"
-         class="rounded-2xl border p-5 shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+         aria-label="Event {{ $event->name }}, {{ $event->type_label }}{{ $event->description ? ', description: ' . $event->description : '' }}, {{ $event->schedule_summary }}{{ $event->isCurrentlyActive() ? ', currently active' : '' }}"
+         class="rounded-2xl border p-5 shadow-sm hc:shadow-none focus:outline-none focus:ring-2 focus:ring-cyan-500 hc:focus:ring-yellow-400 transition"
          :class="showDeactivate
              ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-900/20'
              : 'border-amber-200 bg-amber-50 dark:border-amber-700/50 dark:bg-amber-900/10'">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">
-                <h3 class="truncate text-lg font-semibold text-slate-900 dark:text-gray-100">{{ $event->name }}</h3>
+                <h3 class="truncate text-lg font-semibold text-slate-900 hc:text-white dark:text-gray-100">{{ $event->name }}</h3>
 
                 {{-- Event type badge --}}
                 @if($event->is_day_night_cycle)
-                    <span class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-violet-100 text-violet-800 dark:bg-violet-500/10 dark:text-violet-200">
+                    <span class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-violet-100 hc:bg-black hc:border hc:border-white text-violet-800 hc:text-white dark:bg-violet-500/10 dark:text-violet-200">
                         Day/Night
                     </span>
                     {{-- Lock badge --}}
-                    <span class="rounded-full px-2 py-1 text-xs font-semibold bg-slate-200 text-slate-600 dark:bg-gray-700 dark:text-gray-400"
+                    <span class="rounded-full px-2 py-1 text-xs font-semibold bg-slate-200 hc:bg-black hc:border hc:border-white text-slate-600 hc:text-white dark:bg-gray-700 dark:text-gray-400"
                           title="This event is permanent and cannot be deleted">
                         Locked
                     </span>
                 @else
-                    <span class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide
+                    <span class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide hc:border hc:border-white hc:text-white
                                  {{ $event->event_type === 'recurring'
-                                     ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-500/10 dark:text-cyan-200'
-                                     : 'bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-200' }}">
+                                     ? 'bg-cyan-100 hc:bg-black text-cyan-800 dark:bg-cyan-500/10 dark:text-cyan-200'
+                                     : 'bg-amber-100 hc:bg-black text-amber-800 dark:bg-amber-500/10 dark:text-amber-200' }}">
                         {{ $event->type_label }}
                     </span>
                 @endif
@@ -32,34 +32,34 @@
                 {{-- Active status badge --}}
                 @if($event->is_day_night_cycle)
                     <span x-show="isActive"
-                          class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide
+                          class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide hc:border hc:border-white hc:text-white
                                  {{ $event->current_phase === 'day'
-                                     ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300'
-                                     : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/10 dark:text-indigo-300' }}">
+                                     ? 'bg-amber-100 hc:bg-black text-amber-800 dark:bg-amber-500/10 dark:text-amber-300'
+                                     : 'bg-indigo-100 hc:bg-black text-indigo-800 dark:bg-indigo-500/10 dark:text-indigo-300' }}">
                         {{ $event->current_phase ? ucfirst($event->current_phase) : 'Active' }}
                     </span>
                 @elseif($event->event_type === 'recurring')
                     <span x-show="isActive"
-                          class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
+                          class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-emerald-100 hc:bg-black hc:border hc:border-green-400 text-emerald-800 hc:text-green-400 dark:bg-emerald-500/10 dark:text-emerald-300">
                         Active
                     </span>
                     <span x-show="isInSimulation && !isActive"
-                          class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-cyan-100 text-cyan-800 dark:bg-cyan-500/10 dark:text-cyan-300">
+                          class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-cyan-100 hc:bg-black hc:border hc:border-white hc:text-white text-cyan-800 dark:bg-cyan-500/10 dark:text-cyan-300">
                         In Simulation
                     </span>
                 @else
                     <span x-show="isActive"
-                          class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
+                          class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-emerald-100 hc:bg-black hc:border hc:border-green-400 text-emerald-800 hc:text-green-400 dark:bg-emerald-500/10 dark:text-emerald-300">
                         Active
                     </span>
                 @endif
             </div>
 
             @if($event->description)
-                <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-gray-300">{{ $event->description }}</p>
+                <p class="mt-2 text-sm leading-6 text-slate-600 hc:text-white dark:text-gray-300">{{ $event->description }}</p>
             @endif
 
-            <p class="mt-3 text-sm font-medium text-slate-700 dark:text-gray-200">{{ $event->schedule_summary }}</p>
+            <p class="mt-3 text-sm font-medium text-slate-700 hc:text-white dark:text-gray-200">{{ $event->schedule_summary }}</p>
 
             {{-- Live countdown timers --}}
             @if($event->is_day_night_cycle && $event->is_active && $event->current_phase && $event->phase_started_at)
@@ -78,7 +78,7 @@
                    :class="colorClass"
                    x-text="label"></p>
             @elseif($event->event_type === 'one-off' && $event->is_active && $event->activated_at)
-                <p class="mt-1 text-xs text-emerald-600 dark:text-emerald-400"
+                <p class="mt-1 text-xs text-emerald-600 hc:text-green-400 dark:text-emerald-400"
                    x-data="expiryCountdown({{ $event->oneOffDurationSeconds() }}, 'expires', {{ $event->id }}, {{ $event->activated_at->timestamp }})"
                    x-text="label"></p>
             @endif
@@ -87,18 +87,18 @@
             @if($event->is_day_night_cycle)
                 @if($event->dayFunctions->isNotEmpty() || $event->nightFunctions->isNotEmpty())
                     @if($event->dayFunctions->isNotEmpty())
-                        <p class="mt-2 text-xs text-slate-500 dark:text-gray-400">
+                        <p class="mt-2 text-xs text-slate-500 hc:text-white dark:text-gray-400">
                             Day affects: {{ $event->dayFunctions->pluck('name')->join(', ') }}
                         </p>
                     @endif
                     @if($event->nightFunctions->isNotEmpty())
-                        <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">
+                        <p class="mt-1 text-xs text-slate-500 hc:text-white dark:text-gray-400">
                             Night affects: {{ $event->nightFunctions->pluck('name')->join(', ') }}
                         </p>
                     @endif
                 @endif
             @elseif($event->cityFunctions->isNotEmpty())
-                <p class="mt-2 text-xs text-slate-500 dark:text-gray-400">
+                <p class="mt-2 text-xs text-slate-500 hc:text-white dark:text-gray-400">
                     Affects: {{ $event->cityFunctions->pluck('name')->join(', ') }}
                 </p>
             @endif
@@ -111,7 +111,7 @@
                 @csrf
                 <button type="submit"
                         aria-label="Deactivate event {{ $event->name }}"
-                        class="rounded-xl bg-emerald-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-600">
+                        class="rounded-xl bg-emerald-700 hc:bg-green-400 hc:text-black px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-600 hc:hover:bg-green-300">
                     Deactivate
                 </button>
             </form>
@@ -119,7 +119,7 @@
                 @csrf
                 <button type="submit"
                         aria-label="Activate event {{ $event->name }}"
-                        class="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-500">
+                        class="rounded-xl bg-emerald-600 hc:bg-green-400 hc:text-black px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-500 hc:hover:bg-green-300">
                     Activate
                 </button>
             </form>
@@ -151,7 +151,7 @@
                                 'mobility_modifier'              => $f->pivot->mobility_modifier,
                             ])->values()),
                         })"
-                        class="rounded-xl bg-yellow-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-yellow-500">
+                        class="rounded-xl bg-yellow-600 hc:bg-yellow-300 hc:text-black px-4 py-2 text-xs font-semibold text-white transition hover:bg-yellow-500 hc:hover:bg-yellow-200">
                     Edit
                 </button>
             @else
@@ -177,7 +177,7 @@
                                 'mobility_modifier'              => $f->pivot->mobility_modifier,
                             ])->values()),
                         })"
-                        class="rounded-xl bg-yellow-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-yellow-500">
+                        class="rounded-xl bg-yellow-600 hc:bg-yellow-300 hc:text-black px-4 py-2 text-xs font-semibold text-white transition hover:bg-yellow-500 hc:hover:bg-yellow-200">
                     Edit
                 </button>
 
@@ -185,7 +185,7 @@
                 <form method="POST" action="{{ route('city_events.destroy', $event->id) }}" x-data="deleteForm(@js($event->name))" @submit="confirmAndSubmit($event)">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" aria-label="Delete event {{ $event->name }}" class="rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-500">
+                    <button type="submit" aria-label="Delete event {{ $event->name }}" class="rounded-xl bg-rose-600 hc:bg-red-400 hc:text-black px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-500 hc:hover:bg-red-300">
                         Delete
                     </button>
                 </form>
