@@ -18,6 +18,7 @@ import { confirmModal } from './alpine/confirmModal';
 import { simulationControls } from './alpine/simulationControls';
 import { dayNightCycleTimer } from './alpine/dayNightCycleTimer';
 import { timeSlotEventTimer } from './alpine/timeSlotEventTimer';
+import { gridCellSuggestions } from './alpine/gridCellSuggestions';
 import { simulationComments } from './alpine/simulationComments';
 
 // Core modules
@@ -47,6 +48,7 @@ Alpine.data('confirmModal', confirmModal);
 Alpine.data('simulationControls', simulationControls);
 Alpine.data('dayNightCycleTimer', dayNightCycleTimer);
 Alpine.data('timeSlotEventTimer', timeSlotEventTimer);
+Alpine.data('gridCellSuggestions', gridCellSuggestions);
 Alpine.data('simulationComments', simulationComments);
 
 window.Alpine = Alpine;
