@@ -11,6 +11,7 @@ use App\Http\Controllers\EffectController;
 use App\Http\Controllers\PendingActionController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\CityEventController;
+use App\Http\Controllers\SimulationCommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -114,6 +115,17 @@ Route::middleware(['auth', 'verified', 'role:Policy maker,Administrator'])->grou
     Route::post('/grid/revoke-all', [CityGridCellController::class, 'revokeAllCells']);
     Route::post('/grid/{id}/approve', [CityGridCellController::class, 'approveCell']);
     Route::delete('/grid/{id}/revoke', [CityGridCellController::class, 'revokeCell']);
+});
+
+// REV.2.1 - Simulation comments
+// All grid viewers may read comments; only policy makers and administrators may write or delete
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Policy maker'])->group(function () {
+    Route::get('/comments', [SimulationCommentController::class, 'index'])->name('comments.index');
+});
+
+Route::middleware(['auth', 'verified', 'role:Policy maker,Administrator'])->group(function () {
+    Route::post('/comments', [SimulationCommentController::class, 'store'])->name('comments.store');
+    Route::delete('/comments/{id}', [SimulationCommentController::class, 'destroy'])->name('comments.destroy');
 });
 
 

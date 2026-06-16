@@ -49,7 +49,7 @@
                 </div>
             @endif
 
-            <div class="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+            <div class="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
                 <section tabindex="0" role="region" aria-labelledby="create-event-heading" class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
                     <div class="border-b border-gray-200 px-6 py-8 dark:border-gray-700">
                         <span class="inline-flex rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold tracking-wide text-cyan-800 uppercase dark:bg-cyan-500/10 dark:text-cyan-200">
