@@ -11,6 +11,7 @@ use App\Http\Controllers\EffectController;
 use App\Http\Controllers\PendingActionController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\CityEventController;
+use App\Http\Controllers\GridCellSuggestionController;
 use App\Http\Controllers\SimulationCommentController;
 
 /*
@@ -52,6 +53,9 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Policy m
 
     // SIM.1.4 - QoL score calculation
     Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);
+
+    // REV.2.2 - Live cell list for the improvement suggestions dropdown
+    Route::get('/grid/cells', [CityGridCellController::class, 'getCells']);
 
     // REV.1 - Preview the PDF report in the browser before downloading
     Route::get('/grid/export-pdf', [CityGridCellController::class, 'previewPdf'])->name('grid.export-pdf');
@@ -104,6 +108,22 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     Route::delete('/event-routes/{id}', [EventRouteController::class, 'destroy']);
     Route::get('/event-cells', [EventRouteController::class, 'eventCells']);
 
+});
+
+// REV.2.2 - Improvement suggestions
+// All grid viewers may read; policy makers and administrators may create and delete their own
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Policy maker'])->group(function () {
+    Route::get('/suggestions', [GridCellSuggestionController::class, 'index'])->name('suggestions.index');
+});
+
+Route::middleware(['auth', 'verified', 'role:Policy maker,Administrator'])->group(function () {
+    Route::post('/suggestions', [GridCellSuggestionController::class, 'store'])->name('suggestions.store');
+    Route::delete('/suggestions/{id}', [GridCellSuggestionController::class, 'destroy'])->name('suggestions.destroy');
+});
+
+// REV.2.2 - City planner and administrator can accept or reject suggestions
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->group(function () {
+    Route::patch('/suggestions/{id}/status', [GridCellSuggestionController::class, 'updateStatus'])->name('suggestions.status');
 });
 
 // BES.3 - Approval management — policy maker and administrator

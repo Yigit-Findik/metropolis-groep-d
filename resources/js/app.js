@@ -17,6 +17,7 @@ import { effectEditor } from './alpine/effectEditor';
 import { confirmModal } from './alpine/confirmModal';
 import { simulationControls } from './alpine/simulationControls';
 import { dayNightCycleTimer } from './alpine/dayNightCycleTimer';
+import { gridCellSuggestions } from './alpine/gridCellSuggestions';
 import { simulationComments } from './alpine/simulationComments';
 
 // Core modules
@@ -44,6 +45,7 @@ Alpine.data('effectEditor', effectEditor);
 Alpine.data('confirmModal', confirmModal);
 Alpine.data('simulationControls', simulationControls);
 Alpine.data('dayNightCycleTimer', dayNightCycleTimer);
+Alpine.data('gridCellSuggestions', gridCellSuggestions);
 Alpine.data('simulationComments', simulationComments);
 
 window.Alpine = Alpine;
