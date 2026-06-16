@@ -488,6 +488,10 @@
         .road-cell {
             background-color: rgba(245, 158, 11, 0.18) !important;
             border-color: rgb(245, 158, 11) !important;
+            border-width: 3px !important;
+        }
+        .road-cell span {
+            color: white !important;
         }
         .road-start-selected {
             outline: 3px solid rgb(34, 197, 94) !important;
@@ -505,6 +509,7 @@
         .event-location-cell {
             border-color: rgb(139, 92, 246) !important;
             border-style: dashed !important;
+            border-width: 4px !important;
         }
 
         /* Event route path cells — solid violet, stronger fill */
