@@ -355,7 +355,7 @@ export class EventRouteController {
 
         if (this.#routes.length === 0) {
             const empty = document.createElement('p');
-            empty.className = 'text-gray-500 dark:text-gray-400 text-sm';
+            empty.className = 'text-gray-500 hc:text-white dark:text-gray-400 text-sm';
             empty.textContent = 'No event routes created.';
             this.#routeListEl.appendChild(empty);
             return;
@@ -368,12 +368,12 @@ export class EventRouteController {
             row.className = 'flex items-center justify-between py-1';
 
             const span = document.createElement('span');
-            span.className = 'text-sm text-gray-700 dark:text-gray-200';
+            span.className = 'text-sm text-gray-700 hc:text-white dark:text-gray-200';
             span.textContent = label;
 
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
-            removeBtn.className = 'text-xs text-red-600 dark:text-red-400 hover:underline focus:outline-none focus:ring-1 focus:ring-red-500 rounded px-1';
+            removeBtn.className = 'text-xs text-red-600 hc:text-red-400 dark:text-red-400 hover:underline focus:outline-none focus:ring-1 focus:ring-red-500 hc:focus:ring-yellow-400 rounded px-1';
             removeBtn.textContent = 'Remove';
             removeBtn.setAttribute('aria-label', `Remove ${label}`);
             removeBtn.addEventListener('click', () => this.#removeRoute(route.id, label));
