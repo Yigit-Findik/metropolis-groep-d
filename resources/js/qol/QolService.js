@@ -32,8 +32,6 @@ export class QolService {
         const message = `${symbol} ${functionName}: ${sign}${qolScore}`;
         toast.textContent = message;
         toast.className = `fixed bottom-6 right-6 z-50 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 ${isPositive ? "bg-green-500" : "bg-red-500"}`;
-        toast.setAttribute("aria-live", "assertive");
-        toast.setAttribute("role", "status");
 
         // Reset the timer so rapid drops don't dismiss the toast too early
         clearTimeout(this.#toastTimer);
