@@ -37,8 +37,9 @@
                 <div id="fn-mods-{{ $fn->id }}" x-show="selected" x-cloak class="mt-2 grid grid-cols-2 gap-2 pl-6 sm:grid-cols-5">
                     @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Env. Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $key => $label)
                         <div>
-                            <label class="mb-0.5 block text-xs text-slate-500 hc:text-white dark:text-gray-400">{{ $label }}</label>
+                            <label for="fn-create-mod-{{ $fn->id }}-{{ $key }}" class="mb-0.5 block text-xs text-slate-500 hc:text-white dark:text-gray-400">{{ $label }}</label>
                             <input type="number"
+                                   id="fn-create-mod-{{ $fn->id }}-{{ $key }}"
                                    name="functions[{{ $fn->id }}][{{ $key }}_modifier]"
                                    x-model="mods.{{ $key }}"
                                    :disabled="!selected"
@@ -89,8 +90,9 @@
                 <div :id="'fn-mods-edit-' + fn.id" x-show="selected" x-cloak class="mt-2 grid grid-cols-2 gap-2 pl-6 sm:grid-cols-5">
                     @foreach(['safety_modifier' => 'Safety', 'recreation_modifier' => 'Recreation', 'environment_quality_modifier' => 'Env. Quality', 'facilities_modifier' => 'Facilities', 'mobility_modifier' => 'Mobility'] as $key => $label)
                         <div>
-                            <label class="mb-0.5 block text-xs text-slate-500 hc:text-white dark:text-gray-400">{{ $label }}</label>
+                            <label :for="'fn-edit-mod-' + fn.id + '-{{ $key }}'" class="mb-0.5 block text-xs text-slate-500 hc:text-white dark:text-gray-400">{{ $label }}</label>
                             <input type="number"
+                                   :id="'fn-edit-mod-' + fn.id + '-{{ $key }}'"
                                    :name="`functions[${fn.id}][{{ $key }}]`"
                                    :value="modifier('{{ $key }}')"
                                    @input="setModifier('{{ $key }}', $event.target.value)"
