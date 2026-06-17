@@ -252,8 +252,8 @@
                                   class="!bg-gray-50 hc:!bg-black hc:!text-white hc:!border-white dark:!bg-gray-700 !text-gray-900 dark:!text-white w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hc:focus:ring-yellow-400 resize-none"></textarea>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-600 hc:text-white dark:text-gray-300 mb-2">QoL Values</label>
+                    <div class="mb-4" role="group" aria-labelledby="edit-qol-heading">
+                        <p id="edit-qol-heading" class="block text-sm font-medium text-gray-600 hc:text-white dark:text-gray-300 mb-2">QoL Values</p>
                         <div class="grid grid-cols-2 gap-4">
                             @foreach([
                                 'edit-safety' => ['name' => 'safety', 'model' => 'editing.safety', 'label' => 'Safety'],
@@ -271,8 +271,8 @@
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-600 hc:text-white dark:text-gray-300 mb-2">Adjacency Rules</label>
+                    <div class="mb-4" role="group" aria-labelledby="edit-adjacency-heading">
+                        <p id="edit-adjacency-heading" class="block text-sm font-medium text-gray-600 hc:text-white dark:text-gray-300 mb-2">Adjacency Rules</p>
                         <p class="text-xs text-gray-500 hc:text-white dark:text-gray-400 mb-3">Define which functions must be neighbors or must not be neighbors.</p>
 
                         <div class="space-y-2 mb-4">
