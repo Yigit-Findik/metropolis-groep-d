@@ -154,26 +154,6 @@
                                   class="!bg-gray-50 hc:!bg-black hc:!text-white hc:!border-white dark:!bg-gray-700 !text-gray-900 dark:!text-white w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hc:focus:ring-yellow-400 resize-none"></textarea>
                     </div>
 
-                    <div class="mb-4" x-data="qolToggle">
-                        <div class="flex items-center gap-3 mb-2">
-                            <input type="checkbox" id="create-qol-toggle" x-model="qol"
-                                   class="w-4 h-4 rounded border-gray-300 hc:border-white dark:border-gray-600 bg-white hc:bg-black dark:bg-gray-700 text-blue-500 hc:accent-yellow-300 focus:ring-blue-500 hc:focus:ring-yellow-400 cursor-pointer">
-                            <label for="create-qol-toggle" class="text-sm text-gray-600 hc:text-white dark:text-gray-300 cursor-pointer select-none">
-                                Do you want to insert the QoL values?
-                            </label>
-                        </div>
-                        <div x-show="qol" x-transition class="grid grid-cols-2 gap-4">
-                            @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Environment Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $label)
-                                <div>
-                                    <label for="create-{{ $slug }}" class="block text-sm font-medium text-gray-600 hc:text-white dark:text-gray-300 mb-1">{{ $label }}</label>
-                                    <input type="number" id="create-{{ $slug }}" name="{{ $slug }}" value="0" min="-10" max="10"
-                                           :disabled="!qol"
-                                           class="!bg-gray-50 hc:!bg-black hc:!text-white hc:!border-white dark:!bg-gray-700 !text-gray-900 dark:!text-white w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hc:focus:ring-yellow-400">
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-
                     <div class="flex justify-between mt-6">
                         <button type="button" @click="closeCreate()"
                                 class="px-4 py-2 bg-gray-200 hc:bg-neutral-800 hc:border hc:border-white hc:text-white dark:bg-gray-700 hover:bg-gray-300 hc:hover:bg-neutral-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white text-sm font-semibold rounded-lg transition">
