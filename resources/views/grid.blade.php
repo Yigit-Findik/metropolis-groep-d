@@ -180,10 +180,13 @@
                         </div>
                         <div class="border-l border-gray-600 pl-4"
                              tabindex="0"
+                             aria-live="polite"
+                             aria-atomic="true"
                              :aria-label="'Simulation time: ' + simTime">
                             <span class="text-gray-300 text-xs font-mono font-semibold tabular-nums"
                                   aria-hidden="true"
                                   x-text="simTime">00:00</span>
+                            <span class="sr-only" x-text="'Simulation time ' + simTime"></span>
                         </div>
                     </div>
 
@@ -711,6 +714,7 @@
     </style>
 
     <div id="grid-a11y-announcer" aria-live="polite" aria-atomic="true" role="status" class="sr-only"></div>
+    <div id="grid-a11y-error" role="alert" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
 
     <div id="qol-toast"
          role="status"
