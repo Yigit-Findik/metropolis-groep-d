@@ -8,6 +8,7 @@ export const recurringEventTimer = (activeDurationSeconds, cycleDurationSeconds,
     _reactivates: 0,
     _deactivateTriggered: false,
     _reactivateTriggered: false,
+    _interval: null,
 
     init() {
         const fullExpiresMs = activeDurationSeconds * 1000;
@@ -30,28 +31,51 @@ export const recurringEventTimer = (activeDurationSeconds, cycleDurationSeconds,
 
         this.update();
 
-        setInterval(() => {
-            if (localStorage.getItem('sim_paused') === 'false') {
-                const tick        = Number(localStorage.getItem('sim_speed') || 1) * 1_000;
-                this._expires    -= tick;
-                this._reactivates -= tick;
-                this._save(key);
-                this.update();
-            }
+        const startInterval = () => {
+            if (this._interval) clearInterval(this._interval);
+            const multiplier  = Number(localStorage.getItem('sim_multiplier')   || 1);
+            const unitSeconds = Number(localStorage.getItem('sim_unit_seconds') || 1);
+            this._interval = setInterval(() => {
+                if (localStorage.getItem('sim_paused') === 'false') {
+                    this._expires    -= unitSeconds * 1_000;
+                    this._reactivates -= unitSeconds * 1_000;
+                    this._save(key);
+                    this.update();
+                }
 
-            // Sim cycle ended — deactivate in DB
-            if (this._expires <= 0 && !this._deactivateTriggered) {
-                this._deactivateTriggered = true;
-                simPost('/events/' + eventId + '/deactivate');
-            }
+                // Sim cycle ended — deactivate in DB
+                if (this._expires <= 0 && !this._deactivateTriggered) {
+                    this._deactivateTriggered = true;
+                    simPost('/events/' + eventId + '/sim-deactivate').then(() => {
+                        window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: eventId, isActive: false } }));
+                    });
+                }
 
-            // Sim cycle fully elapsed — reactivate and reload
-            if (this._reactivates <= 0 && !this._reactivateTriggered) {
-                this._reactivateTriggered = true;
-                localStorage.removeItem(key);
-                simPost('/events/' + eventId + '/activate').finally(() => window.location.reload());
-            }
-        }, 1_000);
+                // Sim cycle fully elapsed — reactivate in DB and restart this timer in-place
+                if (this._reactivates <= 0 && !this._reactivateTriggered) {
+                    this._reactivateTriggered = true;
+                    localStorage.removeItem(key);
+                    simPost('/events/' + eventId + '/sim-reactivate').then(() => {
+                        this._expires             = fullExpiresMs;
+                        this._reactivates         = fullCycleMs;
+                        this._deactivateTriggered = false;
+                        this._reactivateTriggered = false;
+                        this._save(key);
+                        this.update();
+                        window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: eventId, isActive: true } }));
+                    });
+                }
+            }, Math.round(1_000 / multiplier));
+        };
+
+        startInterval();
+        window.addEventListener('simulation:speedchange', startInterval);
+        window.addEventListener('simulation:skip', (e) => {
+            this._expires     -= e.detail.addMs;
+            this._reactivates -= e.detail.addMs;
+            this._save(key);
+            this.update();
+        });
     },
 
     _save(key) {

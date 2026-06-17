@@ -78,6 +78,14 @@
                                 <p class="text-sm font-semibold break-words"
                                    :class="event.is_active ? 'text-green-800 hc:text-green-400 dark:text-green-200' : 'text-yellow-800 hc:text-yellow-300 dark:text-yellow-200'"
                                    x-text="event.name"></p>
+                                <template x-if="progressPercent(event) !== null">
+                                    <div class="mt-1.5 h-1.5 rounded-full overflow-hidden"
+                                         :class="event.is_active ? 'bg-green-200 dark:bg-green-800' : 'bg-yellow-200 dark:bg-yellow-800'">
+                                        <div class="h-full rounded-full transition-all duration-1000"
+                                             :class="event.is_active ? 'bg-green-500 dark:bg-green-400' : 'bg-yellow-500 dark:bg-yellow-400'"
+                                             :style="'width: ' + progressPercent(event) + '%'"></div>
+                                    </div>
+                                </template>
                                 <p class="text-xs mt-0.5"
                                    :class="event.is_active ? 'text-green-600 hc:text-green-400 dark:text-green-400' : 'text-yellow-600 hc:text-yellow-300 dark:text-yellow-400'"
                                    x-text="formatStatus(event)"></p>
@@ -92,7 +100,7 @@
             <div class="w-full bg-gray-800 hc:bg-black hc:border hc:border-white rounded-2xl shadow-sm hc:shadow-none px-6 py-4 mb-6"
                  x-data="simulationControls">
 
-                <div class="flex flex-wrap items-center gap-4">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
 
                     <span class="text-gray-400 hc:text-white text-xs font-semibold uppercase tracking-wide">Simulation</span>
 
@@ -106,27 +114,77 @@
 
                     <div class="flex items-center gap-2" role="radiogroup" aria-label="Simulation speed">
                         @foreach([1, 2, 5] as $spd)
-                            <button @click="setSpeed({{ $spd }})"
+                            <button @click="setMultiplier({{ $spd }})"
                                     role="radio"
-                                    :aria-label="speed === {{ $spd }} ? '{{ $spd }}x, selected' : '{{ $spd }}x'"
-                                    data-speed="{{ $spd }}"
+                                    :aria-checked="multiplier === {{ $spd }}"
+                                    :aria-label="multiplier === {{ $spd }} ? 'Change simulation speed to {{ $spd }}x, selected' : 'Change simulation speed to {{ $spd }}x'"
                                     class="px-3 py-1.5 rounded-lg text-sm font-semibold transition"
-                                    :class="speed === {{ $spd }} ? 'bg-blue-600 hc:bg-yellow-300 hc:text-black text-white' : 'bg-gray-700 hc:bg-neutral-900 hc:border hc:border-white text-gray-300 hc:text-white hover:bg-gray-600 hc:hover:bg-neutral-800'">
+                                    :class="multiplier === {{ $spd }} ? 'bg-blue-600 hc:bg-yellow-300 hc:text-black text-white' : 'bg-gray-700 hc:bg-neutral-900 hc:border hc:border-white text-gray-300 hc:text-white hover:bg-gray-600 hc:hover:bg-neutral-800'">
                                 <span aria-hidden="true">{{ $spd }}x</span>
                             </button>
                         @endforeach
                     </div>
 
-                    <div class="ml-auto flex items-center gap-2 text-sm">
-                        <span class="text-gray-400 hc:text-white">Speed:</span>
-                        <span id="simulation-current-speed"
-                              class="text-white hc:text-yellow-300 font-bold"
-                              aria-live="polite"
-                              x-text="speed + 'x'">1x</span>
-                        <span id="simulation-status"
-                              class="text-gray-400 hc:text-white"
-                              aria-live="polite"
-                              x-text="paused ? '(paused)' : '(running)'">(paused)</span>
+                    <div class="border-l border-gray-600 h-6" aria-hidden="true"></div>
+
+                    {{-- Time unit: 1 real second = 1 sim Sec / Min / Hr / Day --}}
+                    <div class="flex items-center gap-2" role="radiogroup" aria-label="Simulation time unit">
+                        @foreach(['Sec' => 1, 'Min' => 60, 'Hr' => 3600, 'Day' => 86400] as $label => $secs)
+                            <button @click="setUnit({{ $secs }})"
+                                    role="radio"
+                                    :aria-checked="unitSeconds === {{ $secs }}"
+                                    :aria-label="unitSeconds === {{ $secs }} ? '1 second equals 1 simulation {{ $label === 'Sec' ? 'second' : ($label === 'Min' ? 'minute' : ($label === 'Hr' ? 'hour' : 'day')) }}, selected' : '1 second equals 1 simulation {{ $label === 'Sec' ? 'second' : ($label === 'Min' ? 'minute' : ($label === 'Hr' ? 'hour' : 'day')) }}'"
+                                    class="px-3 py-1.5 rounded-lg text-sm font-semibold transition"
+                                    :class="unitSeconds === {{ $secs }} ? 'bg-violet-600 hc:bg-yellow-300 hc:text-black text-white' : 'bg-gray-700 hc:bg-neutral-900 hc:border hc:border-white text-gray-300 hc:text-white hover:bg-gray-600 hc:hover:bg-neutral-800'">
+                                <span aria-hidden="true">{{ $label }}</span>
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <div class="border-l border-gray-600 h-6" aria-hidden="true"></div>
+
+                    {{-- Skip forward --}}
+                    <div class="flex items-center gap-2" role="group" aria-label="Skip simulation time forward">
+                        <span class="text-gray-400 hc:text-white text-xs font-semibold uppercase tracking-wide" aria-hidden="true">Skip</span>
+                        <input type="number"
+                               x-model.number="skipAmount"
+                               min="1"
+                               class="w-14 px-3 py-1.5 text-sm font-semibold rounded-lg bg-gray-700 hc:bg-neutral-900 hc:border hc:border-white text-gray-100 hc:text-white border-0 ring-1 ring-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400"
+                               aria-label="Skip amount">
+                        <select x-model.number="skipUnit"
+                                class="px-3 py-1.5 text-sm font-semibold rounded-lg bg-gray-700 hc:bg-neutral-900 hc:border hc:border-white text-gray-300 hc:text-white border-0 ring-1 ring-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 cursor-pointer"
+                                aria-label="Skip unit">
+                            <option value="1" aria-label="Seconds">Sec</option>
+                            <option value="60" aria-label="Minutes">Min</option>
+                            <option value="3600" aria-label="Hours">Hr</option>
+                            <option value="86400" aria-label="Days">Day</option>
+                        </select>
+                        <button @click="skip()"
+                                class="px-3 py-1.5 rounded-lg text-sm font-semibold transition bg-blue-600 hc:bg-yellow-300 hc:text-black hover:bg-blue-500 hc:hover:bg-yellow-200 text-white">
+                            Skip
+                        </button>
+                    </div>
+
+                    {{-- Current speed display --}}
+                    <div class="flex items-center gap-4 text-sm sm:ml-auto">
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-400 hc:text-white">Speed:</span>
+                            <span id="simulation-current-speed"
+                                  class="text-white hc:text-yellow-300 font-bold"
+                                  aria-live="polite"
+                                  x-text="speed + 'x'">1x</span>
+                            <span id="simulation-status"
+                                  class="text-gray-400 hc:text-white"
+                                  aria-live="polite"
+                                  x-text="paused ? '(paused)' : '(running)'">(paused)</span>
+                        </div>
+                        <div class="border-l border-gray-600 pl-4"
+                             tabindex="0"
+                             :aria-label="'Simulation time: ' + simTime">
+                            <span class="text-gray-300 text-xs font-mono font-semibold tabular-nums"
+                                  aria-hidden="true"
+                                  x-text="simTime">00:00</span>
+                        </div>
                     </div>
 
                 </div>
@@ -135,7 +193,7 @@
             {{-- Grid and library --}}
             <div class="flex flex-col lg:flex-row gap-6 lg:items-start" x-data="gridZoom" :style="`--grid-size: ${effectiveGridSize}px`">
 
-                <section class="flex flex-col gap-4" aria-labelledby="city-grid-heading">
+                <section class="flex flex-col gap-4 w-full min-w-0 lg:w-auto" aria-labelledby="city-grid-heading">
 
                  <div class="shrink-0 bg-blue-50 hc:bg-black hc:border hc:border-white dark:bg-gray-700 rounded-2xl p-6 shadow-sm hc:shadow-none">
 
@@ -157,13 +215,13 @@
                                         class="flex items-center gap-1 bg-green-600 hc:bg-green-400 hc:text-black hover:bg-green-700 hc:hover:bg-green-300 text-white px-4 py-2 rounded-lg font-semibold shadow-sm hc:shadow-none"
                                         title="Approve the entire grid">
                                     <span class="material-symbols-outlined" style="font-size:1.1rem">lock</span>
-                                    Approve All
+                                    <span class="hidden sm:inline">Approve All</span>
                                 </button>
                                 <button id="revoke-all-button"
                                         class="flex items-center gap-1 bg-red-600 hc:bg-red-400 hc:text-black hover:bg-red-700 hc:hover:bg-red-300 text-white px-4 py-2 rounded-lg font-semibold shadow-sm hc:shadow-none"
                                         title="Disapprove the entire grid">
                                     <span class="material-symbols-outlined" style="font-size:1.1rem">lock_open</span>
-                                    Disapprove All
+                                    <span class="hidden sm:inline">Disapprove All</span>
                                 </button>
                             @endif
                             @if($userRole !== 'Policy maker')
@@ -591,6 +649,66 @@
 
         </div>
     </div>
+
+    {{-- SIM.12 - Access road visual styles --}}
+    {{-- SIM.12.2 - Event route visual styles --}}
+    <style>
+        /* Access road cells — amber */
+        .road-cell {
+            background-color: rgba(245, 158, 11, 0.18) !important;
+            border-color: rgb(245, 158, 11) !important;
+            border-width: 3px !important;
+        }
+        .road-cell span {
+            color: white !important;
+        }
+        .road-start-selected {
+            outline: 3px solid rgb(34, 197, 94) !important;
+            outline-offset: -3px;
+        }
+        .road-selection-mode [data-grid-cell] {
+            cursor: crosshair;
+        }
+        .road-selection-mode [data-grid-cell]:hover {
+            outline: 3px solid rgb(245, 158, 11);
+            outline-offset: -3px;
+        }
+
+        /* Event location cells — violet outline*/
+        .event-location-cell {
+            border-color: rgb(139, 92, 246) !important;
+            border-style: dashed !important;
+            border-width: 4px !important;
+        }
+
+        /* Event route path cells — solid violet, stronger fill */
+        .event-route-cell {
+            background-color: rgba(109, 40, 217, 0.22) !important;
+            border-color: rgb(109, 40, 217) !important;
+        }
+        .event-route-cell span {
+            color: white !important;
+        }
+
+        /* When a cell is both a road and a route, route takes visual precedence */
+        .event-route-cell.road-cell {
+            background-color: rgba(109, 40, 217, 0.30) !important;
+            border-color: rgb(109, 40, 217) !important;
+        }
+
+        /* Event route selection mode cursor and hover */
+        .event-route-selection-mode [data-grid-cell] {
+            cursor: default;
+        }
+        .event-route-selection-mode [data-grid-cell].event-location-cell {
+            cursor: pointer;
+        }
+        .event-route-selection-mode [data-grid-cell].event-location-cell:hover,
+        .event-route-selection-mode [data-grid-cell].event-location-cell:focus {
+            outline: 3px solid rgb(139, 92, 246);
+            outline-offset: -3px;
+        }
+    </style>
 
     <div id="grid-a11y-announcer" aria-live="polite" aria-atomic="true" role="status" class="sr-only"></div>
 

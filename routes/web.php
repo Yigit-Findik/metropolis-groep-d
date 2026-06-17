@@ -75,6 +75,9 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     // SIM.4.2 - Activate / deactivate an event, triggering temporary QoL effect adjustments.
     Route::post('/events/{id}/activate', [CityEventController::class, 'activate'])->name('city_events.activate');
     Route::post('/events/{id}/deactivate', [CityEventController::class, 'deactivate'])->name('city_events.deactivate');
+    // Internal simulation cycle deactivation/reactivation — no audit log, does not remove the event from the simulation
+    Route::post('/events/{id}/sim-deactivate', [CityEventController::class, 'simDeactivate'])->name('city_events.sim_deactivate');
+    Route::post('/events/{id}/sim-reactivate', [CityEventController::class, 'simReactivate'])->name('city_events.sim_reactivate');
 
     // Day/Night Cycle specific routes
     Route::put('/events/{id}/day-night', [CityEventController::class, 'updateDayNight'])->name('city_events.update_day_night');

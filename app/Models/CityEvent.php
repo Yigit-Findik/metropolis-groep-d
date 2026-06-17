@@ -19,9 +19,11 @@ class CityEvent extends Model
         'recurring_frequency_unit',
         'recurring_active_duration_value',
         'recurring_active_duration_unit',
+        'recurring_time_slots',
         'one_off_duration_value',
         'one_off_duration_unit',
         'is_active',
+        'is_in_simulation',
         'activated_at',
         'expires_at',
         'is_day_night_cycle',
@@ -34,11 +36,13 @@ class CityEvent extends Model
     ];
 
     protected $casts = [
-        'is_active'          => 'boolean',
-        'is_day_night_cycle' => 'boolean',
-        'activated_at'       => 'datetime',
-        'expires_at'         => 'datetime',
-        'phase_started_at'   => 'datetime',
+        'is_active'             => 'boolean',
+        'is_in_simulation'      => 'boolean',
+        'is_day_night_cycle'    => 'boolean',
+        'activated_at'          => 'datetime',
+        'expires_at'            => 'datetime',
+        'phase_started_at'      => 'datetime',
+        'recurring_time_slots'  => 'array',
     ];
 
     public function cityFunctions(): BelongsToMany
@@ -170,6 +174,14 @@ class CityEvent extends Model
         }
 
         if ($this->event_type === 'recurring') {
+            if ($this->hasTimeSlot()) {
+                $slots = $this->recurring_time_slots;
+                $first = $slots[0]['start'] . ' – ' . $slots[0]['end'];
+                $count = count($slots);
+                $extra = $count > 1 ? ' (+' . ($count - 1) . ' more)' : '';
+                return $count . 'x/day: ' . $first . $extra;
+            }
+
             $freq  = (int) ($this->recurring_frequency_value ?? 1);
             $fUnit = $this->recurring_frequency_unit ?? 'day';
             $aDur  = (int) ($this->recurring_active_duration_value ?? 1);
@@ -183,6 +195,36 @@ class CityEvent extends Model
         $unit = $this->one_off_duration_unit ?? 'day';
 
         return 'Lasts ' . $value . ' ' . Str::plural($unit, $value);
+    }
+
+    public function hasTimeSlot(): bool
+    {
+        return $this->event_type === 'recurring'
+            && ! empty($this->recurring_time_slots);
+    }
+
+    /** Returns [{start_seconds, end_seconds}, ...] for use in JS. */
+    public function timeSlotsForJs(): array
+    {
+        if (! $this->hasTimeSlot()) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(function ($slot) {
+            $start = $slot['start'] ?? null;
+            $end   = $slot['end']   ?? null;
+            if (! $start || ! $end) {
+                return null;
+            }
+            [$sh, $sm] = explode(':', $start);
+            [$eh, $em] = explode(':', $end);
+            return [
+                'start_seconds' => (int) $sh * 3600 + (int) $sm * 60,
+                'end_seconds'   => (int) $eh * 3600 + (int) $em * 60,
+                'week_day'      => isset($slot['week_day'])   ? (int) $slot['week_day']   : null,
+                'month_date'    => isset($slot['month_date']) ? (int) $slot['month_date'] : null,
+            ];
+        }, $this->recurring_time_slots ?? [])));
     }
 
     private function phaseDurationSeconds(?int $value, ?string $unit): int
