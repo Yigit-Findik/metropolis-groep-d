@@ -7,6 +7,7 @@ use App\Models\CityEvent;
 use App\Models\CityFunction;
 use App\Models\CityGridCell;
 use App\Models\EventRoute;
+use App\Services\PerformanceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -77,8 +78,8 @@ class CityEventController extends Controller
             'day_functions.*.facilities_modifier'          => ['nullable', 'integer', 'between:-10,10'],
             'day_functions.*.mobility_modifier'            => ['nullable', 'integer', 'between:-10,10'],
             'night_functions'      => ['nullable', 'array'],
-            'night_functions.*.safety_modifier'              => ['nullable', 'integer', 'between:-10,10'],
-            'night_functions.*.recreation_modifier'          => ['nullable', 'integer', 'between:-10,10'],
+            'night_functions.*.safety_modifier'            => ['nullable', 'integer', 'between:-10,10'],
+            'night_functions.*.recreation_modifier'        => ['nullable', 'integer', 'between:-10,10'],
             'night_functions.*.environment_quality_modifier' => ['nullable', 'integer', 'between:-10,10'],
             'night_functions.*.facilities_modifier'          => ['nullable', 'integer', 'between:-10,10'],
             'night_functions.*.mobility_modifier'            => ['nullable', 'integer', 'between:-10,10'],
@@ -140,6 +141,9 @@ class CityEventController extends Controller
 
         $event->update($update);
 
+        // QA.2 Clear QoL cache when an event is activated so scores update immediately
+        PerformanceService::clearQolCache();
+
         $this->recordAuditLog('activate', $event, null, ['is_active' => true]);
 
         return redirect()->route('city_events.index')->with('success', "{$event->name} is now active.");
@@ -164,6 +168,9 @@ class CityEventController extends Controller
         $functionIds = $event->cityFunctions()->pluck('city_functions.id');
         $cellIds = CityGridCell::whereIn('function_id', $functionIds)->pluck('id');
         EventRoute::whereIn('event_cell_id', $cellIds)->delete();
+
+        // QA.2 Clear QoL cache when an event is deactivated
+        PerformanceService::clearQolCache();
 
         $this->recordAuditLog('deactivate', $event, null, ['is_active' => false]);
 
@@ -200,8 +207,7 @@ class CityEventController extends Controller
             return response()->json(['error' => 'Invalid event'], 400);
         }
 
-        // If the caller specifies which phase they expect to switch FROM, skip if it
-        // already changed (prevents double-switches when both pages are open).
+        // If caller specifies which phase they expect to switch FROM skip if changed already
         $fromPhase = $request->input('from_phase');
         if ($fromPhase && $event->current_phase !== $fromPhase) {
             return response()->json(['phase' => $event->current_phase, 'skipped' => true]);
@@ -214,9 +220,14 @@ class CityEventController extends Controller
             'phase_started_at' => now(),
         ]);
 
+        // QA.2 Clear QoL cache on phase switch so scores stay up to date
+        PerformanceService::clearQolCache();
+
         return response()->json(['phase' => $newPhase]);
     }
 
+    
+    //QA.2 - Subtask 4 & 5: Return active events efficiently.
     public function activeEvents()
     {
         $this->processEvents();
@@ -307,6 +318,7 @@ class CityEventController extends Controller
         return response()->json($events);
     }
 
+    //QA.2 Process events in a single transaction using bulk updates.
     private function processEvents(): void
     {
         $now = now();

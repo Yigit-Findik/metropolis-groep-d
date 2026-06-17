@@ -7,6 +7,7 @@ use App\Models\CityGridCell;
 use App\Models\CityFunction;
 use App\Models\ActionHistory;
 use App\Services\QolScoreService;
+use App\Services\PerformanceService;
 use App\Http\Controllers\AccessRoadController;
 use App\Http\Controllers\EventRouteController;
 use App\Models\CityEvent;
@@ -29,8 +30,15 @@ class CityGridCellController extends Controller
 
     public function index()
     {
-        // Create missing cells on demand so the view always receives a complete grid structure.
-        $cells = CityGridCell::ensureGridExists();
+        // Ensure all grid cells exist (fills any gaps)
+        CityGridCell::ensureGridExists();
+
+        // QA.2 Use with() to eager-load cityFunction so the view
+        // doesn't fire N+1 queries while rendering each cell.
+        $cells = CityGridCell::with('cityFunction')
+            ->orderBy('row_index')
+            ->orderBy('column_index')
+            ->get();
 
         $cityFunctions = CityFunction::orderBy('name')->get();
         $categories = CityFunction::query()->distinct()->orderBy('category')->pluck('category')->filter()->values();
@@ -41,7 +49,6 @@ class CityGridCellController extends Controller
             'categories' => $categories,
             'userRole' => auth()->user()?->role?->name,
         ]);
-
     }
 
     public function select($id)
@@ -61,10 +68,9 @@ class CityGridCellController extends Controller
 
     /**
      * Assign a city function to a specific grid cell.
-     * 
-     * This method handles placing a function (like School, Hospital, etc.)
-     * into a grid cell. It validates that the function exists before saving.
-     * 
+     *
+     * QA.2 
+     *
      * SIM.2 - Placing functions in the grid
      */
     public function assignFunction(Request $request, $id)
@@ -79,6 +85,7 @@ class CityGridCellController extends Controller
             return response()->json(['message' => 'This cell is approved and its destination is protected — it cannot be modified.'], 422);
         }
 
+        // QA.2 Eager-load conditions in a single query instead of lazy-loading
         $function = CityFunction::with('functionConditions')->findOrFail($request->function_id);
 
         // Check adjacency conditions
@@ -97,7 +104,7 @@ class CityGridCellController extends Controller
             }
         }
 
-        $oldFunctionId = $cell->function_id; // Saved so we can record it in ActionHistory before it is replaced
+        $oldFunctionId = $cell->function_id;
 
         $cell->update([
             'function_id' => $request->function_id,
@@ -116,12 +123,19 @@ class CityGridCellController extends Controller
             ],
         ]);
 
+        // QA.2 Clear QoL cache so next refresh gets fresh data
+        PerformanceService::clearQolCache();
+
         $response = ['message' => 'Function assigned', 'cell' => $cell];
 
         // SIM.12.1/12.2 - A placed safety function may block road and event route paths; recalculate both.
         if (strtolower(trim($function->category ?? '')) === 'safety') {
-            $response['updated_roads']        = (new AccessRoadController)->recalculateAllRoads();
-            $response['updated_event_routes'] = (new EventRouteController)->recalculateAllEventRoutes();
+            $response['updated_roads'] = PerformanceService::measure('Recalculate All Roads', function() {
+                return (new AccessRoadController)->recalculateAllRoads();
+            });
+            $response['updated_event_routes'] = PerformanceService::measure('Recalculate Event Routes', function() {
+                return (new EventRouteController)->recalculateAllEventRoutes();
+            });
         }
 
         // SIM.12.2 - If this cell was an event destination and the new function is no longer an
@@ -141,9 +155,9 @@ class CityGridCellController extends Controller
     /**
      * Check if placing a function violates its adjacency conditions
      */
-    private function checkAdjacencyConditions(CityFunction $function, CityGridCell $targetCell)
+    private function checkAdjacencyConditions(CityFunction $function, CityGridCell $targetCell, $preloadedCells = null)
     {
-        $adjacentCells = $this->getAdjacentCells($targetCell);
+        $adjacentCells = $this->getAdjacentCells($targetCell, $preloadedCells);
         $neighborFunctionIds = $adjacentCells->pluck('function_id')->filter()->unique()->values()->all();
         $errors = [];
 
@@ -182,8 +196,18 @@ class CityGridCellController extends Controller
     /**
      * Get cells adjacent to the target cell (up, down, left, right)
      */
-    private function getAdjacentCells(CityGridCell $cell)
+    private function getAdjacentCells(CityGridCell $cell, $preloadedCells = null)
     {
+        // QA.2 Use in-memory collections when preloaded to prevent database loops
+        if ($preloadedCells !== null) {
+            return $preloadedCells->filter(function ($c) use ($cell) {
+                return ($c->row_index == $cell->row_index - 1 && $c->column_index == $cell->column_index) // Up
+                    || ($c->row_index == $cell->row_index + 1 && $c->column_index == $cell->column_index) // Down
+                    || ($c->row_index == $cell->row_index && $c->column_index == $cell->column_index - 1) // Left
+                    || ($c->row_index == $cell->row_index && $c->column_index == $cell->column_index + 1); // Right
+            });
+        }
+
         return CityGridCell::where(function ($query) use ($cell) {
             // Up
             $query->where(function ($q) use ($cell) {
@@ -208,16 +232,20 @@ class CityGridCellController extends Controller
         })->get();
     }
 
+    /**
+     * QA.2 Return the cached QoL score instead of recalculating
+     * on every request. Cache is cleared when functions are placed/removed.
+     */
     public function getQolScore()
     {
-        // Calculate the score on demand and return the aggregated result as JSON for the frontend.
-        $result = (new QolScoreService())->calculate();
+        $result = PerformanceService::getCachedQolScore();
 
         return response()->json($result);
     }
 
     public function getCells()
     {
+        // QA.2 Eager-load cityFunction to avoid N+1 queries
         $cells = CityGridCell::with('cityFunction')
             ->orderBy('row_index')
             ->orderBy('column_index')
@@ -233,12 +261,12 @@ class CityGridCellController extends Controller
 
     /**
      * Get valid and invalid cells for placing a function based on adjacency rules.
-     * Returns cell IDs that are valid (green) and invalid (red) for placement.
+     * QA.2 Load all cells and functions once upfront instead of hitting the database inside a loop for every cell.
      */
     public function getValidCells(Request $request)
     {
         $functionId = $request->input('function_id');
-        
+
         if (!$functionId) {
             return response()->json(['valid' => [], 'invalid' => []]);
         }
@@ -256,6 +284,8 @@ class CityGridCellController extends Controller
 
         $validCells = [];
         $invalidCells = [];
+
+        // QA.2 Load all cells once to avoid N+1 in checkAdjacencyConditions
         $allCells = CityGridCell::all();
 
         foreach ($allCells as $cell) {
@@ -264,7 +294,7 @@ class CityGridCellController extends Controller
                 continue;
             }
 
-            $hasError = $this->checkAdjacencyConditions($function, $cell);
+            $hasError = $this->checkAdjacencyConditions($function, $cell, $allCells);
             if ($hasError) {
                 $invalidCells[] = $cell->id;
             } else {
@@ -318,6 +348,9 @@ class CityGridCellController extends Controller
             ],
         ]);
 
+        // QA.2 Clear QoL cache so next refresh gets fresh data
+        PerformanceService::clearQolCache();
+
         $response = [
             'message' => 'Function removed successfully',
             'cell' => $cell,
@@ -325,8 +358,12 @@ class CityGridCellController extends Controller
 
         // SIM.12.1/12.2 - A removed safety function may unblock road and event route paths; recalculate both.
         if ($wasSafety) {
-            $response['updated_roads']        = (new AccessRoadController)->recalculateAllRoads();
-            $response['updated_event_routes'] = (new EventRouteController)->recalculateAllEventRoutes();
+            $response['updated_roads'] = PerformanceService::measure('Recalculate All Roads (Removal)', function() {
+                return (new AccessRoadController)->recalculateAllRoads();
+            });
+            $response['updated_event_routes'] = PerformanceService::measure('Recalculate Event Routes (Removal)', function() {
+                return (new EventRouteController)->recalculateAllEventRoutes();
+            });
         }
 
         // SIM.12.2 - Removing a function strips the event location from this cell; clean up routes.
@@ -417,11 +454,11 @@ class CityGridCellController extends Controller
         return response()->json(['message' => 'All cells disapproved']);
     }
 
-    public function undo(){
-
+    public function undo()
+    {
         $lastAction = ActionHistory::where('user_id', auth()->id())->latest()->first();
 
-        // Checkss that there wasn't any last action that was done. It gives error 400 if the last action is NULL
+        // Checks that there wasnt any last action that was done. It gives error 400 if the last action is NULL
         if ( !$lastAction ) {
             return response()->json(['message' => 'No action to undo'], 400);
         }
@@ -449,13 +486,15 @@ class CityGridCellController extends Controller
             ],
         ]);
 
+        // QA.2 Clear QoL cache after undo
+        PerformanceService::clearQolCache();
+
         // Load the old function so frontend knows what to display
         $cell->load('cityFunction');
 
         return response()->json([
             'message' => 'Action undone',
             'cell' => $cell
-
         ]);
     }
 }
