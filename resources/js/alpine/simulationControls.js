@@ -41,6 +41,7 @@ export const simulationControls = () => ({
         this.paused = false;
         window.dispatchEvent(new CustomEvent('simulation:play'));
         this.startTimer();
+        this._announce(`Simulation playing at ${this.speed}x, time ${this.simTime}`);
     },
 
     pause() {
@@ -49,6 +50,7 @@ export const simulationControls = () => ({
         clearInterval(this.timer);
         this.timer = null;
         window.dispatchEvent(new CustomEvent('simulation:pause'));
+        this._announce(`Simulation paused at time ${this.simTime}`);
     },
 
     setMultiplier(n) {
@@ -75,6 +77,7 @@ export const simulationControls = () => ({
         clearInterval(this._clockInterval);
         this._clockInterval = null;
         this._startClock();
+        this._announce(`Simulation speed set to ${newSpeed}x`);
     },
 
     startTimer() {
@@ -136,5 +139,12 @@ export const simulationControls = () => ({
         const h = Math.floor(totalSec / 3600);
         const m = Math.floor((totalSec % 3600) / 60);
         return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+    },
+
+    _announce(msg) {
+        const el = document.getElementById('grid-a11y-announcer');
+        if (!el) return;
+        el.textContent = '';
+        setTimeout(() => { el.textContent = msg; }, 50);
     },
 });
