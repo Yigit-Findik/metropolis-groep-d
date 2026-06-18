@@ -71,7 +71,7 @@
                 <!-- Settings Dropdown -->
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button aria-label="Profile" aria-haspopup="true" title="Profile" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hc:text-white dark:text-gray-400 bg-white hc:bg-black dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-indigo-400">
+                        <button aria-label="Profile" aria-haspopup="true" :aria-expanded="open.toString()" title="Profile" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hc:text-white dark:text-gray-400 bg-white hc:bg-black dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-indigo-400">
                             <div>{{ Auth::user()->name }}</div>
 
                             <div class="ms-1">

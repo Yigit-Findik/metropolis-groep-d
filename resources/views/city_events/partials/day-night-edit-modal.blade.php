@@ -67,19 +67,19 @@
                         <p class="mb-3 text-sm font-semibold text-amber-900 hc:text-yellow-300 dark:text-amber-100">Day Duration</p>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="mb-1 block text-xs font-medium text-slate-700 hc:text-white dark:text-gray-300">
+                                <label for="dn-day-duration-value" class="mb-1 block text-xs font-medium text-slate-700 hc:text-white dark:text-gray-300">
                                     Value <span class="text-red-400">*</span>
                                 </label>
-                                <input type="number" name="day_duration_value" min="1"
+                                <input type="number" id="dn-day-duration-value" name="day_duration_value" min="1"
                                        x-ref="dnDayValue"
                                        x-model="dayNightEditing.day_duration_value"
                                        class="w-full rounded-xl border border-slate-300 hc:border-white bg-white hc:bg-black px-3 py-2 text-sm text-slate-900 hc:text-white shadow-sm hc:shadow-none focus:border-cyan-500 hc:focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 hc:focus:ring-yellow-400 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100">
                             </div>
                             <div>
-                                <label class="mb-1 block text-xs font-medium text-slate-700 hc:text-white dark:text-gray-300">
+                                <label for="dn-day-duration-unit" class="mb-1 block text-xs font-medium text-slate-700 hc:text-white dark:text-gray-300">
                                     Unit <span class="text-red-400">*</span>
                                 </label>
-                                <select name="day_duration_unit"
+                                <select id="dn-day-duration-unit" name="day_duration_unit"
                                         x-model="dayNightEditing.day_duration_unit"
                                         class="w-full rounded-xl border border-slate-300 hc:border-white bg-white hc:bg-black px-3 py-2 text-sm text-slate-900 hc:text-white shadow-sm hc:shadow-none focus:border-cyan-500 hc:focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 hc:focus:ring-yellow-400 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100">
                                     <option value="minute">Minute</option>
@@ -95,18 +95,18 @@
                         <p class="mb-3 text-sm font-semibold text-indigo-900 hc:text-white dark:text-indigo-100">Night Duration</p>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="mb-1 block text-xs font-medium text-slate-700 hc:text-white dark:text-gray-300">
+                                <label for="dn-night-duration-value" class="mb-1 block text-xs font-medium text-slate-700 hc:text-white dark:text-gray-300">
                                     Value <span class="text-red-400">*</span>
                                 </label>
-                                <input type="number" name="night_duration_value" min="1"
+                                <input type="number" id="dn-night-duration-value" name="night_duration_value" min="1"
                                        x-model="dayNightEditing.night_duration_value"
                                        class="w-full rounded-xl border border-slate-300 hc:border-white bg-white hc:bg-black px-3 py-2 text-sm text-slate-900 hc:text-white shadow-sm hc:shadow-none focus:border-cyan-500 hc:focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 hc:focus:ring-yellow-400 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100">
                             </div>
                             <div>
-                                <label class="mb-1 block text-xs font-medium text-slate-700 hc:text-white dark:text-gray-300">
+                                <label for="dn-night-duration-unit" class="mb-1 block text-xs font-medium text-slate-700 hc:text-white dark:text-gray-300">
                                     Unit <span class="text-red-400">*</span>
                                 </label>
-                                <select name="night_duration_unit"
+                                <select id="dn-night-duration-unit" name="night_duration_unit"
                                         x-model="dayNightEditing.night_duration_unit"
                                         class="w-full rounded-xl border border-slate-300 hc:border-white bg-white hc:bg-black px-3 py-2 text-sm text-slate-900 hc:text-white shadow-sm hc:shadow-none focus:border-cyan-500 hc:focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 hc:focus:ring-yellow-400 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100">
                                     <option value="minute">Minute</option>
@@ -160,8 +160,9 @@
                         <div x-show="selected" x-cloak class="mt-2 grid grid-cols-2 gap-2 pl-6 sm:grid-cols-5">
                             @foreach(['safety_modifier' => 'Safety', 'recreation_modifier' => 'Recreation', 'environment_quality_modifier' => 'Env. Quality', 'facilities_modifier' => 'Facilities', 'mobility_modifier' => 'Mobility'] as $key => $label)
                                 <div>
-                                    <label class="mb-0.5 block text-xs text-slate-500 hc:text-white dark:text-gray-400">{{ $label }}</label>
+                                    <label :for="'dn-day-' + fn.id + '-{{ $key }}'" class="mb-0.5 block text-xs text-slate-500 hc:text-white dark:text-gray-400">{{ $label }}</label>
                                     <input type="number"
+                                           :id="'dn-day-' + fn.id + '-{{ $key }}'"
                                            :name="`day_functions[${fn.id}][{{ $key }}]`"
                                            :value="modifier('{{ $key }}')"
                                            @input="setModifier('{{ $key }}', $event.target.value)"
@@ -218,8 +219,9 @@
                         <div x-show="selected" x-cloak class="mt-2 grid grid-cols-2 gap-2 pl-6 sm:grid-cols-5">
                             @foreach(['safety_modifier' => 'Safety', 'recreation_modifier' => 'Recreation', 'environment_quality_modifier' => 'Env. Quality', 'facilities_modifier' => 'Facilities', 'mobility_modifier' => 'Mobility'] as $key => $label)
                                 <div>
-                                    <label class="mb-0.5 block text-xs text-slate-500 hc:text-white dark:text-gray-400">{{ $label }}</label>
+                                    <label :for="'dn-night-' + fn.id + '-{{ $key }}'" class="mb-0.5 block text-xs text-slate-500 hc:text-white dark:text-gray-400">{{ $label }}</label>
                                     <input type="number"
+                                           :id="'dn-night-' + fn.id + '-{{ $key }}'"
                                            :name="`night_functions[${fn.id}][{{ $key }}]`"
                                            :value="modifier('{{ $key }}')"
                                            @input="setModifier('{{ $key }}', $event.target.value)"

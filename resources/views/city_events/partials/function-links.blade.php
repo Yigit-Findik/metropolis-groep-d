@@ -25,6 +25,8 @@
                  class="mb-3">
                 <label class="flex cursor-pointer items-center gap-2">
                     <input type="checkbox" x-model="selected"
+                           :aria-expanded="selected.toString()"
+                           aria-controls="fn-mods-{{ $fn->id }}"
                            class="h-4 w-4 rounded border-slate-300 hc:border-white text-cyan-600 hc:accent-yellow-300 focus:ring-cyan-500 hc:focus:ring-yellow-400 dark:border-gray-600">
                     <span class="text-sm font-medium text-slate-800 hc:text-white dark:text-gray-200">{{ $fn->name }}</span>
                     @if($fn->category)
@@ -32,11 +34,12 @@
                     @endif
                 </label>
 
-                <div x-show="selected" x-cloak class="mt-2 grid grid-cols-2 gap-2 pl-6 sm:grid-cols-5">
+                <div id="fn-mods-{{ $fn->id }}" x-show="selected" x-cloak class="mt-2 grid grid-cols-2 gap-2 pl-6 sm:grid-cols-5">
                     @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Env. Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $key => $label)
                         <div>
-                            <label class="mb-0.5 block text-xs text-slate-500 hc:text-white dark:text-gray-400">{{ $label }}</label>
+                            <label for="fn-create-mod-{{ $fn->id }}-{{ $key }}" class="mb-0.5 block text-xs text-slate-500 hc:text-white dark:text-gray-400">{{ $label }}</label>
                             <input type="number"
+                                   id="fn-create-mod-{{ $fn->id }}-{{ $key }}"
                                    name="functions[{{ $fn->id }}][{{ $key }}_modifier]"
                                    x-model="mods.{{ $key }}"
                                    :disabled="!selected"
@@ -77,16 +80,19 @@
                     <input type="checkbox"
                            :checked="selected"
                            @change="selected = $event.target.checked"
+                           :aria-expanded="selected.toString()"
+                           :aria-controls="'fn-mods-edit-' + fn.id"
                            class="h-4 w-4 rounded border-slate-300 hc:border-white text-cyan-600 hc:accent-yellow-300 focus:ring-cyan-500 hc:focus:ring-yellow-400 dark:border-gray-600">
                     <span class="text-sm font-medium text-slate-800 hc:text-white dark:text-gray-200" x-text="fn.name"></span>
                     <span class="text-xs text-slate-400 hc:text-white dark:text-gray-500" x-text="fn.category ? '(' + fn.category + ')' : ''"></span>
                 </label>
 
-                <div x-show="selected" x-cloak class="mt-2 grid grid-cols-2 gap-2 pl-6 sm:grid-cols-5">
+                <div :id="'fn-mods-edit-' + fn.id" x-show="selected" x-cloak class="mt-2 grid grid-cols-2 gap-2 pl-6 sm:grid-cols-5">
                     @foreach(['safety_modifier' => 'Safety', 'recreation_modifier' => 'Recreation', 'environment_quality_modifier' => 'Env. Quality', 'facilities_modifier' => 'Facilities', 'mobility_modifier' => 'Mobility'] as $key => $label)
                         <div>
-                            <label class="mb-0.5 block text-xs text-slate-500 hc:text-white dark:text-gray-400">{{ $label }}</label>
+                            <label :for="'fn-edit-mod-' + fn.id + '-{{ $key }}'" class="mb-0.5 block text-xs text-slate-500 hc:text-white dark:text-gray-400">{{ $label }}</label>
                             <input type="number"
+                                   :id="'fn-edit-mod-' + fn.id + '-{{ $key }}'"
                                    :name="`functions[${fn.id}][{{ $key }}]`"
                                    :value="modifier('{{ $key }}')"
                                    @input="setModifier('{{ $key }}', $event.target.value)"
