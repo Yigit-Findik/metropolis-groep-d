@@ -13,6 +13,7 @@ export class GridController {
     #selectedFunctionData = null;
     #lastFocusedCell = null;
     #announcer = null;
+    #errorAnnouncer = null;
     #pickedUpCell = null;
 
     constructor(api, qolService) {
@@ -29,6 +30,7 @@ export class GridController {
 
         // Accessible announcer for screen reader messages
         this.#announcer = document.getElementById('grid-a11y-announcer');
+        this.#errorAnnouncer = document.getElementById('grid-a11y-error');
 
         const cells = Array.from(grid.querySelectorAll('[data-grid-cell]'));
         this.#setupCells(cells);
@@ -61,7 +63,7 @@ export class GridController {
         if (cell.dataset.approved === 'true') {
             const msg = 'This cell is approved and cannot be modified.';
             notify(msg);
-            this.#announce(msg);
+            this.#announceError(msg);
             return true;
         }
         return false;
@@ -134,7 +136,7 @@ export class GridController {
                         .catch((err) => {
                             const msg = err.message || 'Failed to revoke approval.';
                             notify(msg);
-                            this.#announce(msg);
+                            this.#announceError(msg);
                         });
                 } else {
                     this.#api.approve(cellId)
@@ -147,7 +149,7 @@ export class GridController {
                         .catch((err) => {
                             const msg = err.message || 'Failed to approve cell.';
                             notify(msg);
-                            this.#announce(msg);
+                            this.#announceError(msg);
                         });
                 }
             });
@@ -170,7 +172,7 @@ export class GridController {
                 .catch((err) => {
                     const msg = err.message || 'Failed to approve all cells.';
                     notify(msg);
-                    this.#announce(msg);
+                    this.#announceError(msg);
                 });
         });
     }
@@ -191,7 +193,7 @@ export class GridController {
                 .catch((err) => {
                     const msg = err.message || 'Failed to disapprove all cells.';
                     notify(msg);
-                    this.#announce(msg);
+                    this.#announceError(msg);
                 });
         });
     }
@@ -247,11 +249,25 @@ export class GridController {
                 e.dataTransfer.setData('facilities', functionData.facilities);
                 e.dataTransfer.setData('mobility', functionData.mobility);
 
-                // Use the card image as the drag ghost
+                // Use the card image as the drag ghost.
+                // Safari requires the element to be off-screen in document.body —
+                // using a visible in-DOM element produces no ghost or a broken one.
                 const img = card.querySelector('img');
                 if (img) {
-                    e.dataTransfer.setDragImage(img, 25, 25);
-                    img.classList.add('grid-drag-image');
+                    // Firefox ignores both inline styles and HTML width/height attributes
+                    // on <img> elements for drag ghosts and uses the image's natural pixel
+                    // size instead. A <canvas> always renders at its defined pixel dimensions
+                    // in every browser, so we draw the image onto a 50×50 canvas instead.
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 80;
+                    canvas.height = 80;
+                    canvas.getContext('2d').drawImage(img, 0, 0, 80, 80);
+                    canvas.style.position = 'fixed';
+                    canvas.style.top = '-9999px';
+                    canvas.style.left = '-9999px';
+                    document.body.appendChild(canvas);
+                    e.dataTransfer.setDragImage(canvas, 40, 40);
+                    requestAnimationFrame(() => canvas.remove());
                 }
 
                 // Fetch which cells are forbidden so dragover can colour them red
@@ -349,7 +365,18 @@ export class GridController {
                 e.dataTransfer.setData('fromCell', 'true'); // Distinguishes from library drags
 
                 const img = cell.querySelector('img');
-                if (img) e.dataTransfer.setDragImage(img, 25, 25);
+                if (img) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 80;
+                    canvas.height = 80;
+                    canvas.getContext('2d').drawImage(img, 0, 0, 80, 80);
+                    canvas.style.position = 'fixed';
+                    canvas.style.top = '-9999px';
+                    canvas.style.left = '-9999px';
+                    document.body.appendChild(canvas);
+                    e.dataTransfer.setDragImage(canvas, 40, 40);
+                    requestAnimationFrame(() => canvas.remove());
+                }
             });
         });
     }
@@ -368,7 +395,7 @@ export class GridController {
         if (cell.dataset.function && cell.dataset.function !== '') {
             const msg = 'This grid slot already has a city-function';
             notify(msg);
-            this.#announce(msg);
+            this.#announceError(msg);
             return;
         }
 
@@ -392,6 +419,7 @@ export class GridController {
                 });
                 this.#qolService.refresh(true);
                 this.#qolService.showToast(functionName, qolScore);
+                this.#announce(`${functionName} placed`);
                 document.dispatchEvent(new CustomEvent('grid-updated'));
                 if (data.updated_roads) {
                     document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
@@ -403,7 +431,7 @@ export class GridController {
             .catch((error) => {
                 const msg = error.message || 'Failed to save — please refresh and try again.';
                 notify(msg);
-                this.#announce(msg);
+                this.#announceError(msg);
             });
     }
 
@@ -456,6 +484,7 @@ export class GridController {
                     this.#qolService.refresh(true);
                     // Show the negative impact of the removal
                     this.#qolService.showToast(functionName, -oldQolScore);
+                    this.#announce(`${functionName} removed`);
                     document.dispatchEvent(new CustomEvent('grid-updated'));
 
                     if (data.updated_roads) {
@@ -465,7 +494,7 @@ export class GridController {
                 .catch((error) => {
                     const msg = error.message || 'Failed to remove function — please try again.';
                     notify(msg);
-                    this.#announce(msg);
+                    this.#announceError(msg);
                 });
         });
 
@@ -615,6 +644,7 @@ export class GridController {
                 cellElement.blur();
                 this.#qolService.refresh(true);
                 this.#qolService.showToast(functionName, -oldQolScore);
+                this.#announce(`${functionName} removed`);
                 document.dispatchEvent(new CustomEvent('grid-updated'));
 
                 if (data.updated_roads) {
@@ -625,8 +655,9 @@ export class GridController {
                 }
             })
             .catch((error) => {
-                console.error('Error removing function:', error);
-                notify('Failed to remove function — please try again.');
+                const msg = 'Failed to remove function — please try again.';
+                notify(msg);
+                this.#announceError(msg);
             });
     }
 
@@ -677,7 +708,7 @@ export class GridController {
         if (targetCell.dataset.function && targetCell.dataset.function !== '') {
             const msg = 'Cannot place here — target cell is occupied.';
             notify(msg);
-            this.#announce(msg);
+            this.#announceError(msg);
             return;
         }
 
@@ -685,7 +716,7 @@ export class GridController {
         if (!functionId) {
             const msg = 'Picked function has no id; canceling.';
             notify(msg);
-            this.#announce(msg);
+            this.#announceError(msg);
             this.#cancelPickup();
             return;
         }
@@ -738,7 +769,7 @@ export class GridController {
         } catch (err) {
             const msg = (err && err.message) ? err.message : 'Failed to move function.';
             notify(msg);
-            this.#announce(msg);
+            this.#announceError(msg);
             // Always exit pickup mode on failure to prevent further duplication
             if (this.#pickedUpCell) {
                 this.#pickedUpCell.classList.remove('is-picked');
@@ -759,7 +790,7 @@ export class GridController {
         if (cell.dataset.function && cell.dataset.function !== '') {
             const msg = 'This grid slot already has a city-function';
             notify(msg);
-            this.#announce(msg);
+            this.#announceError(msg);
             return;
         }
 
@@ -783,6 +814,7 @@ export class GridController {
                 });
                 this.#qolService.refresh(true);
                 this.#qolService.showToast(selected.functionName, selected.qolScore);
+                this.#announce(`${selected.functionName} placed`);
                 document.dispatchEvent(new CustomEvent('grid-updated'));
                 if (data.updated_roads) {
                     document.dispatchEvent(new CustomEvent('roads-updated', { detail: { roads: data.updated_roads } }));
@@ -794,7 +826,7 @@ export class GridController {
             .catch((error) => {
                 const msg = error.message || 'Failed to save — please refresh and try again.';
                 notify(msg);
-                this.#announce(msg);
+                this.#announceError(msg);
             });
     }
 
@@ -824,13 +856,24 @@ export class GridController {
         };
     }
 
-    // Announce messages to screen readers via a hidden aria-live region
+    // Announce success/status messages politely (aria-live="polite")
     #announce(message) {
         if (!this.#announcer) return;
         try {
             // Clear and re-set to ensure screen readers announce repeated messages
             this.#announcer.textContent = '';
             setTimeout(() => { this.#announcer.textContent = message; }, 50);
+        } catch (err) {
+            // Ignore announcer failures
+        }
+    }
+
+    // Announce error/warning messages immediately (role="alert", aria-live="assertive")
+    #announceError(message) {
+        if (!this.#errorAnnouncer) return;
+        try {
+            this.#errorAnnouncer.textContent = '';
+            setTimeout(() => { this.#errorAnnouncer.textContent = message; }, 50);
         } catch (err) {
             // Ignore announcer failures
         }

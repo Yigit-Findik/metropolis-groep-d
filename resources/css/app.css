@@ -8,7 +8,7 @@
 
 @layer base {
     :root {
-        color-scheme: light;
+        color-scheme: light dark;
     }
 
     body {
@@ -43,20 +43,35 @@
     background: #ffffff;
 }
 
-.grid-cell.is-empty::before {
-    background: #cbd5e1;
-}
-
 .grid-cell.is-occupied {
     background: rgb(255 251 235);
 }
 
-.grid-cell.is-occupied::before {
-    background: #f59e0b;
+/* Visual feedback when a cell is keyboard-picked for move/removal */
+.grid-cell.is-picked {
+    outline: 3px dashed #3b82f6;
+    outline-offset: -3px;
+    animation: picked-pulse 1s ease-in-out infinite;
 }
 
+@keyframes picked-pulse {
+    0%, 100% { outline-color: #3b82f6; }
+    50%       { outline-color: #93c5fd; }
+}
 
-[data-grid-cell] * {
+@media (prefers-reduced-motion: reduce) {
+    .grid-cell.is-picked {
+        animation: none;
+    }
+}
+
+/* Mobile square fallback for Safari < 15 which lacks aspect-ratio support */
+.grid-cell {
+    min-height: 64px;
+}
+
+[data-grid-cell] *,
+[data-removal-zone] * {
     pointer-events: none;
 }
 
@@ -67,6 +82,157 @@
     object-fit: contain;
 }
 
-.grid-drag-image {
-    pointer-events: none;
+/* Access road / event route overlay states — toggled by JS controllers */
+.road-cell {
+    background-color: rgba(245, 158, 11, 0.18) !important;
+    border-color: rgb(245, 158, 11) !important;
+}
+.road-start-selected {
+    outline: 3px solid rgb(34, 197, 94) !important;
+    outline-offset: -3px;
+}
+.road-selection-mode [data-grid-cell] {
+    cursor: crosshair;
+}
+.road-selection-mode [data-grid-cell]:hover {
+    outline: 3px solid rgb(245, 158, 11);
+    outline-offset: -3px;
+}
+.event-location-cell {
+    background-color: rgba(139, 92, 246, 0.12) !important;
+    border-color: rgb(139, 92, 246) !important;
+    border-style: dashed !important;
+}
+.event-route-cell {
+    background-color: rgba(109, 40, 217, 0.22) !important;
+    border-color: rgb(109, 40, 217) !important;
+}
+.event-route-cell.road-cell {
+    background-color: rgba(109, 40, 217, 0.30) !important;
+    border-color: rgb(109, 40, 217) !important;
+}
+.event-route-selection-mode [data-grid-cell] {
+    cursor: default;
+}
+.event-route-selection-mode [data-grid-cell].event-location-cell {
+    cursor: pointer;
+}
+.event-route-selection-mode [data-grid-cell].event-location-cell:hover,
+.event-route-selection-mode [data-grid-cell].event-location-cell:focus {
+    outline: 3px solid rgb(139, 92, 246);
+    outline-offset: -3px;
+}
+
+/* ── Cross-browser visual normalization ──────────────────────────────────────
+   @tailwindcss/forms normalises most form controls, but a few differences
+   remain across Chrome, Firefox, and Safari that need explicit fixes.        */
+
+/*
+ * Number input spinners
+ * Chrome hides them until hover/focus; Firefox and Safari always show them.
+ * Setting opacity:1 on the WebKit pseudo-elements makes Chrome always show
+ * them too, so the input width and appearance are consistent across browsers.
+ */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    opacity: 1;
+}
+
+/*
+ * Scrollbars in overflow containers
+ * Firefox on Windows shows full-width native scrollbars that take layout
+ * space and can shift content. scrollbar-width:thin reduces them to a narrow
+ * overlay-style bar. Chrome 121+ respects this property too.
+ * Safari on macOS already uses overlay scrollbars, so no change is needed
+ * there and this property is silently ignored.
+ */
+.overflow-y-auto,
+.overflow-x-auto {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+@media (prefers-color-scheme: dark) {
+    .overflow-y-auto,
+    .overflow-x-auto {
+        scrollbar-color: #475569 transparent;
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   HIGH CONTRAST MODE — CSS-only overrides
+   Applied when html.high-contrast is set by the contrastToggle component.
+   These rules cover states controlled by JS/Alpine at runtime and therefore
+   cannot be expressed as static Tailwind hc: utility classes in templates.
+   All static template elements use hc: Tailwind classes instead.
+   ════════════════════════════════════════════════════════════════ */
+
+/* Body baseline (applied before JS loads to avoid FOUC) */
+html.high-contrast body {
+    background-color: #000;
+    color: #fff;
+}
+html.high-contrast .min-h-screen {
+    background-color: #000;
+}
+
+/* Focus rings — global override for every interactive element */
+html.high-contrast :focus-visible {
+    outline: 3px solid #fde047 !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+}
+
+/* Grid cell states — class names set dynamically by GridController */
+html.high-contrast .grid-cell.is-empty {
+    background: #000 !important;
+    border: 3px solid #fff !important;
+}
+html.high-contrast .grid-cell.is-empty::before {
+    background: #fff !important;
+}
+html.high-contrast .grid-cell.is-occupied {
+    background: #1a1500 !important;
+    border: 3px solid #fde047 !important;
+}
+html.high-contrast .grid-cell.is-occupied::before {
+    background: #fde047 !important;
+}
+html.high-contrast .grid-cell.is-approved {
+    border: 4px solid #4ade80 !important;
+    outline: 2px solid #4ade80;
+    outline-offset: -4px;
+}
+html.high-contrast .grid-cell span {
+    color: #fff !important;
+}
+html.high-contrast .grid-cell.is-occupied span {
+    color: #fde047 !important;
+}
+
+/* Access road / event route overlay states — added by AccessRoadController / EventRouteController.
+   Specificity must match html.high-contrast .grid-cell.is-empty (0-3-1) so source order wins. */
+html.high-contrast .grid-cell.road-cell {
+    background-color: rgba(253, 224, 71, 0.55) !important;
+    border-color: #fde047 !important;
+}
+html.high-contrast .grid-cell.event-location-cell {
+    background-color: rgba(216, 180, 254, 0.45) !important;
+    border-color: #d8b4fe !important;
+}
+html.high-contrast .grid-cell.event-route-cell {
+    background-color: rgba(216, 180, 254, 0.6) !important;
+    border-color: #d8b4fe !important;
+}
+
+/* Recurring schedule card — shiny blue border in high contrast */
+html.high-contrast .recurring-schedule-card {
+    border: 2px solid #60a5fa !important;
+}
+
+/* QoL toast — shown/hidden by QolService, background set dynamically via JS */
+html.high-contrast #qol-toast {
+    background-color: #fde047 !important;
+    color: #000 !important;
+    border: 2px solid #000 !important;
 }

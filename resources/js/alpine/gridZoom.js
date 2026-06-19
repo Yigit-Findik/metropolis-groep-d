@@ -8,7 +8,12 @@ export const gridZoom = () => ({
     },
     init() {
         const mq = window.matchMedia('(min-width: 1024px)');
-        mq.addEventListener('change', (e) => { this.isDesktop = e.matches; });
+        const mqHandler = (e) => { this.isDesktop = e.matches; };
+        if (mq.addEventListener) {
+            mq.addEventListener('change', mqHandler);
+        } else {
+            mq.addListener(mqHandler);
+        }
         this.$nextTick(() => this._syncMobileSize());
         window.addEventListener('resize', () => this._syncMobileSize(), { passive: true });
     },

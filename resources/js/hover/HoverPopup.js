@@ -1,3 +1,5 @@
+import { getEventModifiersForFunction, getActiveEventsForFunction } from '../alpine/activeEvents.js';
+
 /**
  * Manages the floating hover popup on grid cells.
  * Shows effect badges, highlights orthogonal neighbors, and marks penalty zones.
@@ -391,7 +393,7 @@ export class HoverPopup {
         document.querySelectorAll('.bonus-badge').forEach((n) => n.remove());
     }
 
-    // Returns a coloured pill span for a numeric effect value
+    // Returns a coloured pill span for a numeric base value.
     #formatBadge(value) {
         const n = parseInt(value || 0, 10);
         const sign = n > 0 ? `+${n}` : `${n}`;
@@ -403,11 +405,18 @@ export class HoverPopup {
         return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] ${bg}">${sign}</span>`;
     }
 
+    // Returns an amber pill span for an event modifier value.
+    #formatEventBadge(mod) {
+        const sign = mod > 0 ? `+${mod}` : `${mod}`;
+        return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] bg-violet-500 text-white">${sign}</span>`;
+    }
+
     // Builds the HTML shown inside the popup for a given cell
     #buildHtml(el) {
         const ds = el.dataset || {};
         const name = ds.function || '';
         const category = ds.category || 'Uncategorized';
+        const eventMods = ds.functionId ? getEventModifiersForFunction(ds.functionId) : null;
 
         const badges = [
             ['safety', 'Saf'],
@@ -416,14 +425,28 @@ export class HoverPopup {
             ['facilities', 'Fac'],
             ['mobility', 'Mob'],
         ].map(([key, label]) => {
-            const b = this.#formatBadge(ds[key] ?? 0);
-            return `<div class="flex items-center gap-2"><div class="w-8 text-[10px] text-gray-500 dark:text-gray-400">${label}</div>${b}</div>`;
+            const base = parseInt(ds[key] ?? 0, 10);
+            const mod  = eventMods?.[key] ?? 0;
+            const b = this.#formatBadge(base) + (mod !== 0 ? ' ' + this.#formatEventBadge(mod) : '');
+            return `<div class="flex items-center gap-2"><div class="w-8 text-[10px] text-gray-500 dark:text-gray-400">${label}</div><div class="flex items-center gap-1">${b}</div></div>`;
         }).join('');
+
+        const activeEvents = ds.functionId ? getActiveEventsForFunction(ds.functionId) : [];
+        const eventsSection = this.#formatActiveEvents(activeEvents);
 
         return [
             `<div class="font-semibold mb-1 text-xs">${name}</div>`,
             `<div class="mb-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-100">${category}</div>`,
             `<div class="grid gap-1">${badges}</div>`,
+            eventsSection ? `<div class="border-t border-gray-300 dark:border-gray-600 pt-2 mt-2 text-[10px] space-y-0.5">${eventsSection}</div>` : '',
         ].join('');
+    }
+
+    #formatActiveEvents(events) {
+        if (!events || events.length === 0) return '';
+
+        const count = events.length;
+        const label = count === 1 ? 'active event' : 'active events';
+        return `<div class="text-gray-700 dark:text-gray-300 font-semibold">${count} ${label}</div>`;
     }
 }

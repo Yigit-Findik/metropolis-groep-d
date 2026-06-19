@@ -32,8 +32,6 @@ export class QolService {
         const message = `${symbol} ${functionName}: ${sign}${qolScore}`;
         toast.textContent = message;
         toast.className = `fixed bottom-6 right-6 z-50 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 ${isPositive ? "bg-green-500" : "bg-red-500"}`;
-        toast.setAttribute("aria-live", "assertive");
-        toast.setAttribute("role", "status");
 
         // Reset the timer so rapid drops don't dismiss the toast too early
         clearTimeout(this.#toastTimer);
@@ -80,7 +78,7 @@ export class QolService {
                         const gross = score - penaltyForCat;
                         const display = (gross >= 0 ? "+" : "") + gross;
                         this.#setText(el, display);
-                        el.className = `mt-0.5 text-xl font-semibold ${gross >= 0 ? "text-green-300" : "text-red-300"}`;
+                        el.className = `mt-0.5 text-xl font-semibold ${gross >= 0 ? "text-green-300 hc:text-green-400" : "text-red-300 hc:text-red-400"}`;
                         el.setAttribute("aria-label", `${cat} ${display}`);
                     }
 
@@ -97,7 +95,7 @@ export class QolService {
                     if (eventEl) {
                         const eventDisplay = (eventMod >= 0 ? "+" : "") + eventMod;
                         this.#setText(eventEl, eventDisplay);
-                        eventEl.className = `font-semibold ${eventMod > 0 ? "text-green-600 dark:text-green-400" : eventMod < 0 ? "text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400"}`;
+                        eventEl.className = `font-semibold ${eventMod > 0 ? "text-green-600 dark:text-green-400 hc:text-green-400" : eventMod < 0 ? "text-red-600 dark:text-red-400 hc:text-red-400" : "text-gray-500 dark:text-gray-400 hc:text-white"}`;
                     }
 
                 }
