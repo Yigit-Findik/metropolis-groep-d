@@ -22,7 +22,7 @@
             <div class="flex flex-col lg:flex-row gap-4 mb-6">
 
                 {{-- QoL Score Banner --}}
-                <div class="flex-1 min-w-0 bg-gray-200 hc:bg-black hc:border hc:border-white dark:bg-gray-800 rounded-2xl shadow-sm hc:shadow-none px-4 sm:px-8 py-6" role="group" aria-label="Quality of life summary">
+                <div class="flex-1 min-w-0 overflow-x-auto bg-gray-200 hc:bg-black hc:border hc:border-white dark:bg-gray-800 rounded-2xl shadow-sm hc:shadow-none px-4 sm:px-8 py-6" role="group" aria-label="Quality of life summary">
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[150px_repeat(5,minmax(120px,1fr))] gap-x-4 gap-y-3 items-start">
 
                         <div class="col-span-2 sm:col-span-1 min-w-0">
@@ -57,7 +57,7 @@
                 </div>
 
                 {{-- Active Events Panel --}}
-                <div class="w-full xl:w-80 shrink-0 self-start bg-gray-200 hc:bg-black hc:border hc:border-white dark:bg-gray-800 rounded-2xl shadow-sm hc:shadow-none px-6 py-6"
+                <div class="w-full lg:w-80 shrink-0 self-start bg-gray-200 hc:bg-black hc:border hc:border-white dark:bg-gray-800 rounded-2xl shadow-sm hc:shadow-none px-6 py-6"
                      x-data="activeEvents"
                      role="region"
                      aria-label="Currently active events">
