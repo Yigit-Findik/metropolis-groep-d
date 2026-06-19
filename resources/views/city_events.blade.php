@@ -16,7 +16,7 @@
     <script>window.cityFunctionsData = @json($cityFunctions);</script>
 
     <div class="py-12" x-data="cityEvents">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             @if(session('success'))
                 <div x-data="autoHideToast"
                      x-show="show"

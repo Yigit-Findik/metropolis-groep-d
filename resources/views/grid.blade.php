@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center w-full">
+        <div class="flex flex-wrap justify-between items-center w-full gap-2">
             <h1 class="font-semibold text-xl text-gray-800 hc:text-white dark:text-gray-200 leading-tight">
                 {{ __('Grid') }}
             </h1>
@@ -38,21 +38,32 @@
                             </div>
                         @endforeach
 
-                        <div class="hidden lg:block lg:col-span-6"></div>
-                        <div class="hidden lg:block text-gray-700 hc:text-white dark:text-gray-200 font-medium">Bonus:</div>
-                        @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-green-600 hc:text-green-400 dark:text-green-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded" id="qol-bonus-{{ $slug }}">+0</div>
-                        @endforeach
-
-                        <div class="hidden lg:block text-gray-700 hc:text-white dark:text-gray-200 font-medium">Penalty:</div>
-                        @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-red-600 hc:text-red-400 dark:text-red-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded" id="qol-penalty-{{ $slug }}">-0</div>
-                        @endforeach
-
-                        <div class="hidden lg:block text-gray-700 hc:text-white dark:text-gray-200 font-medium">Events:</div>
-                        @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-gray-500 hc:text-white dark:text-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded" id="qol-event-{{ $slug }}">0</div>
-                        @endforeach
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-gray-300 hc:border-white dark:border-gray-600 space-y-3 text-sm">
+                        <div>
+                            <p class="font-medium text-gray-700 hc:text-white dark:text-gray-200 mb-1">Bonus</p>
+                            <div class="flex flex-wrap gap-x-4 gap-y-1">
+                                @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Env. Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $dimLabel)
+                                    <span class="text-xs text-gray-500 hc:text-white dark:text-gray-400">{{ $dimLabel }}: <span tabindex="0" class="text-green-600 hc:text-green-400 dark:text-green-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded" id="qol-bonus-{{ $slug }}">+0</span></span>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-700 hc:text-white dark:text-gray-200 mb-1">Penalty</p>
+                            <div class="flex flex-wrap gap-x-4 gap-y-1">
+                                @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Env. Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $dimLabel)
+                                    <span class="text-xs text-gray-500 hc:text-white dark:text-gray-400">{{ $dimLabel }}: <span tabindex="0" class="text-red-600 hc:text-red-400 dark:text-red-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded" id="qol-penalty-{{ $slug }}">-0</span></span>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-700 hc:text-white dark:text-gray-200 mb-1">Events</p>
+                            <div class="flex flex-wrap gap-x-4 gap-y-1">
+                                @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Env. Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $dimLabel)
+                                    <span class="text-xs text-gray-500 hc:text-white dark:text-gray-400">{{ $dimLabel }}: <span tabindex="0" class="text-gray-500 hc:text-white dark:text-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded" id="qol-event-{{ $slug }}">0</span></span>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -97,7 +108,7 @@
             </div>{{-- end top bar --}}
 
             {{-- Simulation speed controls --}}
-            <div class="w-full bg-gray-800 hc:bg-black hc:border hc:border-white rounded-2xl shadow-sm hc:shadow-none px-6 py-4 mb-6"
+            <div class="w-full bg-gray-800 hc:bg-black hc:border hc:border-white rounded-2xl shadow-sm hc:shadow-none px-3 sm:px-6 py-4 mb-6"
                  x-data="simulationControls">
 
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -195,9 +206,9 @@
 
                 <section class="flex flex-col gap-4 w-full min-w-0 lg:w-auto" aria-labelledby="city-grid-heading">
 
-                 <div class="shrink-0 bg-blue-50 hc:bg-black hc:border hc:border-white dark:bg-gray-700 rounded-2xl p-6 shadow-sm hc:shadow-none">
+                 <div class="shrink-0 bg-blue-50 hc:bg-black hc:border hc:border-white dark:bg-gray-700 rounded-2xl p-3 sm:p-6 shadow-sm hc:shadow-none">
 
-                    <div class="flex justify-between items-center w-full">
+                    <div class="flex flex-wrap justify-between items-center w-full gap-y-2">
                         <div class="flex items-center gap-4 mb-4 sticky top-0 z-10 bg-blue-50 hc:bg-black dark:bg-gray-700 py-2">
                             <h2 id="city-grid-heading" class="text-lg font-bold text-gray-800 hc:text-white dark:text-gray-100">City Grid</h2>
 
@@ -212,16 +223,16 @@
                         <div class="mb-4 flex items-center gap-2">
                             @if($userRole === 'Policy maker' || $userRole === 'Administrator')
                                 <button id="approve-all-button"
-                                        class="flex items-center gap-1 bg-green-600 hc:bg-green-400 hc:text-black hover:bg-green-700 hc:hover:bg-green-300 text-white px-4 py-2 rounded-lg font-semibold shadow-sm hc:shadow-none"
-                                        title="Approve the entire grid">
-                                    <span class="material-symbols-outlined" style="font-size:1.1rem">lock</span>
-                                    <span class="hidden sm:inline">Approve All</span>
+                                        aria-label="Approve the entire grid"
+                                        class="flex items-center gap-1 bg-green-600 hc:bg-green-400 hc:text-black hover:bg-green-700 hc:hover:bg-green-300 text-white px-4 py-2 rounded-lg font-semibold shadow-sm hc:shadow-none">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem" aria-hidden="true">lock</span>
+                                    <span>Approve All</span>
                                 </button>
                                 <button id="revoke-all-button"
-                                        class="flex items-center gap-1 bg-red-600 hc:bg-red-400 hc:text-black hover:bg-red-700 hc:hover:bg-red-300 text-white px-4 py-2 rounded-lg font-semibold shadow-sm hc:shadow-none"
-                                        title="Disapprove the entire grid">
-                                    <span class="material-symbols-outlined" style="font-size:1.1rem">lock_open</span>
-                                    <span class="hidden sm:inline">Disapprove All</span>
+                                        aria-label="Disapprove the entire grid"
+                                        class="flex items-center gap-1 bg-red-600 hc:bg-red-400 hc:text-black hover:bg-red-700 hc:hover:bg-red-300 text-white px-4 py-2 rounded-lg font-semibold shadow-sm hc:shadow-none">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem" aria-hidden="true">lock_open</span>
+                                    <span>Disapprove All</span>
                                 </button>
                             @endif
                             @if($userRole !== 'Policy maker')
@@ -231,7 +242,7 @@
                     </div>
 
                     <div class="lg:overflow-auto lg:p-1">
-                        <div class="grid grid-cols-4 gap-4 w-full"
+                        <div class="grid grid-cols-4 gap-1 sm:gap-4 w-full"
                             :style="isDesktop ? `grid-template-columns: repeat(4, ${size}px)` : null"
                             data-city-grid tabindex="0">
 
@@ -372,7 +383,7 @@
 
                 {{-- FUNCTION LIBRARY --}}
                 @if($userRole !== 'Policy maker')
-                <section class="flex-1 min-w-0 bg-blue-50 hc:bg-black hc:border hc:border-white dark:bg-gray-700 rounded-2xl p-6 shadow-sm hc:shadow-none"
+                <section class="flex-1 min-w-0 bg-blue-50 hc:bg-black hc:border hc:border-white dark:bg-gray-700 rounded-2xl p-3 sm:p-6 shadow-sm hc:shadow-none"
                         x-data="functionLibrary(@js($cityFunctions->map(fn ($cityFunction) => [
                             'name' => $cityFunction->name,
                             'category' => $cityFunction->category ?? '',
@@ -394,7 +405,7 @@
                             <div>
                                 <label for="category-filter" class="sr-only">Filter by category</label>
                                 <select id="category-filter" x-model="active"
-                                        class="bg-white hc:bg-black hc:text-white hc:border-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 hc:focus:ring-yellow-400">
+                                        class="w-full bg-white hc:bg-black hc:text-white hc:border-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 hc:focus:ring-yellow-400">
                                     <option value="All">All categories</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category }}">{{ $category }}</option>
@@ -457,7 +468,7 @@
             <div class="flex flex-col lg:flex-row gap-6 mt-6">
                 {{-- REV.2.2 - Improvement Suggestions --}}
                 <section class="flex-1 min-w-0" x-data="gridCellSuggestions(@js($userRole))" aria-labelledby="suggestions-heading">
-                    <div class="bg-white hc:bg-black hc:border hc:border-white dark:bg-gray-800 rounded-2xl shadow-sm hc:shadow-none px-6 py-6">
+                    <div class="bg-white hc:bg-black hc:border hc:border-white dark:bg-gray-800 rounded-2xl shadow-sm hc:shadow-none px-4 sm:px-6 py-6">
 
                         <h2 id="suggestions-heading" class="text-lg font-bold text-gray-800 hc:text-white dark:text-gray-100 mb-5">Improvement Suggestions</h2>
 
@@ -569,7 +580,7 @@
 
                 {{-- REV.2.1 - Simulation Comments --}}
                 <section class="flex-1 min-w-0" x-data="simulationComments" aria-labelledby="comments-heading">
-                    <div class="bg-white hc:bg-black hc:border hc:border-white dark:bg-gray-800 rounded-2xl shadow-sm hc:shadow-none px-6 py-6">
+                    <div class="bg-white hc:bg-black hc:border hc:border-white dark:bg-gray-800 rounded-2xl shadow-sm hc:shadow-none px-4 sm:px-6 py-6">
 
                         <h2 id="comments-heading" class="text-lg font-bold text-gray-800 hc:text-white dark:text-gray-100 mb-5">Comments</h2>
 

@@ -18,7 +18,69 @@
             @if($cityFunctions->isEmpty())
                 <p class="text-gray-700 hc:text-white dark:text-white">No city functions found.</p>
             @else
-                <div class="bg-white hc:bg-black hc:border hc:border-white dark:bg-gray-800 rounded-2xl shadow-sm hc:shadow-none overflow-x-auto w-full">
+                {{-- Mobile: card layout (below md) --}}
+                <div class="md:hidden w-full space-y-3">
+                    @foreach($cityFunctions as $fn)
+                        <div class="bg-white hc:bg-black hc:border hc:border-white dark:bg-gray-800 rounded-2xl shadow-sm hc:shadow-none p-4"
+                             role="row"
+                             aria-label="Name: {{ $fn->name }}. Category: {{ $fn->category ?? '—' }}. Description: {{ $fn->description ?? 'None' }}">
+                            <div class="flex items-start gap-3 mb-3">
+                                @if($fn->image_path)
+                                    <img src="{{ asset($fn->image_path) }}"
+                                         alt="{{ $fn->image_alt ?? $fn->name }}"
+                                         class="w-12 h-12 object-contain rounded flex-shrink-0">
+                                @else
+                                    <div class="w-12 h-12 bg-gray-200 hc:bg-neutral-800 hc:border hc:border-white dark:bg-gray-700 rounded flex items-center justify-center text-gray-500 hc:text-white dark:text-white text-xs flex-shrink-0" aria-hidden="true">—</div>
+                                @endif
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-semibold text-gray-900 hc:text-white dark:text-white text-sm break-words">{{ $fn->name }}</p>
+                                    <span class="inline-block px-2 py-0.5 mt-1 text-xs font-medium rounded-full bg-blue-100 hc:bg-black hc:border hc:border-white text-blue-800 hc:text-white dark:bg-blue-900/40 dark:text-white">{{ $fn->category ?? '—' }}</span>
+                                </div>
+                            </div>
+                            @if($fn->description)
+                                <p class="text-sm text-gray-700 hc:text-white dark:text-white mb-3 break-words">{{ $fn->description }}</p>
+                            @else
+                                <p class="text-sm text-gray-400 hc:text-white dark:text-white mb-3"><span aria-hidden="true">—</span><span class="sr-only">No description</span></p>
+                            @endif
+                            <div class="flex gap-2">
+                                <button type="button"
+                                    aria-label="Edit {{ $fn->name }}"
+                                    @click="openEdit({
+                                        id: {{ $fn->id }},
+                                        name: @js($fn->name),
+                                        category: @js($fn->category),
+                                        description: @js($fn->description ?? ''),
+                                        safety: {{ $fn->Safety ?? 0 }},
+                                        recreation: {{ $fn->Recreation ?? 0 }},
+                                        environment_quality: {{ $fn->{'Environment Quality'} ?? 0 }},
+                                        facilities: {{ $fn->Facilities ?? 0 }},
+                                        mobility: {{ $fn->Mobility ?? 0 }},
+                                        image_path: @js($fn->image_path ?? ''),
+                                        image_alt: @js($fn->image_alt ?? ''),
+                                        functionConditions: @js($fn->functionConditions)
+                                    }, @js($cityFunctions->map(fn($f) => ['id' => $f->id, 'name' => $f->name, 'functionConditions' => $f->functionConditions])))"
+                                    class="flex-1 px-3 py-2 bg-yellow-600 hc:bg-yellow-300 hc:text-black hover:bg-yellow-500 hc:hover:bg-yellow-200 text-white text-xs font-semibold rounded-lg transition">
+                                    Edit
+                                </button>
+                                <form action="/city_functions/{{ $fn->id }}" method="POST"
+                                      x-data="deleteForm(@js($fn->name))"
+                                      @submit="confirmAndSubmit($event)"
+                                      class="flex-1">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                            aria-label="Delete {{ $fn->name }}"
+                                            class="w-full px-3 py-2 bg-red-700 hc:bg-red-400 hc:text-black hover:bg-red-600 hc:hover:bg-red-300 text-white text-xs font-semibold rounded-lg transition">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                {{-- Desktop: table layout (md and above) --}}
+                <div class="hidden md:block bg-white hc:bg-black hc:border hc:border-white dark:bg-gray-800 rounded-2xl shadow-sm hc:shadow-none overflow-x-auto w-full">
                     <table class="min-w-full divide-y divide-gray-200 hc:divide-white dark:divide-gray-700" role="grid" aria-label="City functions list">
                         <thead class="bg-gray-50 hc:bg-neutral-900 dark:bg-gray-700">
                             <tr>

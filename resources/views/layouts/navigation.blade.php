@@ -101,7 +101,24 @@
             </div>
 
             <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
+            <div class="-me-2 flex items-center gap-1 sm:hidden">
+                <!-- High contrast toggle (mobile top bar, icon only) -->
+                <div x-data="contrastToggle">
+                    <button
+                        @click="toggle()"
+                        :aria-pressed="active.toString()"
+                        aria-label="Toggle high contrast mode"
+                        class="inline-flex items-center justify-center p-2 rounded-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
+                        :class="active
+                            ? 'bg-yellow-300 text-black border-2 border-black'
+                            : 'text-gray-400 hc:text-white dark:text-gray-500 hover:bg-gray-100 hc:hover:bg-neutral-900 dark:hover:bg-gray-900'"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" />
+                            <path stroke-linecap="round" d="M12 3v18M12 3a9 9 0 010 18" />
+                        </svg>
+                    </button>
+                </div>
                 <button
                     @click="open = ! open"
                     :aria-label="open ? 'Close navigation' : 'Navigation button'"

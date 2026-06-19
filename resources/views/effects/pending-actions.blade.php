@@ -60,7 +60,7 @@
             <div class="overflow-hidden rounded-2xl bg-white hc:bg-black hc:border hc:border-white shadow-sm hc:shadow-none ring-1 ring-gray-200 hc:ring-0 dark:bg-gray-800 dark:ring-gray-700">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 hc:divide-white dark:divide-gray-700">
-                        <thead class="bg-gray-50 hc:bg-neutral-900 dark:bg-gray-700/60">
+                        <thead class="hidden md:table-header-group bg-gray-50 hc:bg-neutral-900 dark:bg-gray-700/60">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 hc:text-white dark:text-gray-300">Function</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 hc:text-white dark:text-gray-300">Trigger type</th>
@@ -79,7 +79,53 @@
                                     $createdText = $pendingAction->created_at?->format('d-m-Y H:i') ?: '';
                                     $statusText = $pendingAction->status_label;
                                 @endphp
-                                <tr tabindex="0" role="button" class="transition hover:bg-gray-50 hc:hover:bg-neutral-900 dark:hover:bg-gray-700/40"
+                                {{-- Mobile card --}}
+                                <tr class="md:hidden border-b border-gray-200 hc:border-white dark:border-gray-700">
+                                    <td colspan="7" class="px-4 py-4">
+                                        <div class="space-y-3 text-sm">
+                                            <div class="font-semibold text-gray-900 hc:text-white dark:text-gray-100">{{ $pendingAction->resolved_function_name }}</div>
+                                            @if($pendingAction->cityFunction?->category)
+                                                <div class="text-xs text-gray-500 hc:text-white dark:text-gray-400">{{ $pendingAction->cityFunction?->category }}</div>
+                                            @endif
+                                            @if($pendingAction->function_name && $pendingAction->function_name !== $pendingAction->resolved_function_name)
+                                                <div class="text-xs text-gray-500 hc:text-white dark:text-gray-400">Snapshot: {{ $pendingAction->function_name }}</div>
+                                            @endif
+                                            <div class="flex flex-wrap gap-2 items-center">
+                                                <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold bg-blue-50 hc:bg-black hc:border hc:border-white text-blue-700 hc:text-white dark:bg-blue-900/30 dark:text-blue-200">{{ $pendingAction->trigger_label }}</span>
+                                                <span class="text-xs text-gray-500 hc:text-white dark:text-gray-400">({{ $pendingAction->trigger_type }})</span>
+                                            </div>
+                                            <div class="text-xs text-gray-500 hc:text-white dark:text-gray-400">
+                                                <time datetime="{{ $pendingAction->created_at?->toIso8601String() }}">{{ $pendingAction->created_at?->format('d-m-Y H:i') }}</time>
+                                                · {{ $pendingAction->created_at?->diffForHumans() }}
+                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                @if($pendingAction->status === \App\Models\PendingAction::STATUS_COMPLETED)
+                                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold bg-green-100 hc:bg-black hc:border hc:border-green-400 text-green-700 hc:text-green-400 dark:bg-green-900/30 dark:text-green-200">{{ $pendingAction->status_label }}</span>
+                                                @else
+                                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold bg-amber-100 hc:bg-black hc:border hc:border-yellow-300 text-amber-700 hc:text-yellow-300 dark:bg-amber-900/30 dark:text-amber-200">{{ $pendingAction->status_label }}</span>
+                                                @endif
+                                                <span class="text-xs text-gray-500 hc:text-white dark:text-gray-400">by {{ $pendingAction->createdBy?->name ?? __('Unknown') }}</span>
+                                            </div>
+                                            @if(count($pendingAction->missing_effect_columns ?? []) > 0)
+                                                <div class="flex flex-wrap gap-1">
+                                                    @foreach($pendingAction->missing_effect_columns as $column)
+                                                        <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold bg-red-50 hc:bg-black hc:border hc:border-red-400 text-red-700 hc:text-red-400 dark:bg-red-900/30 dark:text-red-200">{{ $column }}</span>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-gray-500 hc:text-white dark:text-gray-400">All values filled</span>
+                                            @endif
+                                            @if($pendingAction->city_function_id)
+                                                <a href="{{ route('effects.index', ['function' => $pendingAction->city_function_id]) }}#function-{{ $pendingAction->city_function_id }}"
+                                                   class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold transition bg-gray-900 hc:bg-yellow-300 hc:text-black text-white hover:bg-gray-700 hc:hover:bg-yellow-200 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white">
+                                                    Open effects screen
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                                {{-- Desktop row --}}
+                                <tr tabindex="0" role="button" class="hidden md:table-row transition hover:bg-gray-50 hc:hover:bg-neutral-900 dark:hover:bg-gray-700/40"
                                     aria-label="Function: {{ $pendingAction->resolved_function_name }}. {{ $categoryText }} Trigger: {{ $pendingAction->trigger_label }} ({{ $pendingAction->trigger_type }}). Created: {{ $createdText }}. Status: {{ $statusText }}. Still required: {{ $missing }}. User: {{ $pendingAction->createdBy?->name ?? 'Unknown' }}"
                                     onclick="(function(el, evt){ const target = evt.target; if(target.closest('a, button, input, select, textarea')) return; const a=el.querySelector('a'); if(a) a.click(); })(this, event)"
                                     onkeydown="(function(evt){ if(evt.key==='Enter' || evt.key===' '){ evt.preventDefault(); const a=this.querySelector('a'); if(a) a.click(); } }).call(this, event)">
