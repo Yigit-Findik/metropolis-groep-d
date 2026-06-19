@@ -38,9 +38,7 @@ use App\Http\Controllers\SimulationCommentController;
 
 // Public landing page
 Route::get('/', function () {
-    return view('welcome', [
-        'gridCells' => CityGridCell::ensureGridExists(),
-    ]);
+    return redirect()->route('login');
 });
 
 Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects,Policy maker'])->get('/dashboard', function () {
