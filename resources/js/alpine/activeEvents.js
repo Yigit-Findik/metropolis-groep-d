@@ -107,6 +107,7 @@ export const activeEvents = () => ({
                     this._pendingDeactivations.delete(updated.id);
                     this.fetchEvents();
                     window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: false } }));
+                    this._announce(`${updated.name} event has ended`);
                 });
             }
 
@@ -118,6 +119,7 @@ export const activeEvents = () => ({
                     this._pendingReactivations.delete(updated.id);
                     this.fetchEvents();
                     window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: true } }));
+                    this._announce(`${updated.name} event is now active`);
                 });
             }
 
@@ -129,6 +131,7 @@ export const activeEvents = () => ({
                     this._pendingDeactivations.delete(updated.id);
                     this.fetchEvents();
                     window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: false } }));
+                    this._announce(`${updated.name} event has ended`);
                 });
             }
 
@@ -138,12 +141,14 @@ export const activeEvents = () => ({
                     this._pendingSlotChanges.add(updated.id);
                     simPost('/events/' + updated.id + '/sim-reactivate').then(() => {
                         window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: true } }));
+                        this._announce(`${updated.name} event is now active`);
                         this.fetchEvents().then(() => this._pendingSlotChanges.delete(updated.id));
                     });
                 } else if (!inSlot && updated.is_active && !this._pendingSlotChanges.has(updated.id)) {
                     this._pendingSlotChanges.add(updated.id);
                     simPost('/events/' + updated.id + '/sim-deactivate').then(() => {
                         window.dispatchEvent(new CustomEvent('simulation:event-changed', { detail: { id: updated.id, isActive: false } }));
+                        this._announce(`${updated.name} event has ended`);
                         this.fetchEvents().then(() => this._pendingSlotChanges.delete(updated.id));
                     });
                 }
@@ -450,6 +455,13 @@ export const activeEvents = () => ({
         }
 
         return null;
+    },
+
+    _announce(msg) {
+        const el = document.getElementById('grid-a11y-announcer');
+        if (!el) return;
+        el.textContent = '';
+        setTimeout(() => { el.textContent = msg; }, 50);
     },
 
     formatTime(ms) {

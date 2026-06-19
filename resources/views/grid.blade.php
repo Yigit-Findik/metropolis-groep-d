@@ -711,6 +711,7 @@
     </style>
 
     <div id="grid-a11y-announcer" aria-live="polite" aria-atomic="true" role="status" class="sr-only"></div>
+    <div id="grid-a11y-error" role="alert" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
 
     <div id="qol-toast"
          role="status"
