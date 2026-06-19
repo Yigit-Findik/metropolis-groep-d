@@ -220,7 +220,7 @@
                                     aria-label="Adjust grid size">
                             </div>
                         </div>
-                        <div class="mb-4 flex items-center gap-2">
+                        <div class="mb-4 flex flex-wrap items-center gap-2">
                             @if($userRole === 'Policy maker' || $userRole === 'Administrator')
                                 <button id="approve-all-button"
                                         aria-label="Approve the entire grid"
