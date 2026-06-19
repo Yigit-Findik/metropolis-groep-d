@@ -164,6 +164,15 @@ After running `php artisan db:seed`, the following accounts are available:
 | Expert in Effects | expert@metropolis.test | expert@metropolis.test |
 | Policy Maker | policymaker@metropolis.test | policymaker@metropolis.test |
 
+## Team
+
+- Yigit Findik
+- Jurre van Cuijk
+- Salman Mahamed
+- Volodymyr Dolhov
+- Ichlaas Nabibaks
+- Lucas Hammers
+
 ## Key Features
 
 **City Grid & Planning**
