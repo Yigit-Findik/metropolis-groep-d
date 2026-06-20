@@ -148,212 +148,6 @@
                             </table>
                         </section>
 
-                        {{-- City Functions page --}}
-                        <section aria-labelledby="kb-cityfunctions">
-                            <div id="kb-cityfunctions" tabindex="0" class="text-sm font-semibold uppercase tracking-wide text-gray-500 hc:text-white dark:text-gray-400 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
-                                City Functions page
-                            </div>
-                            <p tabindex="0" class="text-sm text-gray-700 hc:text-white dark:text-gray-300 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
-                                Use this page to create, edit, and delete city functions. Functions can then be placed on the Grid.
-                            </p>
-                            <table class="w-full text-sm border-collapse" role="table">
-                                <thead>
-                                    <tr>
-                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 pr-6 w-48 border-b border-gray-200 hc:border-white dark:border-gray-600">Key</th>
-                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 border-b border-gray-200 hc:border-white dark:border-gray-600">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100 hc:divide-white dark:divide-gray-700">
-                                    <tr tabindex="0" aria-label="Tab to the Create Function button, then Enter or Space — Open the Create Function dialog" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "+ Create Function", then</span>
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Open the Create Function dialog</td>
-                                    </tr>
-                                    <tr tabindex="0" aria-label="Inside the Create dialog, Tab — Move through the fields: Name, Category, Description, then the Create button" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">(inside dialog)</span>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Move through the fields: Name → Category → Description → Create button</td>
-                                    </tr>
-                                    <tr tabindex="0" aria-label="Tab to a function row — Read the function name, category, and description with a screen reader" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to a function row</span>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Read the function's name, category, and description</td>
-                                    </tr>
-                                    <tr tabindex="0" aria-label="Tab to the Edit button in a row, then Enter or Space — Open the Edit Function dialog for that function" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Edit" button, then</span>
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Open the Edit Function dialog — change name, category, description, QoL values, and adjacency rules</td>
-                                    </tr>
-                                    <tr tabindex="0" aria-label="Tab to the Delete button in a row, then Enter or Space — Open the Delete confirmation dialog for that function" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Delete" button, then</span>
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Open the Delete confirmation dialog — Tab to "Delete" then Enter to confirm, or Escape to cancel</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </section>
-
-                        {{-- City Events page --}}
-                        <section aria-labelledby="kb-cityevents">
-                            <div id="kb-cityevents" tabindex="0" class="text-sm font-semibold uppercase tracking-wide text-gray-500 hc:text-white dark:text-gray-400 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
-                                Events page
-                            </div>
-                            <p tabindex="0" class="text-sm text-gray-700 hc:text-white dark:text-gray-300 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
-                                The Events page has a create form on the left and your existing events on the right. Use it to add one-off or recurring city events.
-                            </p>
-                            <table class="w-full text-sm border-collapse" role="table">
-                                <thead>
-                                    <tr>
-                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 pr-6 w-48 border-b border-gray-200 hc:border-white dark:border-gray-600">Key</th>
-                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 border-b border-gray-200 hc:border-white dark:border-gray-600">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100 hc:divide-white dark:divide-gray-700">
-                                    <tr tabindex="0" aria-label="Tab through the create form — Move between the Name, Type, Start Date, End Date, and Function fields" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">through create form</span>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Move between the Name, Type, Date, and Function fields</td>
-                                    </tr>
-                                    <tr tabindex="0" aria-label="Tab to the Create Event button, then Enter — Submit the new event" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Create Event", then</span>
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Submit and create the new event</td>
-                                    </tr>
-                                    <tr tabindex="0" aria-label="Tab to an Edit button in the event list, then Enter — Open the Edit Event dialog" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Edit" in event list, then</span>
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Open the Edit Event dialog — Tab through fields, Enter to save, Escape to cancel</td>
-                                    </tr>
-                                    <tr tabindex="0" aria-label="Tab to a Delete button in the event list, then Enter — Open the Delete confirmation dialog for that event" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Delete" in event list, then</span>
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Open the Delete confirmation — Tab to "Delete" then Enter to confirm, or Escape to cancel</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </section>
-
-                        {{-- Effects page --}}
-                        <section aria-labelledby="kb-effects">
-                            <div id="kb-effects" tabindex="0" class="text-sm font-semibold uppercase tracking-wide text-gray-500 hc:text-white dark:text-gray-400 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
-                                Effects page
-                            </div>
-                            <p tabindex="0" class="text-sm text-gray-700 hc:text-white dark:text-gray-300 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
-                                Use the Effects page to set quality-of-life values (−10 to 10) for each city function per category. Values affect the QoL score shown on the Grid page.
-                            </p>
-                            <table class="w-full text-sm border-collapse" role="table">
-                                <thead>
-                                    <tr>
-                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 pr-6 w-48 border-b border-gray-200 hc:border-white dark:border-gray-600">Key</th>
-                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 border-b border-gray-200 hc:border-white dark:border-gray-600">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100 hc:divide-white dark:divide-gray-700">
-                                    <tr tabindex="0" aria-label="Tab — Move between function names and effect value fields in the table" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Move between function names and effect value fields in the table</td>
-                                    </tr>
-                                    <tr tabindex="0" aria-label="Type a number when an effect field is focused — Enter a value between negative 10 and 10" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <span class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">0–9</span>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">/ −</span>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Type a value between −10 and 10 when an effect field is focused</td>
-                                    </tr>
-                                    <tr tabindex="0" aria-label="Tab to the next field or press Enter — Save the entered value and move on" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">or</span>
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Save the entered value and move to the next field</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </section>
-
-                        {{-- Profile & Account --}}
-                        <section aria-labelledby="kb-profile">
-                            <div id="kb-profile" tabindex="0" class="text-sm font-semibold uppercase tracking-wide text-gray-500 hc:text-white dark:text-gray-400 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
-                                Profile &amp; Account
-                            </div>
-                            <table class="w-full text-sm border-collapse" role="table">
-                                <thead>
-                                    <tr>
-                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 pr-6 w-48 border-b border-gray-200 hc:border-white dark:border-gray-600">Key</th>
-                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 border-b border-gray-200 hc:border-white dark:border-gray-600">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100 hc:divide-white dark:divide-gray-700">
-                                    <tr tabindex="0" aria-label="Tab to your username at the top right, then Enter — Open the account dropdown menu" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to username, then</span>
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Open the account dropdown menu</td>
-                                    </tr>
-                                    <tr tabindex="0" aria-label="Tab to Profile in the dropdown, then Enter — Go to the Profile settings page" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Profile", then</span>
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Go to the Profile settings page</td>
-                                    </tr>
-                                    <tr tabindex="0" aria-label="Tab through profile fields — Move between Name, Email, and Password fields" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">through fields</span>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Move between Name, Email, and Password fields</td>
-                                    </tr>
-                                    <tr tabindex="0" aria-label="Tab to Save, then Enter — Save your profile changes" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Save", then</span>
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Save your profile changes</td>
-                                    </tr>
-                                    <tr tabindex="0" aria-label="Tab to Log Out in the dropdown, then Enter — Sign out of the application" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
-                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
-                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Log Out", then</span>
-                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
-                                        </td>
-                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Sign out of the application</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </section>
-
                         {{-- Function Library --}}
                         <section aria-labelledby="kb-library">
                             <div id="kb-library" tabindex="0" class="text-sm font-semibold uppercase tracking-wide text-gray-500 hc:text-white dark:text-gray-400 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
@@ -485,6 +279,212 @@
                                             <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
                                         </td>
                                         <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Skip the simulation forward by a set amount of time</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </section>
+
+                        {{-- City Events page --}}
+                        <section aria-labelledby="kb-cityevents">
+                            <div id="kb-cityevents" tabindex="0" class="text-sm font-semibold uppercase tracking-wide text-gray-500 hc:text-white dark:text-gray-400 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
+                                Events page
+                            </div>
+                            <p tabindex="0" class="text-sm text-gray-700 hc:text-white dark:text-gray-300 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
+                                The Events page has a create form on the left and your existing events on the right. Use it to add one-off or recurring city events.
+                            </p>
+                            <table class="w-full text-sm border-collapse" role="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 pr-6 w-48 border-b border-gray-200 hc:border-white dark:border-gray-600">Key</th>
+                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 border-b border-gray-200 hc:border-white dark:border-gray-600">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 hc:divide-white dark:divide-gray-700">
+                                    <tr tabindex="0" aria-label="Tab through the create form — Move between the Name, Type, Start Date, End Date, and Function fields" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">through create form</span>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Move between the Name, Type, Date, and Function fields</td>
+                                    </tr>
+                                    <tr tabindex="0" aria-label="Tab to the Create Event button, then Enter — Submit the new event" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Create Event", then</span>
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Submit and create the new event</td>
+                                    </tr>
+                                    <tr tabindex="0" aria-label="Tab to an Edit button in the event list, then Enter — Open the Edit Event dialog" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Edit" in event list, then</span>
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Open the Edit Event dialog — Tab through fields, Enter to save, Escape to cancel</td>
+                                    </tr>
+                                    <tr tabindex="0" aria-label="Tab to a Delete button in the event list, then Enter — Open the Delete confirmation dialog for that event" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Delete" in event list, then</span>
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Open the Delete confirmation — Tab to "Delete" then Enter to confirm, or Escape to cancel</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </section>
+
+                        {{-- City Functions page --}}
+                        <section aria-labelledby="kb-cityfunctions">
+                            <div id="kb-cityfunctions" tabindex="0" class="text-sm font-semibold uppercase tracking-wide text-gray-500 hc:text-white dark:text-gray-400 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
+                                City Functions page
+                            </div>
+                            <p tabindex="0" class="text-sm text-gray-700 hc:text-white dark:text-gray-300 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
+                                Use this page to create, edit, and delete city functions. Functions can then be placed on the Grid.
+                            </p>
+                            <table class="w-full text-sm border-collapse" role="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 pr-6 w-48 border-b border-gray-200 hc:border-white dark:border-gray-600">Key</th>
+                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 border-b border-gray-200 hc:border-white dark:border-gray-600">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 hc:divide-white dark:divide-gray-700">
+                                    <tr tabindex="0" aria-label="Tab to the Create Function button, then Enter or Space — Open the Create Function dialog" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "+ Create Function", then</span>
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Open the Create Function dialog</td>
+                                    </tr>
+                                    <tr tabindex="0" aria-label="Inside the Create dialog, Tab — Move through the fields: Name, Category, Description, then the Create button" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">(inside dialog)</span>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Move through the fields: Name → Category → Description → Create button</td>
+                                    </tr>
+                                    <tr tabindex="0" aria-label="Tab to a function row — Read the function name, category, and description with a screen reader" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to a function row</span>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Read the function's name, category, and description</td>
+                                    </tr>
+                                    <tr tabindex="0" aria-label="Tab to the Edit button in a row, then Enter or Space — Open the Edit Function dialog for that function" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Edit" button, then</span>
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Open the Edit Function dialog — change name, category, description, QoL values, and adjacency rules</td>
+                                    </tr>
+                                    <tr tabindex="0" aria-label="Tab to the Delete button in a row, then Enter or Space — Open the Delete confirmation dialog for that function" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Delete" button, then</span>
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Open the Delete confirmation dialog — Tab to "Delete" then Enter to confirm, or Escape to cancel</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </section>
+
+                        {{-- Effects page --}}
+                        <section aria-labelledby="kb-effects">
+                            <div id="kb-effects" tabindex="0" class="text-sm font-semibold uppercase tracking-wide text-gray-500 hc:text-white dark:text-gray-400 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
+                                Effects page
+                            </div>
+                            <p tabindex="0" class="text-sm text-gray-700 hc:text-white dark:text-gray-300 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
+                                Use the Effects page to set quality-of-life values (−10 to 10) for each city function per category. Values affect the QoL score shown on the Grid page.
+                            </p>
+                            <table class="w-full text-sm border-collapse" role="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 pr-6 w-48 border-b border-gray-200 hc:border-white dark:border-gray-600">Key</th>
+                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 border-b border-gray-200 hc:border-white dark:border-gray-600">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 hc:divide-white dark:divide-gray-700">
+                                    <tr tabindex="0" aria-label="Tab — Move between function names and effect value fields in the table" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Move between function names and effect value fields in the table</td>
+                                    </tr>
+                                    <tr tabindex="0" aria-label="Type a number when an effect field is focused — Enter a value between negative 10 and 10" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <span class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">0–9</span>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">/ −</span>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Type a value between −10 and 10 when an effect field is focused</td>
+                                    </tr>
+                                    <tr tabindex="0" aria-label="Tab to the next field or press Enter — Save the entered value and move on" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">or</span>
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Save the entered value and move to the next field</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </section>
+
+                        {{-- Profile & Account --}}
+                        <section aria-labelledby="kb-profile">
+                            <div id="kb-profile" tabindex="0" class="text-sm font-semibold uppercase tracking-wide text-gray-500 hc:text-white dark:text-gray-400 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded">
+                                Profile &amp; Account
+                            </div>
+                            <table class="w-full text-sm border-collapse" role="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 pr-6 w-48 border-b border-gray-200 hc:border-white dark:border-gray-600">Key</th>
+                                        <th scope="col" class="text-left font-semibold text-gray-700 hc:text-white dark:text-gray-200 py-2 border-b border-gray-200 hc:border-white dark:border-gray-600">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 hc:divide-white dark:divide-gray-700">
+                                    <tr tabindex="0" aria-label="Tab to your username at the top right, then Enter — Open the account dropdown menu" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to username, then</span>
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Open the account dropdown menu</td>
+                                    </tr>
+                                    <tr tabindex="0" aria-label="Tab to Profile in the dropdown, then Enter — Go to the Profile settings page" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Profile", then</span>
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Go to the Profile settings page</td>
+                                    </tr>
+                                    <tr tabindex="0" aria-label="Tab through profile fields — Move between Name, Email, and Password fields" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">through fields</span>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Move between Name, Email, and Password fields</td>
+                                    </tr>
+                                    <tr tabindex="0" aria-label="Tab to Save, then Enter — Save your profile changes" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Save", then</span>
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Save your profile changes</td>
+                                    </tr>
+                                    <tr tabindex="0" aria-label="Tab to Log Out in the dropdown, then Enter — Sign out of the application" class="focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 hc:focus:ring-yellow-400">
+                                        <td class="py-2.5 pr-6 align-top" aria-hidden="true">
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Tab</kbd>
+                                            <span class="text-gray-400 hc:text-white dark:text-gray-400 mx-1">to "Log Out", then</span>
+                                            <kbd class="inline-block px-2 py-0.5 rounded border border-gray-300 hc:border-white bg-gray-100 hc:bg-black dark:bg-gray-700 dark:border-gray-500 text-gray-800 hc:text-white dark:text-gray-100 font-mono text-xs">Enter</kbd>
+                                        </td>
+                                        <td class="py-2.5 text-gray-700 hc:text-white dark:text-gray-300" aria-hidden="true">Sign out of the application</td>
                                     </tr>
                                 </tbody>
                             </table>
