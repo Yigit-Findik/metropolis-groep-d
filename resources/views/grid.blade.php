@@ -233,14 +233,22 @@
                     <div class="lg:overflow-auto lg:p-1">
                         <div class="grid grid-cols-4 gap-4 w-full"
                             :style="isDesktop ? `grid-template-columns: repeat(4, ${size}px)` : null"
-                            data-city-grid tabindex="0">
+                            data-city-grid
+                            tabindex="0"
+                            role="grid"
+                            aria-labelledby="city-grid-heading">
 
                             @foreach ($gridCells->groupBy('row_index') as $rowNumber => $rowCells)
+                                <div role="row" class="contents">
                                 @foreach ($rowCells as $cell)
 
                                     @php $fn = $cityFunctions->firstWhere('id', $cell->function_id); @endphp
 
-                                    <div class="relative">
+                                    <div class="relative"
+                                         role="gridcell"
+                                         aria-rowindex="{{ $cell->row_index }}"
+                                         aria-colindex="{{ $cell->column_index }}"
+                                         aria-label="Row {{ $cell->row_index }}, Column {{ $cell->column_index }}: {{ filled($cell->function_id) ? ($fn?->name ?? 'a function') . ($fn?->category ? ', category ' . $fn->category : '') : 'empty' }}{{ ($cell->is_approved ?? false) ? ', approved' : '' }}">
                                     <button
                                         type="button"
                                         tabindex="0"
@@ -292,6 +300,7 @@
                                     </div>
 
                                 @endforeach
+                                </div>{{-- role="row" --}}
                             @endforeach
                         </div>
                     </div>
