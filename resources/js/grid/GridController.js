@@ -589,6 +589,14 @@ export class GridController {
         const column = cell.dataset.column ? `column ${cell.dataset.column}` : 'column unknown';
         cell.setAttribute('aria-label', `${row}, ${column}, occupied by ${functionName}${category ? `, category ${category}` : ''}`);
 
+        // Keep the parent gridcell label in sync so grid-mode navigation reads both coordinates + content
+        const gridcell = cell.parentElement;
+        if (gridcell?.getAttribute('role') === 'gridcell') {
+            const r = cell.dataset.row ?? 'unknown';
+            const c = cell.dataset.column ?? 'unknown';
+            gridcell.setAttribute('aria-label', `Row ${r}, Column ${c}: ${functionName}${category ? `, category ${category}` : ''}`);
+        }
+
         // Mark as occupied and store all effect values so the hover popup can read them
         cell.classList.remove('is-empty');
         cell.classList.add('is-occupied');
@@ -624,11 +632,17 @@ export class GridController {
         cell.dataset.environmentQuality = '';
         cell.dataset.facilities = '';
         cell.dataset.mobility = '';
-        // Keep the cell reachable by Tab even when empty.
-        const row = cell.dataset.row ? `Row ${cell.dataset.row}` : 'Row unknown';
-        const column = cell.dataset.column ? `column ${cell.dataset.column}` : 'column unknown';
+        const row = cell.dataset.row ?? 'unknown';
+        const column = cell.dataset.column ?? 'unknown';
+
+        // Keep the parent gridcell label in sync
+        const gridcell = cell.parentElement;
+        if (gridcell?.getAttribute('role') === 'gridcell') {
+            gridcell.setAttribute('aria-label', `Row ${row}, Column ${column}: empty`);
+        }
+
         cell.setAttribute('tabindex', '0');
-        cell.setAttribute('aria-label', `${row}, ${column}, available`);
+        cell.setAttribute('aria-label', `Row ${row}, column ${column}, available`);
     }
 
     #removeCell(cellElement) {
