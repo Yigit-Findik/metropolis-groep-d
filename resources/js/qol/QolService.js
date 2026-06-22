@@ -83,19 +83,30 @@ export class QolService {
                     }
 
                     const bonus = data.bonus_categories?.[cat] ?? 0;
-                    const bonusEl = document.getElementById(`qol-bonus-${cat.replace(/\s+/g, "-")}`);
+                    const catId = cat.replace(/\s+/g, "-");
+                    const bonusEl = document.getElementById(`qol-bonus-${catId}`);
                     if (bonusEl) this.#setText(bonusEl, `+${bonus}`);
+                    const bonusElMobile = document.getElementById(`qol-bonus-${catId}-mobile`);
+                    if (bonusElMobile) this.#setText(bonusElMobile, `+${bonus}`);
 
                     const penalty = data.penalty_categories?.[cat] ?? 0;
-                    const penaltyEl = document.getElementById(`qol-penalty-${cat.replace(/\s+/g, "-")}`);
+                    const penaltyEl = document.getElementById(`qol-penalty-${catId}`);
                     if (penaltyEl) this.#setText(penaltyEl, penalty === 0 ? "-0" : `${penalty}`);
+                    const penaltyElMobile = document.getElementById(`qol-penalty-${catId}-mobile`);
+                    if (penaltyElMobile) this.#setText(penaltyElMobile, penalty === 0 ? "-0" : `${penalty}`);
 
                     const eventMod = data.event_categories?.[cat] ?? 0;
-                    const eventEl = document.getElementById(`qol-event-${cat.replace(/\s+/g, "-")}`);
+                    const eventEl = document.getElementById(`qol-event-${catId}`);
                     if (eventEl) {
                         const eventDisplay = (eventMod >= 0 ? "+" : "") + eventMod;
                         this.#setText(eventEl, eventDisplay);
-                        eventEl.className = `font-semibold ${eventMod > 0 ? "text-green-600 dark:text-green-400 hc:text-green-400" : eventMod < 0 ? "text-red-600 dark:text-red-400 hc:text-red-400" : "text-gray-500 dark:text-gray-400 hc:text-white"}`;
+                        eventEl.className = `hidden md:block font-semibold ${eventMod > 0 ? "text-green-600 dark:text-green-400 hc:text-green-400" : eventMod < 0 ? "text-red-600 dark:text-red-400 hc:text-red-400" : "text-gray-500 dark:text-gray-400 hc:text-white"}`;
+                    }
+                    const eventElMobile = document.getElementById(`qol-event-${catId}-mobile`);
+                    if (eventElMobile) {
+                        const eventDisplay = (eventMod >= 0 ? "+" : "") + eventMod;
+                        this.#setText(eventElMobile, eventDisplay);
+                        eventElMobile.className = `font-semibold ${eventMod > 0 ? "text-green-600 dark:text-green-400 hc:text-green-400" : eventMod < 0 ? "text-red-600 dark:text-red-400 hc:text-red-400" : "text-gray-500 dark:text-gray-400 hc:text-white"}`;
                     }
 
                 }
@@ -103,8 +114,11 @@ export class QolService {
 
             if (data.penalty_categories) {
                 for (const [catKey, penValue] of Object.entries(data.penalty_categories)) {
-                    const el = document.getElementById(`qol-penalty-${catKey.replace(/\s+/g, "-")}`);
+                    const keyId = catKey.replace(/\s+/g, "-");
+                    const el = document.getElementById(`qol-penalty-${keyId}`);
                     if (el) this.#setText(el, penValue === 0 ? "-0" : `${penValue}`);
+                    const elMobile = document.getElementById(`qol-penalty-${keyId}-mobile`);
+                    if (elMobile) this.#setText(elMobile, penValue === 0 ? "-0" : `${penValue}`);
                 }
             }
         } catch {

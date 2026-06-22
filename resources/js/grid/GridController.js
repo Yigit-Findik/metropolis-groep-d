@@ -120,6 +120,13 @@ export class GridController {
             const toggle = cell.parentElement?.querySelector('.approve-toggle');
             if (!toggle) return;
 
+            toggle.addEventListener('keydown', (e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                e.preventDefault();
+                e.stopPropagation();
+                toggle.click();
+            });
+
             toggle.addEventListener('click', (e) => {
                 e.stopPropagation(); // Don't trigger the parent cell click
                 const cellId = toggle.dataset.cellId;

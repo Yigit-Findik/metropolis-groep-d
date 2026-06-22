@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white hc:bg-black hc:border hc:border-white dark:bg-gray-800 overflow-hidden shadow-sm hc:shadow-none sm:rounded-lg p-6">
                 <form id="filters" method="GET" class="mb-4 flex flex-wrap gap-3 items-end" aria-label="Filter audit log entries">
                     <div class="flex-1 min-w-[140px]">
@@ -33,7 +33,7 @@
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 hc:divide-white dark:divide-gray-700" role="grid" aria-label="System audit log showing user actions on functions and events">
-                        <thead>
+                        <thead class="hidden md:table-header-group">
                             <tr class="text-left text-sm text-gray-500 hc:text-white">
                                 <th class="px-3 py-2" scope="col">Timestamp</th>
                                 <th class="px-3 py-2" scope="col">User</th>
@@ -165,7 +165,46 @@
 
                                     $rowLabel = $actionText . ' ' . $entityLabel . ' ' . $functionLabel . '. User ' . $userLabel . '. Timestamp ' . $timestampLabel . '. Details ' . $fullDetailsLabelForAria;
                                 @endphp
-                                <tr class="text-sm text-gray-700 hc:text-white dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 hc:focus:ring-yellow-400 focus:ring-inset" role="row" tabindex="0" aria-label="{{ $rowLabel }}">
+                                {{-- Mobile card --}}
+                                <tr class="md:hidden border-b border-gray-200 hc:border-white dark:border-gray-700">
+                                    <td colspan="5" class="px-4 py-3">
+                                        <div class="space-y-2 text-sm">
+                                            <div class="flex items-start justify-between gap-2 flex-wrap">
+                                                <time datetime="{{ $entry->created_at->toIso8601String() }}" class="text-xs text-gray-500 hc:text-white dark:text-gray-400">{{ $timestampLabel }}</time>
+                                                <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold capitalize {{ $actionBadgeClasses }}" aria-label="Action: {{ $actionLabel }}">{{ $actionLabel }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="font-medium text-gray-900 hc:text-white dark:text-gray-100">{{ $functionLabel }}</span>
+                                                <span class="ml-1 text-xs text-gray-500 hc:text-white dark:text-gray-400">({{ $entityLabel }})</span>
+                                            </div>
+                                            <div class="text-xs text-gray-500 hc:text-white dark:text-gray-400">By {{ $userLabel }}</div>
+                                            @if(count($renderedRows) > 0)
+                                                <div class="pt-2 border-t border-gray-100 hc:border-white dark:border-gray-700 flex flex-wrap gap-1">
+                                                    @if($isSnapshotAction)
+                                                        <span class="sr-only">{{ $snapshotTitle }}</span>
+                                                    @endif
+                                                    @foreach($renderedRows as $row)
+                                                        @continue($row['label'] === 'name')
+                                                        <div lang="en" class="inline-flex items-center gap-1 rounded-full border border-gray-200 hc:border-white bg-white hc:bg-black px-2 py-0.5 text-xs text-gray-700 hc:text-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
+                                                            <span class="font-semibold text-gray-900 hc:text-white dark:text-gray-100">{{ $row['label'] }}</span>
+                                                            @if(array_key_exists('new', $row))
+                                                                <span>{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}</span>
+                                                                <span aria-hidden="true" class="text-xs text-gray-400 hc:text-white mx-1">→</span>
+                                                                <span>{{ is_array($row['new']) ? json_encode($row['new']) : (($row['new'] === null) ? 'empty' : ($row['new'] ?? 'empty')) }}</span>
+                                                            @else
+                                                                <span>{{ is_array($row['value']) ? json_encode($row['value']) : (($row['value'] === null) ? 'empty' : ($row['value'] ?? 'empty')) }}</span>
+                                                            @endif
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                <div class="text-xs text-gray-500 hc:text-white dark:text-gray-400 italic">No additional details recorded</div>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                                {{-- Desktop row --}}
+                                <tr class="hidden md:table-row text-sm text-gray-700 hc:text-white dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 hc:focus:ring-yellow-400 focus:ring-inset" role="row" tabindex="0" aria-label="{{ $rowLabel }}">
                                     <td class="px-3 py-2" role="gridcell"><time datetime="{{ $entry->created_at->toIso8601String() }}">{{ $timestampLabel }}</time></td>
                                     <td class="px-3 py-2" role="gridcell">{{ $userLabel }}</td>
                                     <td class="px-3 py-2" role="gridcell"><span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold capitalize {{ $actionBadgeClasses }}" aria-label="Action: {{ $actionLabel }}">{{ $actionLabel }}</span></td>
