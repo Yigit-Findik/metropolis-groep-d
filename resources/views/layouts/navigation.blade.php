@@ -11,7 +11,7 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden space-x-8 lg:-my-px lg:ms-10 lg:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
@@ -47,7 +47,7 @@
             </div>
 
             <!-- Right side: Contrast Toggle + Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:gap-3">
+            <div class="hidden lg:flex lg:items-center lg:gap-3">
 
                 <!-- High Contrast Toggle -->
                 <div x-data="contrastToggle">
@@ -101,7 +101,7 @@
             </div>
 
             <!-- Hamburger -->
-            <div class="-me-2 flex items-center gap-1 sm:hidden">
+            <div class="-me-2 flex items-center gap-1 lg:hidden">
                 <!-- High contrast toggle (mobile top bar, icon only) -->
                 <div x-data="contrastToggle">
                     <button
@@ -136,7 +136,7 @@
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div id="mobile-navigation-menu" :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-white hc:bg-black dark:bg-gray-800">
+    <div id="mobile-navigation-menu" :class="{'block': open, 'hidden': ! open}" class="hidden lg:hidden bg-white hc:bg-black dark:bg-gray-800">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}

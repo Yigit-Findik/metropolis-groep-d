@@ -23,7 +23,7 @@
 
                 {{-- QoL Score Banner --}}
                 <div class="flex-1 min-w-0 overflow-x-auto bg-gray-200 hc:bg-black hc:border hc:border-white dark:bg-gray-800 rounded-2xl shadow-sm hc:shadow-none px-4 sm:px-8 py-6" role="group" aria-label="Quality of life summary">
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[150px_repeat(5,minmax(120px,1fr))] gap-x-4 gap-y-3 items-start">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-[130px_repeat(5,minmax(90px,1fr))] gap-x-4 gap-y-3 items-start">
 
                         <div class="col-span-2 sm:col-span-1 min-w-0">
                             <p class="text-gray-500 hc:text-white dark:text-gray-400 text-xs font-medium uppercase tracking-wide" aria-hidden="true">Total QoL</p>
@@ -38,23 +38,23 @@
                             </div>
                         @endforeach
 
-                        <div class="hidden lg:block lg:col-span-6"></div>
-                        <div class="hidden lg:block text-gray-700 hc:text-white dark:text-gray-200 font-medium">Bonus:</div>
+                        <div class="hidden md:block md:col-span-6"></div>
+                        <div class="hidden md:block text-gray-700 hc:text-white dark:text-gray-200 font-medium">Bonus:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-green-600 hc:text-green-400 dark:text-green-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded" id="qol-bonus-{{ $slug }}">+0</div>
+                            <div tabindex="0" class="hidden md:block text-green-600 hc:text-green-400 dark:text-green-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded" id="qol-bonus-{{ $slug }}">+0</div>
                         @endforeach
 
-                        <div class="hidden lg:block text-gray-700 hc:text-white dark:text-gray-200 font-medium">Penalty:</div>
+                        <div class="hidden md:block text-gray-700 hc:text-white dark:text-gray-200 font-medium">Penalty:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-red-600 hc:text-red-400 dark:text-red-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded" id="qol-penalty-{{ $slug }}">-0</div>
+                            <div tabindex="0" class="hidden md:block text-red-600 hc:text-red-400 dark:text-red-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded" id="qol-penalty-{{ $slug }}">-0</div>
                         @endforeach
 
-                        <div class="hidden lg:block text-gray-700 hc:text-white dark:text-gray-200 font-medium">Events:</div>
+                        <div class="hidden md:block text-gray-700 hc:text-white dark:text-gray-200 font-medium">Events:</div>
                         @foreach(['safety', 'recreation', 'environment_quality', 'facilities', 'mobility'] as $slug)
-                            <div tabindex="0" class="hidden lg:block text-gray-500 hc:text-white dark:text-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded" id="qol-event-{{ $slug }}">0</div>
+                            <div tabindex="0" class="hidden md:block text-gray-500 hc:text-white dark:text-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded" id="qol-event-{{ $slug }}">0</div>
                         @endforeach
                     </div>
-                    <div class="lg:hidden mt-4 pt-3 border-t border-gray-300 hc:border-white dark:border-gray-600 space-y-3 text-sm">
+                    <div class="md:hidden mt-4 pt-3 border-t border-gray-300 hc:border-white dark:border-gray-600 space-y-3 text-sm">
                         <div>
                             <p class="font-medium text-gray-700 hc:text-white dark:text-gray-200 mb-1">Bonus</p>
                             <div class="flex flex-wrap gap-x-4 gap-y-1">
@@ -64,7 +64,7 @@
                             </div>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-700 hc:text-white dark:text-gray-200 mb-1">Penalty</p>
+                            <p class="font-medium text-grey-700 hc:text-white dark:text-gray-200 mb-1">Penalty</p>
                             <div class="flex flex-wrap gap-x-4 gap-y-1">
                                 @foreach(['safety' => 'Safety', 'recreation' => 'Recreation', 'environment_quality' => 'Env. Quality', 'facilities' => 'Facilities', 'mobility' => 'Mobility'] as $slug => $dimLabel)
                                     <span class="text-xs text-gray-500 hc:text-white dark:text-gray-400">{{ $dimLabel }}: <span tabindex="0" class="text-red-600 hc:text-red-400 dark:text-red-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 hc:focus:ring-yellow-400 rounded" id="qol-penalty-{{ $slug }}-mobile">-0</span></span>

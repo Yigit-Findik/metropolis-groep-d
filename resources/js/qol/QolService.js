@@ -100,7 +100,7 @@ export class QolService {
                     if (eventEl) {
                         const eventDisplay = (eventMod >= 0 ? "+" : "") + eventMod;
                         this.#setText(eventEl, eventDisplay);
-                        eventEl.className = `font-semibold ${eventMod > 0 ? "text-green-600 dark:text-green-400 hc:text-green-400" : eventMod < 0 ? "text-red-600 dark:text-red-400 hc:text-red-400" : "text-gray-500 dark:text-gray-400 hc:text-white"}`;
+                        eventEl.className = `hidden md:block font-semibold ${eventMod > 0 ? "text-green-600 dark:text-green-400 hc:text-green-400" : eventMod < 0 ? "text-red-600 dark:text-red-400 hc:text-red-400" : "text-gray-500 dark:text-gray-400 hc:text-white"}`;
                     }
                     const eventElMobile = document.getElementById(`qol-event-${catId}-mobile`);
                     if (eventElMobile) {
