@@ -12,6 +12,13 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=lock,lock_open" />
 
+        <!-- Apply saved contrast preference before first paint to prevent flash of unstyled content -->
+        <script>
+            if (localStorage.getItem('high-contrast') === 'true') {
+                document.documentElement.classList.add('high-contrast');
+            }
+        </script>
+
         <!-- Simulation always starts paused; Grid page sets 'false' only when Play is pressed -->
         <script>localStorage.setItem('sim_paused', 'true');</script>
 
@@ -21,12 +28,12 @@
         @endif
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+        <div class="min-h-screen bg-gray-100 hc:bg-black dark:bg-gray-900">
             @include('layouts.navigation')
 
             <!-- Page Heading -->
             @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow min-h-[70px]">
+                <header class="bg-white hc:bg-black hc:border-b-2 hc:border-white dark:bg-gray-800 shadow hc:shadow-none min-h-[70px]">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>

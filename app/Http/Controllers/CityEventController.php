@@ -7,6 +7,7 @@ use App\Models\CityEvent;
 use App\Models\CityFunction;
 use App\Models\CityGridCell;
 use App\Models\EventRoute;
+use App\Services\PerformanceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -77,8 +78,8 @@ class CityEventController extends Controller
             'day_functions.*.facilities_modifier'          => ['nullable', 'integer', 'between:-10,10'],
             'day_functions.*.mobility_modifier'            => ['nullable', 'integer', 'between:-10,10'],
             'night_functions'      => ['nullable', 'array'],
-            'night_functions.*.safety_modifier'              => ['nullable', 'integer', 'between:-10,10'],
-            'night_functions.*.recreation_modifier'          => ['nullable', 'integer', 'between:-10,10'],
+            'night_functions.*.safety_modifier'            => ['nullable', 'integer', 'between:-10,10'],
+            'night_functions.*.recreation_modifier'        => ['nullable', 'integer', 'between:-10,10'],
             'night_functions.*.environment_quality_modifier' => ['nullable', 'integer', 'between:-10,10'],
             'night_functions.*.facilities_modifier'          => ['nullable', 'integer', 'between:-10,10'],
             'night_functions.*.mobility_modifier'            => ['nullable', 'integer', 'between:-10,10'],
@@ -127,9 +128,10 @@ class CityEventController extends Controller
         $event = CityEvent::findOrFail($id);
 
         $update = [
-            'is_active'    => true,
-            'activated_at' => now(),
-            'expires_at'   => null,
+            'is_active'        => true,
+            'is_in_simulation' => true,
+            'activated_at'     => now(),
+            'expires_at'       => null,
         ];
 
         if ($event->is_day_night_cycle) {
@@ -138,6 +140,9 @@ class CityEventController extends Controller
         }
 
         $event->update($update);
+
+        // QA.2 Clear QoL cache when an event is activated so scores update immediately
+        PerformanceService::clearQolCache();
 
         $this->recordAuditLog('activate', $event, null, ['is_active' => true]);
 
@@ -148,7 +153,10 @@ class CityEventController extends Controller
     {
         $event = CityEvent::findOrFail($id);
 
-        $update = ['is_active' => false];
+        $update = [
+            'is_active'        => false,
+            'is_in_simulation' => false,
+        ];
 
         if ($event->is_day_night_cycle) {
             $update['current_phase']    = null;
@@ -161,9 +169,34 @@ class CityEventController extends Controller
         $cellIds = CityGridCell::whereIn('function_id', $functionIds)->pluck('id');
         EventRoute::whereIn('event_cell_id', $cellIds)->delete();
 
+        // QA.2 Clear QoL cache when an event is deactivated
+        PerformanceService::clearQolCache();
+
         $this->recordAuditLog('deactivate', $event, null, ['is_active' => false]);
 
         return redirect()->route('city_events.index')->with('success', "{$event->name} has been deactivated.");
+    }
+
+    public function simDeactivate($id)
+    {
+        $event = CityEvent::findOrFail($id);
+
+        $event->update(['is_active' => false]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function simReactivate($id)
+    {
+        $event = CityEvent::findOrFail($id);
+
+        $event->update([
+            'is_active'    => true,
+            'activated_at' => now(),
+            'expires_at'   => null,
+        ]);
+
+        return response()->json(['success' => true]);
     }
 
     public function switchPhase(Request $request, $id)
@@ -174,8 +207,7 @@ class CityEventController extends Controller
             return response()->json(['error' => 'Invalid event'], 400);
         }
 
-        // If the caller specifies which phase they expect to switch FROM, skip if it
-        // already changed (prevents double-switches when both pages are open).
+        // If caller specifies which phase they expect to switch FROM skip if changed already
         $fromPhase = $request->input('from_phase');
         if ($fromPhase && $event->current_phase !== $fromPhase) {
             return response()->json(['phase' => $event->current_phase, 'skipped' => true]);
@@ -188,22 +220,29 @@ class CityEventController extends Controller
             'phase_started_at' => now(),
         ]);
 
+        // QA.2 Clear QoL cache on phase switch so scores stay up to date
+        PerformanceService::clearQolCache();
+
         return response()->json(['phase' => $newPhase]);
     }
 
+    
+    //QA.2 - Subtask 4 & 5: Return active events efficiently.
     public function activeEvents()
     {
         $this->processEvents();
 
         $events = CityEvent::where(function ($q) {
                 $q->where('is_active', true)
-                  ->orWhere('event_type', 'recurring');
+                  ->orWhere('is_in_simulation', true);
             })
+            ->with(['cityFunctions', 'dayFunctions', 'nightFunctions'])
             ->get([
                 'id', 'name', 'event_type', 'is_active', 'is_day_night_cycle',
                 'expires_at', 'activated_at',
                 'recurring_frequency_value', 'recurring_frequency_unit',
                 'recurring_active_duration_value', 'recurring_active_duration_unit',
+                'recurring_time_slots',
                 'one_off_duration_value', 'one_off_duration_unit',
                 'current_phase', 'phase_started_at',
                 'day_duration_value', 'day_duration_unit',
@@ -211,6 +250,20 @@ class CityEventController extends Controller
             ])
             ->map(function ($event) {
                 if ($event->is_day_night_cycle) {
+                    $phaseFns = $event->current_phase === 'day'
+                        ? $event->dayFunctions
+                        : $event->nightFunctions;
+                    $linked = $event->is_active
+                        ? $phaseFns->map(fn ($fn) => [
+                            'function_id'                  => $fn->id,
+                            'safety_modifier'              => (int) ($fn->pivot->safety_modifier ?? 0),
+                            'recreation_modifier'          => (int) ($fn->pivot->recreation_modifier ?? 0),
+                            'environment_quality_modifier' => (int) ($fn->pivot->environment_quality_modifier ?? 0),
+                            'facilities_modifier'          => (int) ($fn->pivot->facilities_modifier ?? 0),
+                            'mobility_modifier'            => (int) ($fn->pivot->mobility_modifier ?? 0),
+                        ])->values()->all()
+                        : [];
+
                     return [
                         'id'                         => $event->id,
                         'name'                       => $event->name,
@@ -224,8 +277,20 @@ class CityEventController extends Controller
                         'night_duration_seconds'     => $event->nightDurationSeconds(),
                         'active_duration_seconds'    => null,
                         'cycle_duration_seconds'     => null,
+                        'linked_functions'           => $linked,
                     ];
                 }
+
+                $linked = $event->is_active
+                    ? $event->cityFunctions->map(fn ($fn) => [
+                        'function_id'                  => $fn->id,
+                        'safety_modifier'              => (int) ($fn->pivot->safety_modifier ?? 0),
+                        'recreation_modifier'          => (int) ($fn->pivot->recreation_modifier ?? 0),
+                        'environment_quality_modifier' => (int) ($fn->pivot->environment_quality_modifier ?? 0),
+                        'facilities_modifier'          => (int) ($fn->pivot->facilities_modifier ?? 0),
+                        'mobility_modifier'            => (int) ($fn->pivot->mobility_modifier ?? 0),
+                    ])->values()->all()
+                    : [];
 
                 return [
                     'id'                      => $event->id,
@@ -240,16 +305,20 @@ class CityEventController extends Controller
                     'cycle_duration_seconds'  => $event->event_type === 'recurring'
                         ? $event->cycleDurationSeconds()
                         : null,
+                    'time_slots'              => $event->timeSlotsForJs(),
+                    'recurring_frequency_unit'   => $event->recurring_frequency_unit,
                     'current_phase'              => null,
                     'phase_started_at_timestamp' => null,
                     'day_duration_seconds'       => null,
                     'night_duration_seconds'     => null,
+                    'linked_functions'           => $linked,
                 ];
             });
 
         return response()->json($events);
     }
 
+    //QA.2 Process events in a single transaction using bulk updates.
     private function processEvents(): void
     {
         $now = now();
@@ -268,9 +337,10 @@ class CityEventController extends Controller
             ->where('expires_at', '<=', $now)
             ->update(['is_active' => false]);
 
-        // Only auto-reactivate events that have a real expires_at (not simulation-managed ones)
+        // Only auto-reactivate events that are still in the simulation
         CityEvent::where('is_active', false)
             ->where('event_type', 'recurring')
+            ->where('is_in_simulation', true)
             ->whereNotNull('activated_at')
             ->whereNotNull('expires_at')
             ->get()
@@ -354,8 +424,13 @@ class CityEventController extends Controller
             'event_type'                    => ['required', 'in:one-off,recurring'],
             'recurring_frequency_value'          => ['nullable', 'integer', 'min:1', 'required_if:event_type,recurring'],
             'recurring_frequency_unit'           => ['nullable', 'in:hour,day,week,month', 'required_if:event_type,recurring'],
-            'recurring_active_duration_value'    => ['nullable', 'integer', 'min:1', 'required_if:event_type,recurring'],
-            'recurring_active_duration_unit'     => ['nullable', 'in:minute,hour,day,week', 'required_if:event_type,recurring'],
+            'recurring_active_duration_value'    => ['nullable', 'integer', 'min:1'],
+            'recurring_active_duration_unit'     => ['nullable', 'in:minute,hour,day,week'],
+            'recurring_time_slots'                    => ['nullable', 'array'],
+            'recurring_time_slots.*.start'            => ['nullable', 'required_if:event_type,recurring', 'regex:/^\d{2}:\d{2}$/'],
+            'recurring_time_slots.*.end'              => ['nullable', 'required_if:event_type,recurring', 'regex:/^\d{2}:\d{2}$/'],
+            'recurring_time_slots.*.week_day'         => ['nullable', 'integer', 'between:1,7'],
+            'recurring_time_slots.*.month_date'       => ['nullable', 'integer', 'between:1,31'],
             'one_off_duration_value'             => ['nullable', 'integer', 'min:1', 'required_if:event_type,one-off'],
             'one_off_duration_unit'         => ['nullable', 'in:hour,day,week', 'required_if:event_type,one-off'],
             'functions'                     => ['nullable', 'array'],
@@ -377,8 +452,9 @@ class CityEventController extends Controller
             'event_type'                        => $validated['event_type'],
             'recurring_frequency_value'         => $isRecurring ? $validated['recurring_frequency_value'] : null,
             'recurring_frequency_unit'          => $isRecurring ? $validated['recurring_frequency_unit'] : null,
-            'recurring_active_duration_value'   => $isRecurring ? $validated['recurring_active_duration_value'] : null,
-            'recurring_active_duration_unit'    => $isRecurring ? $validated['recurring_active_duration_unit'] : null,
+            'recurring_active_duration_value'   => $isRecurring ? ($validated['recurring_active_duration_value'] ?? null) : null,
+            'recurring_active_duration_unit'    => $isRecurring ? ($validated['recurring_active_duration_unit'] ?? null) : null,
+            'recurring_time_slots'              => $isRecurring ? ($validated['recurring_time_slots'] ?? null) : null,
             'one_off_duration_value'            => $isRecurring ? null : $validated['one_off_duration_value'],
             'one_off_duration_unit'             => $isRecurring ? null : $validated['one_off_duration_unit'],
         ];
@@ -394,6 +470,7 @@ class CityEventController extends Controller
             'recurring_frequency_unit'        => $event->recurring_frequency_unit,
             'recurring_active_duration_value' => $event->recurring_active_duration_value,
             'recurring_active_duration_unit'  => $event->recurring_active_duration_unit,
+            'recurring_time_slots'            => $event->recurring_time_slots,
             'one_off_duration_value'          => $event->one_off_duration_value,
             'one_off_duration_unit'           => $event->one_off_duration_unit,
         ];

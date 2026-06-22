@@ -18,5 +18,8 @@ export default {
         },
     },
 
-    plugins: [forms],
+    plugins: [forms, ({ addVariant }) => {
+        // hc: variant activates when html.high-contrast is set by the contrast toggle
+        addVariant('hc', 'html.high-contrast &');
+    }],
 };

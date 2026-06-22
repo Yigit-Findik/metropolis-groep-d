@@ -11,6 +11,8 @@ use App\Http\Controllers\EffectController;
 use App\Http\Controllers\PendingActionController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\CityEventController;
+use App\Http\Controllers\GridCellSuggestionController;
+use App\Http\Controllers\SimulationCommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,9 +38,7 @@ use App\Http\Controllers\CityEventController;
 
 // Public landing page
 Route::get('/', function () {
-    return view('welcome', [
-        'gridCells' => CityGridCell::ensureGridExists(),
-    ]);
+    return redirect()->route('login');
 });
 
 Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Expert in effects,Policy maker'])->get('/dashboard', function () {
@@ -51,6 +51,9 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Policy m
 
     // SIM.1.4 - QoL score calculation
     Route::get('/grid/qol-score', [CityGridCellController::class, 'getQolScore']);
+
+    // REV.2.2 - Live cell list for the improvement suggestions dropdown
+    Route::get('/grid/cells', [CityGridCellController::class, 'getCells']);
 
     // REV.1 - Preview the PDF report in the browser before downloading
     Route::get('/grid/export-pdf', [CityGridCellController::class, 'previewPdf'])->name('grid.export-pdf');
@@ -70,6 +73,9 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
     // SIM.4.2 - Activate / deactivate an event, triggering temporary QoL effect adjustments.
     Route::post('/events/{id}/activate', [CityEventController::class, 'activate'])->name('city_events.activate');
     Route::post('/events/{id}/deactivate', [CityEventController::class, 'deactivate'])->name('city_events.deactivate');
+    // Internal simulation cycle deactivation/reactivation — no audit log, does not remove the event from the simulation
+    Route::post('/events/{id}/sim-deactivate', [CityEventController::class, 'simDeactivate'])->name('city_events.sim_deactivate');
+    Route::post('/events/{id}/sim-reactivate', [CityEventController::class, 'simReactivate'])->name('city_events.sim_reactivate');
 
     // Day/Night Cycle specific routes
     Route::put('/events/{id}/day-night', [CityEventController::class, 'updateDayNight'])->name('city_events.update_day_night');
@@ -105,12 +111,39 @@ Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->grou
 
 });
 
+// REV.2.2 - Improvement suggestions
+// All grid viewers may read; policy makers and administrators may create and delete their own
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Policy maker'])->group(function () {
+    Route::get('/suggestions', [GridCellSuggestionController::class, 'index'])->name('suggestions.index');
+});
+
+Route::middleware(['auth', 'verified', 'role:Policy maker,Administrator'])->group(function () {
+    Route::post('/suggestions', [GridCellSuggestionController::class, 'store'])->name('suggestions.store');
+    Route::delete('/suggestions/{id}', [GridCellSuggestionController::class, 'destroy'])->name('suggestions.destroy');
+});
+
+// REV.2.2 - City planner and administrator can accept or reject suggestions
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner'])->group(function () {
+    Route::patch('/suggestions/{id}/status', [GridCellSuggestionController::class, 'updateStatus'])->name('suggestions.status');
+});
+
 // BES.3 - Approval management — policy maker and administrator
 Route::middleware(['auth', 'verified', 'role:Policy maker,Administrator'])->group(function () {
     Route::post('/grid/approve-all', [CityGridCellController::class, 'approveAllCells']);
     Route::post('/grid/revoke-all', [CityGridCellController::class, 'revokeAllCells']);
     Route::post('/grid/{id}/approve', [CityGridCellController::class, 'approveCell']);
     Route::delete('/grid/{id}/revoke', [CityGridCellController::class, 'revokeCell']);
+});
+
+// REV.2.1 - Simulation comments
+// All grid viewers may read comments; only policy makers and administrators may write or delete
+Route::middleware(['auth', 'verified', 'role:Administrator,City planner,Policy maker'])->group(function () {
+    Route::get('/comments', [SimulationCommentController::class, 'index'])->name('comments.index');
+});
+
+Route::middleware(['auth', 'verified', 'role:Policy maker,Administrator'])->group(function () {
+    Route::post('/comments', [SimulationCommentController::class, 'store'])->name('comments.store');
+    Route::delete('/comments/{id}', [SimulationCommentController::class, 'destroy'])->name('comments.destroy');
 });
 
 

@@ -15,6 +15,7 @@ export const effectEditor = (initialValue, updateUrl, csrfToken, functionName, c
     error: '',
     functionNameArg: functionName,
     categoryArg: category,
+    _toastTimer: null,
 
     isValid() {
         return this.value >= -10 && this.value <= 10;
@@ -84,7 +85,8 @@ export const effectEditor = (initialValue, updateUrl, csrfToken, functionName, c
             if (toast) {
                 toast.textContent = `${functionName} effect updated!`;
                 toast.className = 'fixed bottom-6 right-6 z-50 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 bg-green-500';
-                setTimeout(() => { toast.className += ' hidden'; }, 3000);
+                clearTimeout(this._toastTimer);
+                this._toastTimer = setTimeout(() => { toast.classList.add('hidden'); }, 3000);
             }
         } catch {
             this.error = 'An error occurred';
@@ -98,10 +100,9 @@ export const effectEditor = (initialValue, updateUrl, csrfToken, functionName, c
         this.editing = false;
     },
 
-    // Returns a Tailwind text colour class based on whether the value is positive, negative, or zero
     getColor() {
-        if (this.value > 0) return 'text-green-600 dark:text-green-400';
-        if (this.value < 0) return 'text-red-600 dark:text-red-400';
-        return 'text-gray-500 dark:text-gray-400';
+        if (this.value > 0) return 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/40 dark:text-green-400 dark:hover:bg-green-900/60 hc:bg-green-900 hc:text-white hc:hover:bg-green-800';
+        if (this.value < 0) return 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-400 dark:hover:bg-red-900/60 hc:bg-red-900 hc:text-white hc:hover:bg-red-800';
+        return 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 hc:bg-neutral-800 hc:text-white hc:hover:bg-neutral-700';
     },
 });
