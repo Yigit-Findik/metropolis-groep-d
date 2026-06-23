@@ -53,19 +53,19 @@ export const simulationControls = () => ({
         this._announce(`Simulation paused at time ${this.simTime}`);
     },
 
-    setMultiplier(n) {
+    setSpeed(n) {
         this.multiplier = n;
         localStorage.setItem('sim_multiplier', String(n));
-        this.setSpeed(n * this.unitSeconds);
+        this._applySpeed(n * this.unitSeconds);
     },
 
     setUnit(n) {
         this.unitSeconds = n;
         localStorage.setItem('sim_unit_seconds', String(n));
-        this.setSpeed(this.multiplier * n);
+        this._applySpeed(this.multiplier * n);
     },
 
-    setSpeed(newSpeed) {
+    _applySpeed(newSpeed) {
         localStorage.setItem('sim_speed', String(newSpeed));
         this.speed = newSpeed;
         window.dispatchEvent(new CustomEvent('simulation:speedchange', { detail: { speed: newSpeed } }));
