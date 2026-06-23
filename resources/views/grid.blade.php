@@ -140,7 +140,8 @@
 
                     <div class="flex items-center gap-2" role="radiogroup" aria-label="Simulation speed">
                         @foreach([1, 2, 5] as $spd)
-                            <button @click="setMultiplier({{ $spd }})"
+                            <button @click="setSpeed({{ $spd }})"
+                                    data-speed="{{ $spd }}"
                                     role="radio"
                                     :aria-checked="multiplier === {{ $spd }}"
                                     :aria-label="multiplier === {{ $spd }} ? 'Change simulation speed to {{ $spd }}x, selected' : 'Change simulation speed to {{ $spd }}x'"
